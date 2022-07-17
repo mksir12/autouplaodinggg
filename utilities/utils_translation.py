@@ -424,22 +424,14 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                         tracker_settings[optional_key] = region
 
                 # -!-!- Tags -!-!- #
-                elif optional_key == 'tags':  # (Only supported on BHD)
-                    # We only support 2 tags atm, Scene & WEBDL/RIP on bhd
-                    # All we currently support regarding tags, is to assign the 'Scene' tag if we are uploading a scene release
+                elif optional_key == 'tags':
+                    # The uploader will generate all the tags that are applicable to the current upload.
+                    # each tracker will specify the list of tags that are accepted by it.
+                    # here we select only those tags which are accepted by the tracker from the tags list generated
                     upload_these_tags_list = []
-                    for tag in optional_value:
-
-                        # This will check for the 'Scene' tag
-                        if str(tag).lower() in str(torrent_info.keys()).lower():
-                            upload_these_tags_list.append(str(tag))
-                            # tracker_settings[optional_key] = str(tag)
-
-                        # This will check for webdl/webrip tag
-                        if str(tag) in ["WEBRip", "WEBDL"]:
-                            # Check if we are uploading one of those ^^ 'sources'
-                            if str(tag).lower() == str(torrent_info["source_type"]).lower():
-                                upload_these_tags_list.append(str(tag))
+                    for tag in torrent_info["tags"]:
+                        if tag in optional_value:
+                            upload_these_tags_list.append(tag)
                     if len(upload_these_tags_list) != 0:
                         tracker_settings[optional_key] = ",".join(upload_these_tags_list)
 
@@ -583,3 +575,40 @@ def format_title(json_config, torrent_info):
     # which is used to store the payload for the actual POST upload request
     return str(formatted_title[1:])
 # -------------- END of format_title --------------
+
+
+def __add_applicable_tags(torrent_info, group, subkey):
+    if group is None or subkey is None:
+        return
+
+    if "tags" not in torrent_info:
+        torrent_info["tags"] = []
+
+    group = group.lower()
+    subkey = subkey.lower().replace("'", "")
+    tag_grouping = torrent_info["tag_grouping"] if "tag_grouping" in torrent_info else {}
+    if group in tag_grouping and subkey in tag_grouping[group]:
+        logging.info(f"[Tags] Adding tags for group '{group}' and subkey '{subkey}'")
+        torrent_info["tags"].extend(tag_grouping[group][subkey])
+        torrent_info["tags"] = sorted(torrent_info["tags"])
+
+
+# ---------------------------------------------------------------------- #
+#           !!! WARN !!! This Method has side effects. !!! WARN !!!
+# ---------------------------------------------------------------------- #
+def generate_all_applicable_tags(torrent_info):
+    logging.debug("[Tags] Generating tags for the upload")
+    logging.debug("[Tags] Creating tags for hdr_format")
+    __add_applicable_tags(torrent_info, "hdr_format", torrent_info["hdr"] if "hdr" in torrent_info else None)
+    __add_applicable_tags(torrent_info, "hdr_format", torrent_info["dv"] if "dv" in torrent_info else None)
+
+    logging.debug("[Tags] Creating tags for source_type")
+    __add_applicable_tags(torrent_info, "source_type", torrent_info["source_type"] if "source_type" in torrent_info else None)
+
+    logging.debug("[Tags] Creating tags for audio")
+    __add_applicable_tags(torrent_info, "audio", torrent_info["atmos"] if "atmos" in torrent_info else None)
+
+    logging.debug("[Tags] Creating tags for edition")
+    __add_applicable_tags(torrent_info, "edition", torrent_info["edition"] if "edition" in torrent_info else None)
+
+    logging.info(f"[Tags] Generated tags: '{torrent_info['tags']}'")

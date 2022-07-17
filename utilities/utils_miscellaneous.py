@@ -22,14 +22,14 @@ def miscellaneous_perform_scene_group_capitalization(scene_groups_path, release_
         # Also save the fact that this is a scene group for later (we can add a 'scene' tag later to BHD)
         return 'true', scene_group_capitalization[str(release_group).lower()]
     return 'false', release_group
-
+ 
 
 def miscellaneous_identify_bluray_edition(upload_media):
     # use regex (sourced and slightly modified from official radarr repo) to find torrent editions (Extended, Criterion, Theatrical, etc)
     # https://github.com/Radarr/Radarr/blob/5799b3dc4724dcc6f5f016e8ce4f57cc1939682b/src/NzbDrone.Core/Parser/Parser.cs#L21
     try:
         torrent_editions = re.search(
-            r"((Recut.|Extended.|Ultimate.|Criterion.|International.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Final|Criterion|International(?=(.(Cut|Edition|Version|Collection)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.(Cut|Edition|Version|Collection))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit))?|(Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|Edition|Restored|(234)in1))", upload_media)
+            r"((Recut.|Extended.|Ultimate.|Criterion.|International.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Final|Criterion|International(?=(.(Cut|Edition|Version|Collection)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.(Cut|Edition|Version|Collection))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|FANRES|Fan.?Edit))?|(Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|FANRES|Edition|Restored|(234)in1))", upload_media)
         logging.info(f"[MiscellaneousUtils] extracted '{str(torrent_editions.group()).replace('.', ' ')}' as the 'edition' for the final torrent name")
         return str(torrent_editions.group()).replace(".", " ")
     except AttributeError:
@@ -124,16 +124,12 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
         }
         # Since we already know the 'parent source' from an earlier function we don't need to prompt the user for it twice
         if str(source).lower() in basic_source_to_source_type_dict and isinstance(basic_source_to_source_type_dict[str(source).lower()], list):
-            console.print(
-                "\nError: Unable to detect this medias 'format'", style='red')
-            console.print(
-                f"\nWe've successfully detected the 'parent source': [bold]{source}[/bold] but are unable to detect its 'final form'", highlight=False)
-            logging.error(
-                f"[MiscellaneousUtils] We've successfully detected the 'parent source': [bold]{source}[/bold] but are unable to detect its 'final form'")
+            console.print("\nError: Unable to detect this medias 'format'", style='red')
+            console.print(f"\nWe've successfully detected the 'parent source': [bold]{source}[/bold] but are unable to detect its 'final form'", highlight=False)
+            logging.error(f"[MiscellaneousUtils] We've successfully detected the 'parent source': [bold]{source}[/bold] but are unable to detect its 'final form'")
 
             # Now prompt the user
-            specific_source_type = Prompt.ask(f"\nNow select one of the following 'formats' for [green]'{source}'[/green]: ",
-                                              choices=basic_source_to_source_type_dict[source])
+            specific_source_type = Prompt.ask(f"\nNow select one of the following 'formats' for [green]'{source}'[/green]: ", choices=basic_source_to_source_type_dict[source])
             # The user is given a list of options that are specific to the parent source they choose earlier (e.g.  bluray --> disc, remux, encode )
             return_source_type = f'{source}_{specific_source_type}'
         else:
@@ -143,14 +139,11 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
     # Well this sucks, we got pretty far this time but since 'auto_mode=true' we can't prompt the user & it probably isn't a great idea to start making assumptions about a media files source,
     # that seems like a good way to get a warning/ban so instead we'll just quit here and let the user know why
     else:
-        logging.critical(
-            "[MiscellaneousUtils] auto_mode is enabled (no user input) & we can not auto extract the 'source_type'")
+        logging.critical("[MiscellaneousUtils] auto_mode is enabled (no user input) & we can not auto extract the 'source_type'")
         # let the user know the error/issue
-        console.print(
-            "\nCritical error when trying to extract: 'source_type' (more specific version of 'source', think bluray_remux & just bluray) ", style='red bold')
+        console.print("\nCritical error when trying to extract: 'source_type' (more specific version of 'source', think bluray_remux & just bluray) ", style='red bold')
         console.print("Quitting now..")
         # and finally exit since this will affect all trackers we try and upload to, so it makes no sense to try the next tracker
         sys.exit()
-    logging.debug(
-        f'[MiscellaneousUtils] Source type identified as {return_source_type}')
+    logging.debug(f'[MiscellaneousUtils] Source type identified as {return_source_type}')
     return return_source_type

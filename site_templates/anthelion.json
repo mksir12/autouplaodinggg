@@ -35,7 +35,8 @@
         "source": "type_id",
         "resolution": "ressel",
         "tmdb": "tmdbid",
-        "imdb": "imdbid"
+        "imdb": "imdbid",
+        "tags": "tags"
     },
 
     "Required": {
@@ -91,11 +92,30 @@
     "Optional": {
         "bdinfo": "string",
         "mediainfo": "string",
-        "anonymous": "string"
+        "anonymous": "string",
+        "tags":{
+
+        },
+        "_available_tags": [
+            "Directors",
+            "Extended",
+            "Uncut",
+            "Unrated",
+            "HDR10",
+            "DV",
+            "4KRemaster",
+            "Atmos",
+            "DualAudio",
+            "Commentary",
+            "Remux",
+            "3D",
+            "Criterion"
+        ]
     },
 
     "Default":{
-        "action" : "upload"
+        "action" : "upload",
+        "flagchangereason" : "Uploaded with ❤ using GG-BOT Upload Assistant"
     },
 
     "dupes": {
@@ -125,6 +145,8 @@
         "720p_encode": 100,
         "else": 1
     },
+
+
 
     "torrent_title_format": {
         "episode": {

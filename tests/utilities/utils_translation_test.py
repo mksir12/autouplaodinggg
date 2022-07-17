@@ -478,3 +478,57 @@ def test_choose_right_tracker_keys_disc_enabled(full_tracker_config, torrent_inf
         else:
             assert tracker_settings[key] == expected[key]
     assert len(tracker_settings) == len(expected)
+
+
+def __get_tag_grouping():
+    return {
+        "group_1": {
+            "subkey_1_1": ["val_1_1_1", "val_1_1_2", "val_1_1_3"],
+            "subkey_1_2": ["val_1_2_1", "val_1_2_2", "val_1_2_3", "val_1_2_4"],
+            "subkey_1_3": ["val_1_3_1"]
+        },
+        "group_2": {
+            "subkey_2_1": ["val_2_1_1", "val_2_1_2"]
+        }
+    }
+
+
+@pytest.mark.parametrize(
+    ("torrent_info", "expected"),
+    [
+        pytest.param(
+            {
+                "hdr" : "HDR",
+                "atmos" : "Atmos",
+                "source_type" : "bluray_remux",
+                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+            },
+            sorted(["HDR", "HDR10", "Atmos", " Dolby Atmos", "Remux", "BlurayRemux", "Bluray-Remux", "remux"]),
+            id = "hdr_atmos_bluray_remux"
+        ),
+        pytest.param(
+            {
+                "atmos" : "Atmos",
+                "dv": "DV",
+                "source_type" : "webdl",
+                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+            },
+            sorted(["Atmos", " Dolby Atmos", "WEBDL", "WEB-DL", "DV", "DoVi", "Do-Vi", "webdl"]),
+            id = "dv_atmos_webdl"
+        ),
+        pytest.param(
+            {
+                "atmos" : "Atmos",
+                "dv": "DV",
+                "edition": "International Cut",
+                "source_type" : "webdl",
+                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+            },
+            sorted(["Atmos", " Dolby Atmos", "WEBDL", "WEB-DL", "webdl", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
+            id = "edition"
+        )
+    ]
+)
+def test_generate_all_applicable_tags(torrent_info, expected):
+    translation.generate_all_applicable_tags(torrent_info)
+    assert torrent_info["tags"] == expected
