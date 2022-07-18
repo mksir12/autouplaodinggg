@@ -36,7 +36,7 @@
         "resolution": "ressel",
         "tmdb": "tmdbid",
         "imdb": "imdbid",
-        "tags": "tags"
+        "tags": "flags[]"
     },
 
     "Required": {
@@ -93,24 +93,24 @@
         "bdinfo": "string",
         "mediainfo": "string",
         "anonymous": "string",
-        "tags":{
-
-        },
-        "_available_tags": [
-            "Directors",
-            "Extended",
-            "Uncut",
-            "Unrated",
-            "HDR10",
-            "DV",
-            "4KRemaster",
-            "Atmos",
-            "DualAudio",
-            "Commentary",
-            "Remux",
-            "3D",
-            "Criterion"
-        ]
+        "flags[]": {
+            "type" : "array",
+            "tags": [
+                "Directors",
+                "Extended",
+                "Uncut",
+                "Unrated",
+                "HDR10",
+                "DV",
+                "4KRemaster",
+                "Atmos",
+                "DualAudio",
+                "Commentary",
+                "Remux",
+                "3D",
+                "Criterion"
+            ]
+        }
     },
 
     "Default":{

@@ -1164,14 +1164,14 @@ for file in upload_queue:
             torrent_title=torrent_info["torrent_title"]
         )
 
+        # TAGS GENERATION. Generations all the tags that are applicable to this upload
+        translation_utilities.generate_all_applicable_tags(torrent_info)
+
         # -------- Assign specific tracker keys --------
         # This function takes the info we have the dict torrent_info and associates with the right key/values needed for us to use X trackers API
         # if for some reason the upload cannot be performed to the specific tracker, the method returns "STOP"
         if translation_utilities.choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, args, working_folder) == "STOP":
             continue
-
-        # TAGS GENERATION. Generations all the tags that are applicable to this upload
-        translation_utilities.generate_all_applicable_tags(torrent_info)
 
         logging.debug("::::::::::::::::::::::::::::: Final torrent_info with all data filled :::::::::::::::::::::::::::::")
         logging.debug(f'\n{pformat(torrent_info)}')

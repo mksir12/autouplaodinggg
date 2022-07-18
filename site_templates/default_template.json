@@ -71,7 +71,8 @@
         "doubleup": "doubleup",
         "tripleup": "tripleup",
         "sticky": "sticky",
-        "freeleech": "free"
+        "freeleech": "free",
+        "tags":"tags"
     },
 
     "Required": {
@@ -201,23 +202,26 @@
             "TWN",
             "USA"
         ],
-        "tags": [
-            "Commentary",
-            "2in1",
-            "Hybrid",
-            "OpenMatte",
-            "2D3D",
-            "WEBRip",
-            "WEBDL",
-            "3D",
-            "4kRemaster",
-            "DualAudio",
-            "EnglishDub",
-            "Personal",
-            "Scene",
-            "DigitalExtras",
-            "Extras"
-        ],
+        "tags": {
+            "type" : "string",
+            "tags": [
+                "Commentary",
+                "2in1",
+                "Hybrid",
+                "OpenMatte",
+                "2D3D",
+                "WEBRip",
+                "WEBDL",
+                "3D",
+                "4kRemaster",
+                "DualAudio",
+                "EnglishDub",
+                "Personal",
+                "Scene",
+                "DigitalExtras",
+                "Extras"
+            ]
+        },
         "nfo": "string",
         "nfo_file": "file",
         "pack": "int",

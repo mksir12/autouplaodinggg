@@ -299,11 +299,11 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
     # Filling in data for all the keys that have mapping/translations
     # Here we iterate over the translation mapping and for each translation key, we check the required and optional items for that value
     # once identified we handle it
-    logging.info("[Main] Starting translations from torrent info to tracker settings.")
+    logging.info("[Translation] Starting translations from torrent info to tracker settings.")
     is_hybrid_translation_needed = False
     hybrid_translation_keys = []
     for translation_key, translation_value in config["translation"].items():
-        logging.debug(f"[Main] Trying to translate {translation_key} to {translation_value}")
+        logging.debug(f"[Translation] Trying to translate {translation_key} to {translation_value}")
 
         # ------------ required_items start ------------
         for required_key, required_value in required_items.items():
@@ -313,7 +313,7 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                 if required_value == "hybrid_type":
                     break
 
-                logging.debug(f"[Main] Key {translation_key} mapped to required item {required_key} with value type as {required_value}")
+                logging.debug(f"[Translation] Key {translation_key} mapped to required item {required_key} with value type as {required_value}")
 
                 # the torrent file is always submitted as a file
                 if required_value in ("file", "file|base64", "file|array", "file|string|array"):
@@ -338,7 +338,7 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
 
                     # If the user supplied the "-anon" argument then we want to pass that along when uploading
                     elif translation_key == "anon" and args.anon:
-                        logging.info("Uploading anonymously")
+                        logging.info("[Translation] Uploading anonymously")
                         tracker_settings[config["translation"][translation_key]] = "1"
 
                     # Adding support for internal args
@@ -358,7 +358,7 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                         # URLs can be set only to for certain media databases
                         tracker_settings[config["translation"][translation_key]] = _get_url_type_data(translation_key, torrent_info)
                 else:
-                    logging.error(f"[Main] Invalid value type {required_value} configured for required item {required_key} with translation key {required_key}")
+                    logging.error(f"[Translation] Invalid value type {required_value} configured for required item {required_key} with translation key {required_key}")
 
                 # Set the category ID, this could be easily hardcoded in (1=movie & 2=tv) but I chose to use JSON data just in case a future tracker switches this up
                 if translation_key == "type":
@@ -372,8 +372,8 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
 
                     if config["translation"][translation_key] not in tracker_settings:
                         # this type of upload is not permitted in this tracker
-                        logging.critical('[CategoryMapping] Unable to find a suitable "category/type" match for this file')
-                        logging.error("[CategoryMapping] Its possible that the media you are trying to upload is not allowed on site (e.g. DVDRip to BLU is not allowed")
+                        logging.critical('[Translation] Unable to find a suitable "category/type" match for this file')
+                        logging.error("[Translation] Its possible that the media you are trying to upload is not allowed on site (e.g. DVDRip to BLU is not allowed")
                         console.print(f'\nThis "Category" ([bold]{torrent_info["type"]}[/bold]) is not allowed on this tracker', style='Red underline', highlight=False)
                         return "STOP"
 
@@ -398,7 +398,7 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                 if optional_value == "hybrid_type":
                     break
 
-                logging.debug(f"[Main] Key {translation_key} mapped to optional item {optional_key} with value type as {optional_value}")
+                logging.debug(f"[Translation] Key {translation_key} mapped to optional item {optional_key} with value type as {optional_value}")
                 # -!-!- Editions -!-!- #
                 if optional_key == 'edition' and 'edition' in torrent_info:
                     # First we remove any 'fluff' so that we can try to match the edition to the list BHD has, if not we just upload it as a custom edition
@@ -424,16 +424,19 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                         tracker_settings[optional_key] = region
 
                 # -!-!- Tags -!-!- #
-                elif optional_key == 'tags':
+                elif translation_key == 'tags':
                     # The uploader will generate all the tags that are applicable to the current upload.
                     # each tracker will specify the list of tags that are accepted by it.
                     # here we select only those tags which are accepted by the tracker from the tags list generated
+                    logging.info("[Translation] Identified tags key for tracker.")
                     upload_these_tags_list = []
                     for tag in torrent_info["tags"]:
-                        if tag in optional_value:
+                        if tag in optional_value["tags"]:
                             upload_these_tags_list.append(tag)
+                    logging.info(f"[Translation] Tags selected for tracker: {upload_these_tags_list}")
                     if len(upload_these_tags_list) != 0:
-                        tracker_settings[optional_key] = ",".join(upload_these_tags_list)
+                        # currently we support sending tags as comma separated string or as an array
+                        tracker_settings[optional_key] = ",".join(upload_these_tags_list) if optional_value["type"] == "string" else upload_these_tags_list
 
                 # TODO figure out why .nfo uploads fail on BHD & don't display on BLU...
                 # if optional_key in ["nfo_file", "nfo"] and "nfo_file" in torrent_info:
@@ -447,21 +450,21 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                 # TODO make changes to save bdinfo to bdinfo and move the existing bdinfo metadata to someother key
                 # for full disks the bdInfo is saved under the same key as mediainfo
                 elif translation_key == "mediainfo":
-                    logging.debug(f"[CategoryMapping] Identified {optional_key} for tracker with {'FullDisk' if args.disc else 'File/Folder'} upload")
+                    logging.debug(f"[Translation] Identified {optional_key} for tracker with {'FullDisk' if args.disc else 'File/Folder'} upload")
                     if args.disc:
-                        logging.debug("[CategoryMapping] Skipping mediainfo for tracker settings since upload is FullDisk.")
+                        logging.debug("[Translation] Skipping mediainfo for tracker settings since upload is FullDisk.")
                     else:
-                        logging.debug(f"[CategoryMapping] Setting mediainfo from torrent_info to tracker_settings for optional_key {optional_key}")
+                        logging.debug(f"[Translation] Setting mediainfo from torrent_info to tracker_settings for optional_key {optional_key}")
                         tracker_settings[optional_key] = torrent_info.get("mediainfo", "0")
                         continue
                 elif translation_key == "bdinfo":
-                    logging.debug(f"[CategoryMapping] Identified {optional_key} for tracker with {'FullDisk' if args.disc else 'File/Folder'} upload")
+                    logging.debug(f"[Translation] Identified {optional_key} for tracker with {'FullDisk' if args.disc else 'File/Folder'} upload")
                     if args.disc:
-                        logging.debug(f"[CategoryMapping] Setting mediainfo from torrent_info to tracker_settings for optional_key {optional_key}")
+                        logging.debug(f"[Translation] Setting mediainfo from torrent_info to tracker_settings for optional_key {optional_key}")
                         tracker_settings[optional_key] = torrent_info.get("mediainfo", "0")
                         continue
                     else:
-                        logging.debug("[CategoryMapping] Skipping bdinfo for tracker settings since upload is NOT FullDisk.")
+                        logging.debug("[Translation] Skipping bdinfo for tracker settings since upload is NOT FullDisk.")
                 else:
                     tracker_settings[optional_key] = torrent_info.get(translation_key, "")
         # ------------ optional_items end ------------
@@ -478,7 +481,7 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
 
     # Adding default values from template to tracker settings
     for default_key, default_value in config["Default"].items():
-        logging.debug(f'[DefaultMapping] Adding default key `{default_key}` with value `{default_value}` to tracker settings')
+        logging.debug(f'[Translation] Adding default key `{default_key}` with value `{default_value}` to tracker settings')
         tracker_settings[default_key] = default_value
 
     # at this point we have finished iterating over the translation key items
@@ -611,4 +614,4 @@ def generate_all_applicable_tags(torrent_info):
     logging.debug("[Tags] Creating tags for edition")
     __add_applicable_tags(torrent_info, "edition", torrent_info["edition"] if "edition" in torrent_info else None)
 
-    logging.info(f"[Tags] Generated tags: '{torrent_info['tags']}'")
+    logging.info(f"[Tags] Generated tags: {torrent_info['tags']}")
