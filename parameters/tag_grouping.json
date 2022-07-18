@@ -1,0 +1,78 @@
+{
+    "hdr_format": {
+        "hdr": ["HDR", "HDR10"],
+        "pq10": ["HDR", "PQ10"],
+        "hlg": ["HDR", "HLG"],
+        "wcg": ["HDR", "WCG"],
+        "hdr10+": ["HDR10+", "HDR10Plus"],
+        "dv": ["DV", "DoVi", "Do-Vi"]
+    },
+
+    "edition": {
+        "criterion":["Criterion", "criterion"],
+        "criterion collection":["Criterion", "Criterion Collection"],
+        "criterion edition":["Criterion", "Criterion Edition"],
+
+        "uncut":["Uncut"],
+        "unrated":["Unrated"],
+        "4kremaster":["4KRemaster"],
+
+        "extended":["Extended"],
+        "extended cut":["Extended", "Extended Cut", "Extended-Cut"],
+        "extended version":["Extended", "Extended Version", "Extended-Version"],
+        "extended edition":["Extended", "Extended Edition", "Extended-Edition"],
+
+        "ultimate":["Ultimate"],
+        "ultimate cut":["Ultimate", "Ultimate Cut", "Ultimate-Cut"],
+        "ultimate version":["Ultimate", "Ultimate Version", "Ultimate-Version"],
+        "ultimate edition":["Ultimate", "Ultimate Edition", "Ultimate-Edition"],
+
+        "international":["International"],
+        "international cut":["International", "International Cut", "International-Cut"],
+        "international version":["International", "International Version", "International-Version"],
+        "international edition":["International", "International Edition", "International-Edition"],
+
+        "theatrical":["Theatrical"],
+        "theatrical cut":["Theatrical", "Theatrical Cut", "Theatrical-Cut"],
+        "theatrical version":["Theatrical", "Theatrical Version", "Theatrical-Version"],
+        "theatrical edition":["Theatrical", "Theatrical Edition", "Theatrical-Edition"],
+
+        "director": ["Directors"],
+        "directors cut": ["Directors", "Director's Cut", "Directors Cut", "Director's-Cut", "Directors-Cut"],
+        "directors version": ["Directors", "Director's Version", "Directors Version", "Director's-Version", "Directors-Version"],
+        "directors edition": ["Directors", "Director's Edition", "Directors Edition", "Director's-Edition", "Directors-Edition"],
+
+        "final":["Final"],
+        "final cut":["Final", "Final Cut", "Final-Cut"],
+        "final version":["Final", "Final Version", "Final-Version"],
+        "final edition":["Final", "Final Edition", "Final-Edition"]
+    },
+
+    "audio": {
+        "commentary": ["Commentary"],
+        "dual_audio": ["DualAudio"],
+        "atmos": ["Atmos", " Dolby Atmos"]
+    },
+
+    "source_type": {
+        "bluray_remux": ["Remux", "BlurayRemux", "Bluray-Remux", "remux"],
+        "dvd_remux": ["Remux", "DVDRemux", "DVD-Remux", "remux"],
+        "webdl": ["WEBDL", "WEB-DL", "webdl"],
+        "webrip": ["WEBRip", "webrip"]
+    },
+
+    "3d": {
+        "3d": ["3D"]
+    },
+
+    "__no_mappings_yet": [
+        "Extras",
+        "DigitalExtras",
+        "Scene",
+        "Hybrid",
+        "OpenMatte",
+        "2D3D",
+        "EnglishDub",
+        "Personal"
+    ]
+}

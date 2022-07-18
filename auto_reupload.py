@@ -829,6 +829,11 @@ def reupload_job():
         torrent_path = reupload_utilities.reupload_get_translated_torrent_path(torrent["content_path"])
 
         torrent_info.clear()
+        # This list will contain tags that are applicable to the torrent being uploaded.
+        # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
+        torrent_info["tag_grouping"] = json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+        torrent_info["tags"] = []
+
         # Remove all old temp_files & data from the previous upload
         torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, file=torrent_path, resume=False)
 
@@ -1027,6 +1032,9 @@ def reupload_job():
                 tracker=tracker,
                 torrent_title=torrent_info["torrent_title"]
             )
+
+            # TAGS GENERATION. Generations all the tags that are applicable to this upload
+            translation_utilities.generate_all_applicable_tags(torrent_info)
 
             # -------- Assign specific tracker keys --------
             # This function takes the info we have the dict torrent_info and associates with the right key/values needed for us to use X trackers API
