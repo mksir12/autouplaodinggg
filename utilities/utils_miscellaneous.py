@@ -22,7 +22,7 @@ def miscellaneous_perform_scene_group_capitalization(scene_groups_path, release_
         # Also save the fact that this is a scene group for later (we can add a 'scene' tag later to BHD)
         return 'true', scene_group_capitalization[str(release_group).lower()]
     return 'false', release_group
- 
+
 
 def miscellaneous_identify_bluray_edition(upload_media):
     # use regex (sourced and slightly modified from official radarr repo) to find torrent editions (Extended, Criterion, Theatrical, etc)
