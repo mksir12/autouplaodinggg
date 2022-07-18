@@ -244,11 +244,14 @@ docker run --rm -it \
 # Roadmap
 ### v3.0.1
 - [ ] Improved TMDB metadata search Phase 2
+- [ ] Better MAL id detection
+- [ ] Support for Dual Audio Detection
+- [X] Rewrote tag generation logic
+- [X] Issue#52: ANT upload does not detect/set Atmos or other parameters
+
+### v3.0.2
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Ability to reuse already existing torrents.
-- [ ] Add support for anonymous uploads to BHDTV
-- [ ] Support for Dual Audio Detection
-- [ ] Better MAL id detection
 
 ### Backlogs
 - [ ] EPIC: Migrate GG-BOT Runtime to work with GG-BOT Auto ReUploader
@@ -270,8 +273,15 @@ docker run --rm -it \
 
 # Change Log
 
+## **3.0.1 UNRELEASED SUBJECTED TO CHANGE**
+    New Features
+        * Added support for tag generation and use for tracker uploads
 
-## **3.0 UNRELEASED SUBJECTED TO CHANGE**
+    Bug Fixes
+        * Issue#52: ANT upload does not detect/set Atmos or other parameters
+
+
+## **3.0**
     New Trackers
         * Swarmazon
 
