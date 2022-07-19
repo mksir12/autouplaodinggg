@@ -2,8 +2,7 @@ import os
 import base64
 import logging
 import requests
-
-from modules.env import Environment
+import modules.env as Environment
 
 rutorrent_keys = ["d.get_custom1", "d.get_bytes_done", "d.get_base_path", "hash", "d.get_name", "d.get_size_bytes"]
 rutorrent_keys_translation = {
@@ -114,14 +113,14 @@ class Rutorrent:
         return f"{int(size)} {power_labels[n]}B"
 
     def __init__(self):
-        self.host = Environment.ClientEnv.get_client_host()
+        self.host = Environment.get_client_host()
         if self.host is None or len(self.host) == 0:
             raise Exception("Invalid RuTorrent host provided")
 
-        self.port = Environment.ClientEnv.get_client_port()
-        self.username = Environment.ClientEnv.get_client_username()
-        self.password = Environment.ClientEnv.get_client_password()
-        self.path = Environment.ClientEnv.get_client_path()
+        self.port = Environment.get_client_port()
+        self.username = Environment.get_client_username()
+        self.password = Environment.get_client_password()
+        self.path = Environment.get_client_path()
         self.base_url = f'{self.host}:{self.port}{self.path}'
 
         if self.username:
@@ -130,15 +129,15 @@ class Rutorrent:
         else:
             self.header = {}
 
-        self.dynamic_tracker_selection = Environment.ClientEnv.is_dynamic_tracker_selection_needed()
+        self.dynamic_tracker_selection = Environment.is_dynamic_tracker_selection_needed()
         if self.dynamic_tracker_selection == True:
             # reuploader running in dynamic tracker selection mode
             self.target_label = "GGBOT"
         else:
             # `target_label` is the label of the torrents that we are interested in
-            self.target_label = Environment.ClientEnv.get_reupload_label()
+            self.target_label = Environment.get_reupload_label()
         # `seed_label` is the label which will be added to the cross-seeded torrents
-        self.seed_label = Environment.ClientEnv.get_cross_seed_label()
+        self.seed_label = Environment.get_cross_seed_label()
         # `source_label` is thelabel which will be added to the original torrent in the client
         self.source_label = f"{self.seed_label}_Source"
 

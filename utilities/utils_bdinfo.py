@@ -9,7 +9,7 @@ from rich.table import Table
 from rich.console import Console
 from rich.prompt import Prompt
 from utilities.utils import write_file_contents_to_log_as_debug
-from modules.env import Environment
+import modules.env as Environment
 
 console = Console()
 

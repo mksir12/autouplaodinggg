@@ -14,7 +14,7 @@ from pymediainfo import MediaInfo
 from rich.console import Console
 from rich.prompt import Prompt
 
-from modules.env import Environment
+import modules.env as Environment
 import utilities.utils_bdinfo as bdinfo_utilities
 
 

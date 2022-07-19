@@ -7,7 +7,7 @@ from rich import box
 from rich.table import Table
 from rich.console import Console
 from rich.prompt import Prompt
-from modules.env import Environment
+import modules.env as Environment
 
 console = Console()
 

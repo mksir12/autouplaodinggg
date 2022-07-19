@@ -3,7 +3,7 @@ import sys
 import logging
 
 from rich.console import Console
-from modules.env import Environment
+import modules.env as Environment
 
 console = Console()
 

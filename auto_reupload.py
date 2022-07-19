@@ -41,8 +41,7 @@ import utilities.utils as utils
 # processing modules
 from modules.cache import CacheFactory, CacheVendor
 from modules.torrent_client import Clients, TorrentClientFactory
-from modules.env import Environment
-
+import modules.env as Environment
 # Used for rich.traceback
 install()
 
@@ -132,10 +131,10 @@ logging.info("[Main] Going to establish connection to the torrent client configu
 # getting an instance of the torrent client factory
 torrent_client_factory = TorrentClientFactory()
 # creating the torrent client using the factory based on the users configuration
-torrent_client = torrent_client_factory.create(Clients[Environment.ClientEnv.get_client_type()])
+torrent_client = torrent_client_factory.create(Clients[Environment.get_client_type()])
 # checking whether the torrent client connection has been created successfully or not
 torrent_client.hello()
-logging.info(f"[Main] Successfully established connection to the torrent client {Environment.ClientEnv.get_client_type()}")
+logging.info(f"[Main] Successfully established connection to the torrent client {Environment.get_client_type()}")
 
 
 logging.info("[Main] Going to establish connection to the cache server configured")
@@ -145,7 +144,7 @@ logging.info("[Main] Going to establish connection to the cache server configure
 # getting an instance of the torrent client factory
 cache_client_factory = CacheFactory()
 # creating the torrent client using the factory based on the users configuration
-cache = cache_client_factory.create(CacheVendor[Environment.CacheEnv.get_cache_type()])
+cache = cache_client_factory.create(CacheVendor[Environment.get_cache_type()])
 # checking whether the cache connection has been created successfully or not
 cache.hello()
 logging.info("[Main] Successfully established connection to the cache server configured")

@@ -15,7 +15,7 @@ from ffmpy import FFmpeg
 from pathlib import Path
 from datetime import datetime
 from imgurpython import ImgurClient
-from modules.env import Environment
+import modules.env as Environment
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()

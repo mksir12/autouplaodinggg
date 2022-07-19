@@ -40,8 +40,7 @@ import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_basic as basic_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils as utils
-
-from modules.env import Environment
+import modules.env as Environment
 
 # Used for rich.traceback
 install()

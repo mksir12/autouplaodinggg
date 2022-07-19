@@ -13,7 +13,7 @@ from rich.prompt import Confirm
 from rich.console import Console
 
 from utilities.utils_miscellaneous import miscellaneous_identify_repacks
-from modules.env import Environment
+import modules.env as Environment
 
 console = Console()
 

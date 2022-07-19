@@ -15,7 +15,7 @@ from dotenv import dotenv_values
 from rich.console import Console
 
 from modules.torrent_client import Clients, TorrentClientFactory
-from modules.env import Environment
+import modules.env as Environment
 
 console = Console()
 
@@ -476,7 +476,7 @@ def get_torrent_client_if_needed():
         # getting an instance of the torrent client factory
         torrent_client_factory = TorrentClientFactory()
         # creating the torrent client using the factory based on the users configuration
-        torrent_client = torrent_client_factory.create(Clients[Environment.ClientEnv.get_client_type()])
+        torrent_client = torrent_client_factory.create(Clients[Environment.get_client_type()])
         # checking whether the torrent client connection has been created successfully or not
         torrent_client.hello()
         return torrent_client
