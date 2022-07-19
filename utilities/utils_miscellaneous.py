@@ -111,7 +111,7 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
 
     # Well firstly if we got this far with auto_mode enabled that means we've somehow figured out the 'parent' source but now can't figure out its 'final form'
     # If auto_mode is disabled we can prompt the user
-    elif auto_mode == 'false':
+    elif not auto_mode:
         # Yeah yeah this is just copy/pasted from the original user_input source code, it works though ;)
         basic_source_to_source_type_dict = {
             # this dict is used to associate a 'parent' source with one if its possible final forms

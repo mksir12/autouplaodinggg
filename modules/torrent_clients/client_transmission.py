@@ -3,10 +3,9 @@ import logging
 
 from datetime import datetime
 from transmission_rpc import Client
+from modules.env import Environment
 
-
-qbt_keys = ["category", "completed", "content_path",
-            "hash", "name", "save_path", "size", "tracker"]
+qbt_keys = ["category", "completed", "content_path", "hash", "name", "save_path", "size", "tracker"]
 
 
 class Transmission:
@@ -26,12 +25,11 @@ class Transmission:
             # password='admin'
         )
         # `target_label` is the label of the torrents that we are interested in
-        self.target_label = os.getenv('reupload_label', '')
+        self.target_label = Environment.ClientEnv.get_reupload_label()
         # `seed_label` is the label which will be added to the cross-seeded torrents
-        self.seed_label = os.getenv('cross_seed_label', 'GGBotCrossSeed')
+        self.seed_label = Environment.ClientEnv.get_cross_seed_label()
         # `source_label` is thelabel which will be added to the original torrent in the client
-        self.source_label = os.getenv(
-            'source_seed_label', 'GGBotCrossSeed_Source')
+        self.source_label = Environment.ClientEnv.get_source_label()
 
     def hello(self):
         logging.info(

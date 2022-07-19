@@ -123,8 +123,7 @@ def test_client_upload_tv_season_with_translation(mocker):
     torrent_info["individual_episodes"] = "0"
     tracker = "TRACKER"
 
-    mocker.patch(
-        "os.getenv", side_effect=__cross_seed_with_translation_side_effect)
+    mocker.patch("os.getenv", side_effect=__cross_seed_with_translation_side_effect)
     mock_client = mocker.patch('modules.torrent_client.TorrentClient')
     mock_client.upload_torrent = __mock_upload_torrent
 

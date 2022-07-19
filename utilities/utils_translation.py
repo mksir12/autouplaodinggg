@@ -3,7 +3,7 @@ import sys
 import logging
 
 from rich.console import Console
-
+from modules.env import Environment
 
 console = Console()
 
@@ -331,9 +331,8 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                     # BHD requires the key "live" (0 = Sent to drafts and 1 = Live on site)
                     if required_key == "live":
                         # BHD Live/Draft
-                        is_live_on_site = str(os.getenv('live')).lower()
-                        live = '1' if is_live_on_site == 'true' else '0'
-                        logging.info(f"Upload live status: {'Live (Visible)' if is_live_on_site == 'true' else 'Draft (Hidden)'}")
+                        live = '1' if Environment.is_live() else '0'
+                        logging.info(f"Upload live status: {'Live (Visible)' if Environment.is_live() else 'Draft (Hidden)'}")
                         tracker_settings[config["translation"][translation_key]] = live
 
                     # If the user supplied the "-anon" argument then we want to pass that along when uploading

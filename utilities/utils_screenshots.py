@@ -15,6 +15,7 @@ from ffmpy import FFmpeg
 from pathlib import Path
 from datetime import datetime
 from imgurpython import ImgurClient
+from modules.env import Environment
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
@@ -23,7 +24,7 @@ console = Console()
 def _get_ss_range(duration, num_of_screenshots):
     # If no spoilers is enabled, then screenshots are taken from first half of the movie or tv show
     # otherwise screenshots are taken at regualar intervals from the whole movie or tv show
-    no_spoilers = os.getenv("no_spoilers") or False
+    no_spoilers = Environment.is_no_spoiler_screenshot()
     first_time_stamp = (int(int(duration) / 2) if no_spoilers else int(duration)) / int(int(num_of_screenshots) + 1)
 
     list_of_ss_timestamps = []
@@ -55,10 +56,10 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
     # 4. BBCode|Thumbnail|NoSizeLimit
     # 5. Full Image URL
     #
-    thumb_size = os.getenv("thumb_size") or "350"
+    thumb_size = Environment.get_thumb_size()
     if img_host == 'imgur':
         try:
-            client = ImgurClient(client_id=os.getenv('imgur_client_id'), client_secret=os.getenv('imgur_api_key'))
+            client = ImgurClient(client_id=Environment.get_imgur_client_id(), client_secret=Environment.get_imgur_api_key())
             response = client.upload_from_path(image_path)
             logging.debug(f'[Screenshots] Imgur image upload response: {response}')
             # return data
@@ -76,7 +77,7 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
 
     elif img_host == 'ptpimg':
         try:
-            ptp_img_upload = ptpimg_uploader.upload(api_key=os.getenv('ptpimg_api_key'), files_or_urls=[image_path], timeout=5)
+            ptp_img_upload = ptpimg_uploader.upload(api_key=Environment.get_ptpimg_api_key(), files_or_urls=[image_path], timeout=5)
             # Make sure the response we get from ptpimg is a list
             if not isinstance(ptp_img_upload, ptp_img_upload):
                 return False
@@ -214,7 +215,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     console.rule("Screenshots", style='red', align='center')
     console.line(count=1)
 
-    num_of_screenshots = os.getenv("num_of_screenshots")
+    num_of_screenshots = Environment.get_num_of_screenshots()
 
     logging.info(f"[Screenshots] Sanitizing the torrent title `{torrent_title_import}` since this is from TMDB")
     torrent_title_import = re.escape(torrent_title_import.replace(" ", '').replace("\\", '').replace("/", ''))
@@ -227,15 +228,14 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
         logging.info("[Screenshots] User has provided the `skip_screenshots` argument. Hence continuing without screenshots.")
         console.print('\nUser provided the argument `[red]skip_screenshots[/red]`. Overriding screenshot configurations in config.env', style='bold green')
     # ---------------------- check if 'num_of_screenshots=0' or not set ---------------------- #
-    elif num_of_screenshots == "0" or not bool(num_of_screenshots):
-        logging.error(f'[Screenshots] num_of_screenshots is {"not set" if not bool(num_of_screenshots) else f"set to {num_of_screenshots}"}, continuing without screenshots.')
-        console.print(f'\nnum_of_screenshots is {"not set" if not bool(num_of_screenshots) else f"set to {num_of_screenshots}"}, \n', style='bold red')
+    elif num_of_screenshots == "0" or num_of_screenshots is None: # TODO: check when does this boolean case is executed
+        logging.error(f'[Screenshots] num_of_screenshots is {"not set" if num_of_screenshots is None else f"set to {num_of_screenshots}"}, continuing without screenshots.')
+        console.print(f'\nnum_of_screenshots is {"not set" if num_of_screenshots is None else f"set to {num_of_screenshots}"}, \n', style='bold red')
     else:
         # ---------------------- verify at least 1 image-host is set/enabled ---------------------- #
         enabled_img_host_num_loop = 0
-        while bool(os.getenv(f'img_host_{enabled_img_host_num_loop + 1}')):
-            enabled_img_hosts_list.append(
-                os.getenv(f'img_host_{enabled_img_host_num_loop + 1}'))
+        while Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1) is not None:
+            enabled_img_hosts_list.append(Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1))
             enabled_img_host_num_loop += 1
         # now check if the loop ^^ found any enabled image hosts
         if not bool(enabled_img_host_num_loop):
@@ -245,7 +245,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
         # -------------------- verify an API key is set for 'enabled_img_hosts' -------------------- #
         for img_host_api_check in enabled_img_hosts_list:
             # Check if an API key is set for the image host
-            if not bool(os.getenv(f'{img_host_api_check}_api_key')):
+            if Environment.get_image_host_api_key(img_host_api_check) is None:
                 logging.error(f"Can't upload to {img_host_api_check} without an API key")
                 console.print(f"\nCan't upload to [bold]{img_host_api_check}[/bold] without an API key\n", style='red3', highlight=False)
                 # If the api key is missing then remove the img_host from the 'enabled_img_hosts_list' list
@@ -316,7 +316,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
                 # call the function that uploads the screenshot
                 upload_image = _upload_screens(
                     img_host=img_host,
-                    img_host_api=os.getenv(f'{img_host}_api_key'),
+                    img_host_api=Environment.get_image_host_api_key(img_host),
                     image_path=ss_to_upload,
                     torrent_title=torrent_title_import,
                     base_path=base_path

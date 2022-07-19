@@ -6,7 +6,7 @@ import datetime
 
 from pprint import pformat
 from utilities.utils import get_and_validate_configured_trackers
-
+from modules.env import Environment
 
 TORRENT_DB_KEY_PREFIX = "ReUpload::Torrent"
 JOB_REPO_DB_KEY_PREFIX = "ReUpload::JobRepository"
@@ -201,12 +201,12 @@ def reupload_get_processable_torrents(torrent_client, cache):
 
 
 def reupload_get_translated_torrent_path(torrent_path):
-    if bool(os.getenv('translation_needed', False)) == True:
+    if Environment.is_translation_needed():
         logging.info('[ReuploadUtils] Translating paths... ("translation_needed" flag set to True in reupload.config.env) ')
 
         # Just in case the user didn't end the path with a forward slash...
-        host_path = f"{os.getenv('uploader_accessible_path', '')}/".replace('//', '/')
-        remote_path = f"{os.getenv('client_accessible_path', '')}/".replace('//', '/')
+        host_path = f"{Environment.get_uploader_accessible_path()}/".replace('//', '/')
+        remote_path = f"{Environment.get_client_accessible_path()}/".replace('//', '/')
 
         translated_path = str(torrent_path).replace(remote_path, host_path)
         # And finally log the changes
@@ -218,7 +218,7 @@ def reupload_get_translated_torrent_path(torrent_path):
 
 def get_available_dynamic_trackers(torrent_client, torrent, original_upload_to_trackers, api_keys_dict, all_trackers_list):
     # we first try to dynamically select the trackers to upload to from the torrent label. (if the feature is enabled.)
-    if bool(os.getenv("dynamic_tracker_selection", False)) == True:
+    if Environment.ClientEnv.is_dynamic_tracker_selection_needed():
         logging.info("[ReuploadUtils] Uploader running in dynamic tracker section mode. Attempting to resolve any dynamic trackers")
         try:
             dynamic_trackers = torrent_client.get_dynamic_trackers(torrent)

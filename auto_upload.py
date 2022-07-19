@@ -41,6 +41,8 @@ import utilities.utils_basic as basic_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils as utils
 
+from modules.env import Environment
+
 # Used for rich.traceback
 install()
 
@@ -74,9 +76,7 @@ acronym_to_tracker = json.load(open(f'{working_folder}/parameters/tracker/acrony
 api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict(f'{working_folder}/parameters/tracker/api_keys.json')
 
 # Import 'auto_mode' status
-if str(os.getenv('auto_mode')).lower() not in ['true', 'false']:
-    logging.error('[Main] `auto_mode` is not set to `true/false` in `config.env`. Defaulting to `false`')
-auto_mode = str(os.getenv('auto_mode', 'false')).lower()
+auto_mode = Environment.is_auto_mode()
 
 # Setup args
 parser = argparse.ArgumentParser()
@@ -158,7 +158,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
             tracker_api=temp_tracker_api_key,
             debug=args.debug,
             working_folder=working_folder,
-            auto_mode=os.getenv('auto_mode')
+            auto_mode=auto_mode
         )
     except Exception as e:
         logging.exception(f'[Main] Error occured while performing dupe check for tracker {tracker}. Error: {e}')
@@ -661,7 +661,7 @@ def upload_to_site(upload_to, tracker_api_key):
                 logging.info(f"[TrackerUpload] Optional key {key} will be added to payload")
             payload[key] = val
 
-    if auto_mode == "false":
+    if not auto_mode:
         # prompt the user to verify everything looks OK before uploading
 
         # ------- Show the user a table of the API KEY/VAL (TEXT) that we are about to send ------- #
@@ -844,12 +844,12 @@ If the above mentioned envs are true, we override the user configured `bdinfo_sc
 Similarly, from inside the normal full disk un-supported images, if user tries to upload a Full Disk,
 we stop upload process immediately with an error message.
 """
-bdinfo_script = os.getenv('bdinfo_script')
-if os.getenv("IS_CONTAINERIZED") == "true" and os.getenv("IS_FULL_DISK_SUPPORTED") == "true":
+bdinfo_script = Environment.get_bdinfo_script_location()
+if Environment.is_containerized() and Environment.is_full_disk_supported():
     logging.info("[Main] Full disk is supported inside this container. Setting overriding configured `bdinfo_script` to use alias `bdinfocli`")
     bdinfo_script = "bdinfocli"
 
-if args.disc and os.getenv("IS_CONTAINERIZED") == "true" and not os.getenv("IS_FULL_DISK_SUPPORTED") == "true":
+if args.disc and Environment.is_containerized() and not Environment.is_full_disk_supported():
     logging.fatal("[Main] User tried to upload Full Disk from an unsupported image!. Stopping upload process.")
     console.print("\n[bold red on white] ---------------------------- :warning: Unsupported Operation :warning: ---------------------------- [/bold red on white]")
     console.print("You're trying to upload a [bold red]Full Disk[/bold red] to trackers.",  highlight=False)
@@ -887,7 +887,7 @@ for tracker in upload_to_trackers:
 console.print(upload_to_trackers_overview)
 
 # If not in 'auto_mode' then verify with the user that they want to continue with the upload
-if auto_mode == "false":
+if not auto_mode:
     if not Confirm.ask("Continue upload to these sites?", default='y'):
         logging.info("[Main] User canceled upload when asked to confirm sites to upload to")
         sys.exit(console.print("\nOK, quitting now..\n", style="bold red", highlight=False))
@@ -1020,7 +1020,7 @@ for file in upload_queue:
         console.print(f"\nUsing the user supplied edition: [medium_spring_green]{user_input_edition}[/medium_spring_green]")
         torrent_info["edition"] = user_input_edition
 
-    if auto_mode == "false" and Confirm.ask("Do you want to add custom texts to torrent description?", default=False):
+    if not auto_mode and Confirm.ask("Do you want to add custom texts to torrent description?", default=False):
         logging.debug('[Main] User decided to add custom text to torrent description. Handing control to custom_user_input module')
         torrent_info["custom_user_inputs"] = collect_custom_messages_from_user(f'{working_folder}/parameters/custom_text_components.json')
     else:
@@ -1032,7 +1032,7 @@ for file in upload_queue:
     # -------- Dupe check for single tracker uploads --------
     # If user has provided only one Tracker to upload to, then we do dupe check prior to taking screenshots. [if dupe_check is enabled]
     # If there are duplicates in the tracker, then we do not waste time taking and uploading screenshots.
-    if os.getenv('check_dupes') == 'true' and len(upload_to_trackers) == 1:
+    if Environment.is_check_dupes() and len(upload_to_trackers) == 1:
         tracker = upload_to_trackers[0]
         temp_tracker_api_key = api_keys_dict[f"{str(tracker).lower()}_api_key"]
 
@@ -1045,7 +1045,7 @@ for file in upload_queue:
         # False == no_dupes/continue upload
         if dupe_check_response:
             logging.error(f"[Main] Could not upload to: {tracker} because we found a dupe on site")
-            if auto_mode == "true":
+            if auto_mode:
                 continue
             else:
                 sys.exit(console.print("\nOK, quitting now..\n",style="bold red", highlight=False))
@@ -1129,7 +1129,7 @@ for file in upload_queue:
         # we take the screenshots and uploads them, then do dupe check for the trackers.
         # dupe check need not be performed if user provided only one tracker.
         # in cases where only one tracker is provided, dupe check will be performed prior to taking screenshots.
-        if os.getenv('check_dupes') == 'true' and len(upload_to_trackers) > 1:
+        if Environment.is_check_dupes() and len(upload_to_trackers) > 1:
             console.line(count=2)
             console.rule(f"Dupe Check [bold]({tracker})[/bold]", style='red', align='center')
             logging.debug(f"[Main] Dumping torrent_info contents to log before dupe check: \n{pformat(torrent_info)}")
@@ -1155,7 +1155,7 @@ for file in upload_queue:
 
         torrent_utilities.generate_dot_torrent(
             media=torrent_media,
-            announce=list(os.getenv(f"{str(tracker).upper()}_ANNOUNCE_URL").split(" ")),
+            announce=list(Environment.get_tracker_announce_url(tracker).split(" ")),
             source=config["source"],
             working_folder=working_folder,
             hash_prefix=torrent_info["working_folder"],

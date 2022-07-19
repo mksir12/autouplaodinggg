@@ -223,7 +223,7 @@ def __get_file_contents(raw_file_name):
 )
 def test_basic_get_missing_video_codec(torrent_info, is_disc, media_info_video_track, force_pymediainfo, expected):
     assert basic_get_missing_video_codec(
-        torrent_info, is_disc, "false", media_info_video_track, force_pymediainfo) == expected
+        torrent_info, is_disc, False, media_info_video_track, force_pymediainfo) == expected
 
 
 @pytest.mark.parametrize(
@@ -258,7 +258,7 @@ def test_basic_get_missing_video_codec(torrent_info, is_disc, media_info_video_t
 )
 def test_basic_get_missing_screen_size(torrent_info, is_disc, media_info_video_track, expected):
     assert basic_get_missing_screen_size(
-        torrent_info, is_disc, media_info_video_track, "false", "screen_size") == expected
+        torrent_info, is_disc, media_info_video_track, False, "screen_size") == expected
 
 
 @pytest.mark.parametrize(

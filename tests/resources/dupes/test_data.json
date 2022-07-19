@@ -5,7 +5,7 @@
         "imdb": "0081318",
         "tmdb": "24920",
         "tvmaze": "0",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": "REPACK3",
             "type": "movie",
@@ -27,7 +27,7 @@
         "imdb": "0081318",
         "tmdb": "24920",
         "tvmaze": "0",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": "PROPER",
             "type": "movie",
@@ -49,7 +49,7 @@
         "imdb": "0081318",
         "tmdb": "24920",
         "tvmaze": "0",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": "REPACK",
             "type": "movie",
@@ -71,7 +71,7 @@
         "imdb": "0081318",
         "tmdb": "24920",
         "tvmaze": "0",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": "REPACK",
             "type": "movie",
@@ -93,7 +93,7 @@
         "imdb": "4687892",
         "tmdb": "66869",
         "tvmaze": "2518",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": "REPACK",
             "type": "tv",
@@ -115,7 +115,7 @@
         "imdb": "9032400",
         "tmdb": "524434",
         "tvmaze": "0",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": null,
             "type": "movie",
@@ -137,7 +137,7 @@
         "imdb": "0898266",
         "tmdb": "1418",
         "tvmaze": "66",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": null,
             "type": "tv",
@@ -160,7 +160,7 @@
         "imdb": "0898266",
         "tmdb": "1418",
         "tvmaze": "66",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": null,
             "type": "tv",
@@ -183,7 +183,7 @@
         "imdb": "0898266",
         "tmdb": "1418",
         "tvmaze": "66",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": null,
             "type": "tv",
@@ -206,7 +206,7 @@
         "imdb": "0898266",
         "tmdb": "1418",
         "tvmaze": "66",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": null,
             "type": "tv",
@@ -229,7 +229,7 @@
         "imdb": "10872600",
         "tmdb": "634649",
         "tvmaze": "0",
-        "auto_mode": "true",
+        "auto_mode": true,
         "torrent_info": {
             "repack": null,
             "type": "movie",

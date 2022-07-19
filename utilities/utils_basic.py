@@ -14,7 +14,9 @@ from pymediainfo import MediaInfo
 from rich.console import Console
 from rich.prompt import Prompt
 
+from modules.env import Environment
 import utilities.utils_bdinfo as bdinfo_utilities
+
 
 console = Console()
 
@@ -272,7 +274,7 @@ def basic_get_missing_audio_codec(torrent_info, is_disc, auto_mode, audio_codec_
             return audio_codec_dict[audio_codec], atmos
 
     # If the audio_codec has not been extracted yet then we try user_input
-    if auto_mode == 'false':
+    if not auto_mode:
         while True:
             audio_codec_input = Prompt.ask(f'\n[red]We could not auto detect the {missing_value}[/red], [bold]Please input it now[/bold]: (e.g. DTS | DDP | FLAC | TrueHD | Opus )')
             if len(str(audio_codec_input)) < 2:
@@ -282,10 +284,10 @@ def basic_get_missing_audio_codec(torrent_info, is_disc, auto_mode, audio_codec_
                 logging.info(f"[BasicUtils] Used user_input to identify the {missing_value}: {audio_codec_input}")
                 return str(audio_codec_input), atmos
 
-    # -- ! This runs if auto_mode == true !
+    # -- ! This runs if auto_mode == True !
     # We could technically upload without the audio codec in the filename, check to see what the user wants
     # This means we will still force an upload without the audio_codec
-    if str(os.getenv('force_auto_upload')).lower() == 'true':
+    if Environment().is_force_auto_upload():
         logging.info("[BasicUtils] force_auto_upload=true so we'll upload without the audio_codec in the torrent title")
         return "", atmos
 
@@ -351,7 +353,7 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
         return audio_channels_pymedia
 
     # If no audio_channels have been extracted yet then we try user_input next
-    if auto_mode == 'false':
+    if not auto_mode:
         while True:
             audio_channel_input = Prompt.ask(f'\n[red]We could not auto detect the {missing_value}[/red], [bold]Please input it now[/bold]: (e.g. 5.1 | 2.0 | 7.1 )')
             if len(str(audio_channel_input)) < 2:
@@ -361,12 +363,11 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
                 logging.info(f"[BasicUtils] Used user_input to identify {missing_value}: {audio_channel_input}")
                 return str(audio_channel_input)
 
-    # -- ! This runs if auto_mode == true !
+    # -- ! This runs if auto_mode == True !
     # We could technically upload without the audio channels in the filename, check to see what the user wants
     # This means we will still force an upload without the audio_channels
-    if str(os.getenv('force_auto_upload')).lower() == 'true':
-        logging.info(
-            "[BasicUtils] force_auto_upload=true so we'll upload without the audio_channels in the filename")
+    if Environment().is_force_auto_upload():
+        logging.info("[BasicUtils] force_auto_upload=true so we'll upload without the audio_channels in the filename")
         return ""
 
     # Well shit, if nothing above returned any value then it looks like this is the end of our journey :(
@@ -400,7 +401,7 @@ def basic_get_missing_screen_size(torrent_info, is_disc, media_info_video_track,
     # User input as a last resort
     else:
         # If auto_mode is enabled we can prompt the user for input
-        if auto_mode == 'false':
+        if not auto_mode:
             while True:
                 screen_size_input = Prompt.ask(
                     f'\n[red]We could not auto detect the {missing_value}[/red], [bold]Please input it now[/bold]: (e.g. 720p, 1080p, 2160p) ')
@@ -429,7 +430,7 @@ def basic_get_missing_source(torrent_info, is_disc, auto_mode, missing_value):
 
     # Well shit, this is a problem and I can't think of a good way to consistently & automatically get the right result
     # if auto_mode is set to false we can ask the user but if auto_mode is set to true then we'll just need to quit since we can't upload without it
-    if auto_mode == 'false':
+    if not auto_mode:
         console.print(
             f"Can't auto extract the [bold]{missing_value}[/bold] from the filename, you'll need to manually specify it", style='red', highlight=False)
 

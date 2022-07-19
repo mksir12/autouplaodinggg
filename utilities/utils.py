@@ -15,7 +15,7 @@ from dotenv import dotenv_values
 from rich.console import Console
 
 from modules.torrent_client import Clients, TorrentClientFactory
-
+from modules.env import Environment
 
 console = Console()
 
@@ -119,10 +119,10 @@ def write_uploader_signature_to_description(description_file_path, tracker, bbco
     # will then open throw some errors???
     with open(description_file_path, 'a') as description:
         # Finally append the entire thing with some shameless self promotion ;) and some line breaks
-        if os.getenv("uploader_signature") is not None and len(os.getenv("uploader_signature")) > 0:
+        if Environment.get_uploader_signature() and len(Environment.get_uploader_signature()) > 0:
             logging.debug('[Utils] User has provided custom uploader signature to use.')
             # the user has provided a custom signature to be used. hence we'll use that.
-            uploader_signature = os.getenv("uploader_signature")
+            uploader_signature = Environment.get_uploader_signature()
             logging.debug(f'[Utils] User provided signature :: {uploader_signature}')
             if not uploader_signature.startswith("[center]") and not uploader_signature.endswith("[/center]"):
                 uploader_signature = f'[center]{uploader_signature}[/center]'
@@ -173,7 +173,7 @@ def delete_leftover_files(working_folder, file, resume=False):
     else:
         os.mkdir(f"{working_folder}/temp_upload/")
 
-    if bool(os.getenv("readable_temp_data", False)) == True:
+    if Environment.is_readble_temp_data_needed():
         files = f'{file}/'.replace("//", "/").strip().replace(" ", ".").replace(":", ".").replace("'", "").split("/")[:-1]
         files.reverse()
         unique_hash = files[0]
@@ -270,11 +270,10 @@ def prepare_and_validate_tracker_api_keys_dict(api_keys_file_path):
 
         In cases where the TMDB api key has not been configured, the method will raise an `AssertionError`.
     """
-
     api_keys = json.load(open(api_keys_file_path))
     api_keys_dict = dict()
     for value in api_keys:
-        api_keys_dict[value] = os.getenv(value.upper(), "")
+        api_keys_dict[value] = Environment.get_property_or_default(value.upper(), "")
 
     # Make sure the TMDB API is provided [Mandatory Property]
     try:
@@ -291,7 +290,7 @@ def validate_env_file(sample_env_location):
     sample_env_keys = dotenv_values(sample_env_location).keys()
     # validating env file with expected keys from sample file
     for key in sample_env_keys:
-        if os.getenv(key) is None:
+        if Environment.get_property_or_default(key, None) is None:
             console.print(f"Outdated config.env file. Variable [red][bold]{key}[/bold][/red] is missing.", style="blue")
             logging.error(f"Outdated config.env file. Variable {key} is missing.")
 
@@ -307,7 +306,7 @@ def get_and_validate_configured_trackers(trackers, all_trackers, api_keys_dict, 
         logging.info(f"[Utils] User has chosen to upload to add possible trackers: {tracker_list}")
     else:
         logging.info("[Utils] Attempting check and validate and default trackers configured")
-        tracker_list = os.getenv("default_trackers_list", "")
+        tracker_list = Environment.get_default_trackers_list(default="")
         if len(tracker_list) > 0:
             tracker_list = [x.strip() for x in tracker_list.split(',')]
 
@@ -349,12 +348,12 @@ def _get_client_translated_path(torrent_info):
         To: /media/downloads/movie_name/movie.mkv
     """
 
-    if bool(os.getenv('translation_needed', False)) == True:
+    if Environment.is_translation_needed():
         logging.info('[Utils] Translating paths... ("translation_needed" flag set to True in config.env) ')
 
         # Just in case the user didn't end the path with a forward slash...
-        uploader_accessible_path = f"{os.getenv('uploader_accessible_path', '__MISCONFIGURED_PATH__')}/".replace('//', '/')
-        client_accessible_path = f"{os.getenv('client_accessible_path', '__MISCONFIGURED_PATH__')}/".replace('//', '/')
+        uploader_accessible_path = f"{Environment.get_uploader_accessible_path('__MISCONFIGURED_PATH__')}/".replace('//', '/')
+        client_accessible_path = f"{Environment.get_client_accessible_path('__MISCONFIGURED_PATH__')}/".replace('//', '/')
 
         if "__MISCONFIGURED_PATH__/" in [client_accessible_path, uploader_accessible_path]:
             logging.error("[Utils] User have enabled translation, but haven't provided the translation paths. Stopping cross-seeding...")
@@ -412,7 +411,7 @@ def _post_mode_cross_seed(torrent_client, torrent_info, working_folder, tracker,
 
 
 def _post_mode_watch_folder(torrent_info, working_folder):
-    move_locations = {"torrent": f"{os.getenv('dot_torrent_move_location')}", "media": f"{os.getenv('media_move_location')}"}
+    move_locations = {"torrent": f"{Environment.get_dot_torrent_move_location()}", "media": f"{Environment.get_media_move_location()}"}
     logging.debug(f"[Utils] Move locations configured by user :: {move_locations}")
     torrent_info["post_processing_complete"] = True
 
@@ -429,7 +428,7 @@ def _post_mode_watch_folder(torrent_info, working_folder):
 
             if move_location_key == 'torrent':
                 sub_folder = "/"
-                if os.getenv("enable_type_base_move", False) != False:
+                if Environment.is_type_based_move_enabled():
                     sub_folder = sub_folder + torrent_info["type"] + "/"
                     # os.makedirs(os.path.dirname(move_locations["torrent"] + sub_folder), exist_ok=True)
                     if os.path.exists(f"{move_locations['torrent']}{sub_folder}"):
@@ -455,7 +454,7 @@ def _post_mode_watch_folder(torrent_info, working_folder):
                     logging.error(f"[Utils] {torrent_info['upload_media']} is already in {move_location_value}, Not moving the media")
                 else:
                     sub_folder = "/"
-                    if os.getenv("enable_type_base_move", False) != False:
+                    if Environment.is_type_based_move_enabled():
                         sub_folder = sub_folder + torrent_info["type"] + "/"
                         move_location_value = move_location_value + sub_folder
                         os.makedirs(os.path.dirname(move_location_value), exist_ok=True)
@@ -471,13 +470,13 @@ def _post_mode_watch_folder(torrent_info, working_folder):
 
 
 def get_torrent_client_if_needed():
-    logging.debug(f"[Utils] enable_post_processing {os.getenv('enable_post_processing', False)}")
-    logging.debug(f"[Utils] post_processing_mode {os.getenv('post_processing_mode', False)}")
-    if bool(os.getenv("enable_post_processing", False)) == True and os.getenv("post_processing_mode", "") == "CROSS_SEED":
+    logging.debug(f"[Utils] enable_post_processing {Environment.is_post_processing_needed()}")
+    logging.debug(f"[Utils] post_processing_mode {Environment.get_post_processing_mode()}")
+    if Environment.is_post_processing_needed() and Environment.get_post_processing_mode() == "CROSS_SEED":
         # getting an instance of the torrent client factory
         torrent_client_factory = TorrentClientFactory()
         # creating the torrent client using the factory based on the users configuration
-        torrent_client = torrent_client_factory.create(Clients[os.getenv('client')])
+        torrent_client = torrent_client_factory.create(Clients[Environment.ClientEnv.get_client_type()])
         # checking whether the torrent client connection has been created successfully or not
         torrent_client.hello()
         return torrent_client
@@ -489,8 +488,7 @@ def get_torrent_client_if_needed():
 def perform_post_processing(torrent_info, torrent_client, working_folder, tracker, allow_multiple_files=False):
     # After we finish uploading, we can add all the dot torrent files to a torrent client to start seeding immediately.
     # This post processing step can be enabled or disabled based on the users configuration
-    if bool(os.getenv("enable_post_processing", False)):
-
+    if Environment.is_post_processing_needed():
         # When running in a bare meta, there is a chance for the user to provide relative paths.
         """ data/movie_name/movie.mkv """
         # the way to identify a relative path is to check whether the `upload_media` starts with a `/`
@@ -504,7 +502,7 @@ def perform_post_processing(torrent_info, torrent_client, working_folder, tracke
             return False
         torrent_info["client_path"] = translated_path
 
-        post_processing_mode = os.getenv("post_processing_mode", "")
+        post_processing_mode = Environment.get_post_processing_mode()
         if post_processing_mode == "CROSS_SEED":
             console.print("[bold] 🌱 Detected [red]Cross Seed[/red] as the post processing mode. 🌱 [/bold]", justify="center")
             return _post_mode_cross_seed(torrent_client, torrent_info, working_folder, tracker, allow_multiple_files)

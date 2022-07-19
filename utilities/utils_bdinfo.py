@@ -9,6 +9,7 @@ from rich.table import Table
 from rich.console import Console
 from rich.prompt import Prompt
 from utilities.utils import write_file_contents_to_log_as_debug
+from modules.env import Environment
 
 console = Console()
 
@@ -16,7 +17,7 @@ console = Console()
 def bdinfo_validate_bdinfo_script_for_bare_metal(bdinfo_script):
     # Verify that the bdinfo script exists only when executed on bare metal / VM instead of container
     # The containerized version has bdinfo packed inside.
-    if not os.getenv("IS_CONTAINERIZED") == "true" and not os.path.isfile(bdinfo_script):
+    if not Environment().is_containerized() and not os.path.isfile(bdinfo_script):
         logging.critical("[BDInfoUtils] You've specified the '-disc' arg but have not supplied a valid bdinfo script path in config.env")
         logging.info("[BDInfoUtils] Can not upload a raw disc without bdinfo output, update the 'bdinfo_script' path in config.env")
         raise AssertionError(f"The bdinfo script you specified: ({bdinfo_script}) does not exist")
@@ -143,30 +144,29 @@ def bdinfo_get_largest_playlist(bdinfo_script, auto_mode, upload_media):
         dict_of_playlist_info_list, key=lambda d: [d["size"]], reverse=True)
 
     # In auto_mode we just choose the largest playlist
-    if auto_mode == 'false':
+    if not auto_mode:
         # here we display the playlists identified ordered in decending order by size
         # the default choice will be the largest playlist file
         # user will be given the option to choose any different playlist file
-        bdinfo_list_table = Table(
-            box=box.SQUARE, title='BDInfo Playlists', title_style='bold #be58bf')
-        bdinfo_list_table.add_column(
-            "Playlist #", justify="center", style='#38ACEC')
-        bdinfo_list_table.add_column(
-            "Group", justify="center", style='#38ACEC')
-        bdinfo_list_table.add_column(
-            "Playlist File", justify="center", style='#38ACEC')
-        bdinfo_list_table.add_column(
-            "Duration", justify="center", style='#38ACEC')
-        bdinfo_list_table.add_column(
-            "Estimated Bytes", justify="center", style='#38ACEC')
+        bdinfo_list_table = Table(box=box.SQUARE, title='BDInfo Playlists', title_style='bold #be58bf')
+        bdinfo_list_table.add_column("Playlist #", justify="center", style='#38ACEC')
+        bdinfo_list_table.add_column("Group", justify="center", style='#38ACEC')
+        bdinfo_list_table.add_column("Playlist File", justify="center", style='#38ACEC')
+        bdinfo_list_table.add_column("Duration", justify="center", style='#38ACEC')
+        bdinfo_list_table.add_column("Estimated Bytes", justify="center", style='#38ACEC')
         # bdinfo_list_table.add_column("Measured Bytes", justify="center", style='#38ACEC') # always `-` in the tested BDs
 
         for playlist_details in dict_of_playlist_info_list:
-            bdinfo_list_table.add_row(str(playlist_details['no']), playlist_details['group'], f"[chartreuse1][bold]{str(playlist_details['file'])}[/bold][/chartreuse1]",
-                                      playlist_details['length'], playlist_details['est_bytes'], end_section=True)
+            bdinfo_list_table.add_row(
+                str(playlist_details['no']),
+                playlist_details['group'],
+                f"[chartreuse1][bold]{str(playlist_details['file'])}[/bold][/chartreuse1]",
+                playlist_details['length'],
+                playlist_details['est_bytes'],
+                end_section=True
+            )
 
-        console.print(
-            "For BluRay disk you need to select which playlist need to be analyzed, by default the largest playlist will be selected\n", style='bold blue')
+        console.print("For BluRay disk you need to select which playlist need to be analyzed, by default the largest playlist will be selected\n", style='bold blue')
         console.print("")
         console.print(bdinfo_list_table)
 
@@ -175,21 +175,15 @@ def bdinfo_get_largest_playlist(bdinfo_script, auto_mode, upload_media):
             i += 1
             list_of_num.append(str(i))
 
-        user_input_playlist_id_num = Prompt.ask(
-            "Choose which `Playlist #` to analyze:", choices=list_of_num, default="1")
-        largest_playlist = dict_of_playlist_info_list[int(
-            user_input_playlist_id_num) - 1]["file"]
-        logging.debug(
-            f"[BDInfoUtils] Used decided to select the playlist [{largest_playlist}] with Playlist # [{user_input_playlist_id_num}]")
-        logging.info(
-            f"[BDInfoUtils] Largest playlist obtained from bluray disc: {largest_playlist}")
+        user_input_playlist_id_num = Prompt.ask("Choose which `Playlist #` to analyze:", choices=list_of_num, default="1")
+        largest_playlist = dict_of_playlist_info_list[int(user_input_playlist_id_num) - 1]["file"]
+        logging.debug(f"[BDInfoUtils] Used decided to select the playlist [{largest_playlist}] with Playlist # [{user_input_playlist_id_num}]")
+        logging.info(f"[BDInfoUtils] Largest playlist obtained from bluray disc: {largest_playlist}")
         return bd_max_file, largest_playlist
     else:
         largest_playlist_value = max(dict_of_playlist_length_size.values())
-        largest_playlist = list(dict_of_playlist_length_size.keys())[list(
-            dict_of_playlist_length_size.values()).index(largest_playlist_value)]
-        logging.info(
-            f"[BDInfoUtils] Largest playlist obtained from bluray disc: {largest_playlist}")
+        largest_playlist = list(dict_of_playlist_length_size.keys())[list(dict_of_playlist_length_size.values()).index(largest_playlist_value)]
+        logging.info(f"[BDInfoUtils] Largest playlist obtained from bluray disc: {largest_playlist}")
         return bd_max_file, largest_playlist
 
 

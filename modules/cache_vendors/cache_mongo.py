@@ -3,7 +3,7 @@ import logging
 import functools
 
 from pymongo import MongoClient
-
+from modules.env import Environment
 
 class Mongo:
 
@@ -14,17 +14,17 @@ class Mongo:
     def __init__(self):
         """Method to initialize the connection to a redis database."""
         # Provide the mongodb atlas url to connect python to mongodb using pymongo
-        if os.getenv('cache_username') is not None and len(os.getenv('cache_username')) > 0:
-            CONNECTION_STRING = f"mongodb://{os.getenv('cache_username')}:{os.getenv('cache_password')}@{os.getenv('cache_host')}:{os.getenv('cache_port')}/{os.getenv('cache_database')}"
+        if Environment.CacheEnv.get_cache_username() is not None and len(Environment.CacheEnv.get_cache_username()) > 0:
+            CONNECTION_STRING = f"mongodb://{Environment.CacheEnv.get_cache_username()}:{Environment.CacheEnv.get_cache_password()}@{Environment.CacheEnv.get_cache_host()}:{Environment.CacheEnv.get_cache_port()}/{Environment.CacheEnv.get_cache_database()}"
         else:
-            CONNECTION_STRING = f"mongodb://{os.getenv('cache_host')}:{os.getenv('cache_port')}/{os.getenv('cache_database')}"
+            CONNECTION_STRING = f"mongodb://{Environment.CacheEnv.get_cache_host()}:{Environment.CacheEnv.get_cache_port()}/{Environment.CacheEnv.get_cache_database()}"
 
         if not self.is_mongo_initalized:
             try:
                 self.mongo_client = MongoClient(CONNECTION_STRING)
                 self.mongo_client.admin.command('ping')
                 self.is_mongo_initalized = True
-                self.database = self.mongo_client[os.getenv('cache_database')]
+                self.database = self.mongo_client[Environment.CacheEnv.get_cache_database()]
             except Exception as ex:
                 logging.fatal(f'[Cache] Failed to connect to Mongo DB. Error: {ex}')
                 raise Exception(f"Failed to connect to Mongo DB. Error: {ex}")
