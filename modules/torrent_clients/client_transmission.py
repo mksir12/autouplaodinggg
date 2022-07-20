@@ -45,7 +45,7 @@ class Transmission:
             return True
         return torrent.category == self.target_label
 
-    def __extract_necessary_keys(self, torrent):
+    def __extract_necessary_keys(torrent):
         return {key: value for key, value in torrent.items() if key in qbt_keys}
 
     # torrents_set_category

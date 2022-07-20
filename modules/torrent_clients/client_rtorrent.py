@@ -25,7 +25,7 @@ class Rutorrent:
         response = requests.post(url, data=data if data is not None else {}, files=files, headers=header or self.header)
         return response.json() if 'application/json' in response.headers.get('Content-Type') else response
 
-    def __get_torrent_info(self, item):
+    def __get_torrent_info(item):
         key = item[0]
         data = item[1]
         return {
@@ -92,7 +92,7 @@ class Rutorrent:
         else:
             return torrent["d.get_custom1"] == self.target_label
 
-    def __do_key_translation(self, key):
+    def __do_key_translation(key):
         return rutorrent_keys_translation[key] if key in rutorrent_keys_translation else key
 
     def __extract_necessary_keys(self, torrent):
@@ -101,7 +101,7 @@ class Rutorrent:
         torrent["category"]=torrent["category"].replace("%3A",":")
         return torrent
 
-    def __format_bytes(self, size):
+    def __format_bytes(size):
         # 2**10 = 1024
         power = 2**10
         n = 0
