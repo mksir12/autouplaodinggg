@@ -17,7 +17,7 @@ console = Console()
 def bdinfo_validate_bdinfo_script_for_bare_metal(bdinfo_script):
     # Verify that the bdinfo script exists only when executed on bare metal / VM instead of container
     # The containerized version has bdinfo packed inside.
-    if not Environment().is_containerized() and not os.path.isfile(bdinfo_script):
+    if not Environment.is_containerized() and not os.path.isfile(bdinfo_script):
         logging.critical("[BDInfoUtils] You've specified the '-disc' arg but have not supplied a valid bdinfo script path in config.env")
         logging.info("[BDInfoUtils] Can not upload a raw disc without bdinfo output, update the 'bdinfo_script' path in config.env")
         raise AssertionError(f"The bdinfo script you specified: ({bdinfo_script}) does not exist")

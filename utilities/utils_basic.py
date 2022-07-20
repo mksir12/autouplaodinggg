@@ -287,7 +287,7 @@ def basic_get_missing_audio_codec(torrent_info, is_disc, auto_mode, audio_codec_
     # -- ! This runs if auto_mode == True !
     # We could technically upload without the audio codec in the filename, check to see what the user wants
     # This means we will still force an upload without the audio_codec
-    if Environment().is_force_auto_upload():
+    if Environment.is_force_auto_upload():
         logging.info("[BasicUtils] force_auto_upload=true so we'll upload without the audio_codec in the torrent title")
         return "", atmos
 
@@ -366,7 +366,7 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
     # -- ! This runs if auto_mode == True !
     # We could technically upload without the audio channels in the filename, check to see what the user wants
     # This means we will still force an upload without the audio_channels
-    if Environment().is_force_auto_upload():
+    if Environment.is_force_auto_upload():
         logging.info("[BasicUtils] force_auto_upload=true so we'll upload without the audio_channels in the filename")
         return ""
 
