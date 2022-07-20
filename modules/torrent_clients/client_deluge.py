@@ -1,3 +1,3 @@
 class Deluge:
-    def display(self):
+    def display():
         print("Hello From Deluge")
