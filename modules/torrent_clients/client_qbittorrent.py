@@ -71,7 +71,7 @@ class Qbittorrent:
         else:
             return torrent.category == self.target_label
 
-    def __extract_necessary_keys(torrent):
+    def __extract_necessary_keys(self, torrent):
         return {key: value for key, value in torrent.items() if key in qbt_keys}
 
     # torrents_set_category

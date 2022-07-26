@@ -9,7 +9,7 @@ class CacheVendor(enum.Enum):
 
 class CacheFactory():
 
-    def create(cache_type):
+    def create(self, cache_type):
         targetclass = cache_type.name.capitalize()
         return Cache(globals()[targetclass]())
 

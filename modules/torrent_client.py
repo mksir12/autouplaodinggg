@@ -16,7 +16,7 @@ class Clients(enum.Enum):
 
 class TorrentClientFactory():
 
-    def create(client_type):
+    def create(self, client_type):
         targetclass = client_type.name.capitalize()
         return TorrentClient(globals()[targetclass]())
 
