@@ -1,11 +1,9 @@
-import os
 import re
 import json
 import logging
 import requests
 
 from pprint import pformat
-from distutils import util
 from fuzzywuzzy import fuzz
 from guessit import guessit
 
@@ -14,7 +12,7 @@ from rich.prompt import Confirm
 from rich.console import Console
 
 from utilities.utils_miscellaneous import miscellaneous_identify_repacks
-
+import modules.env as Environment
 
 console = Console()
 
@@ -552,7 +550,7 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
                 # check to see if that's ^^ happening, if it is then we will log it and if 'auto_mode' is enabled we also cancel the upload
                 # if 'auto_mode=false' then we prompt the user & let them decide
                 if not is_full_season:
-                    if bool(util.strtobool(auto_mode)):
+                    if auto_mode:
                         # possible_dupe_with_percentage_dict[existing_release_types_key] = 100
                         logging.critical(f'[DupeCheck] Canceling upload to {search_site} because uploading a full season pack is already available: {existing_release_types_key}')
                         return True
@@ -574,7 +572,7 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
         logging.info(f'[DupeCheck] Filtered out: {number_of_discarded_seasons} results for not being the right season ({season_num})')
 
     possible_dupes_table = Table(show_header=True, header_style="bold cyan")
-    possible_dupes_table.add_column(f"Exceeds Max % ({os.getenv('acceptable_similarity_percentage')}%)", justify="left")
+    possible_dupes_table.add_column(f"Exceeds Max % ({Environment.get_acceptable_similarity_percentage()}%)", justify="left")
     possible_dupes_table.add_column(f"Possible Dupes ({str(config['name']).upper()})", justify="left")
     possible_dupes_table.add_column("Similarity %", justify="center")
     possible_dupes_table.add_column("Dupe Reason", justify="center")
@@ -596,11 +594,9 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
             )
 
     for possible_dupe in sorted(possible_dupe_with_percentage_dict, key=possible_dupe_with_percentage_dict.get, reverse=True):
-        mark_as_dupe = bool(possible_dupe_with_percentage_dict[possible_dupe] >= int(
-            os.getenv('acceptable_similarity_percentage')))
+        mark_as_dupe = bool(possible_dupe_with_percentage_dict[possible_dupe] >= Environment.get_acceptable_similarity_percentage())
         mark_as_dupe_color = "bright_red" if mark_as_dupe else "dodger_blue1"
-        mark_as_dupe_percentage_difference_raw_num = possible_dupe_with_percentage_dict[possible_dupe] - int(
-            os.getenv('acceptable_similarity_percentage'))
+        mark_as_dupe_percentage_difference_raw_num = possible_dupe_with_percentage_dict[possible_dupe] - Environment.get_acceptable_similarity_percentage()
         mark_as_dupe_percentage_difference = f'{"+" if mark_as_dupe_percentage_difference_raw_num >= 0 else "-"}{abs(mark_as_dupe_percentage_difference_raw_num)}%'
 
         possible_dupes_table.add_row(f'[{mark_as_dupe_color}]{mark_as_dupe}[/{mark_as_dupe_color}] ({mark_as_dupe_percentage_difference})',
@@ -633,12 +629,12 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
             # If auto_mode is enabled then return true in all cases
             # If user chooses Yes / y => then we return False indicating that there are no dupes and processing can continue
             # If user chooses no / n => then we return True indicating that there are possible duplicates and stop the upload for the tracker
-            return True if bool(util.strtobool(auto_mode)) else not bool(Confirm.ask("\nIgnore and continue upload?"))
+            return True if auto_mode else not bool(Confirm.ask("\nIgnore and continue upload?"))
         else:
             # If auto_mode is enabled then return true in all cases
             # If user chooses Yes / y => then we return False indicating that there are no dupes and processing can continue
             # If user chooses no / n => then we return True indicating that there are possible duplicates and stop the upload for the tracker
-            return True if bool(util.strtobool(auto_mode)) else not bool(Confirm.ask("\nContinue upload even with possible dupe?"))
+            return True if auto_mode else not bool(Confirm.ask("\nContinue upload even with possible dupe?"))
     else:
         if is_dupes_present:
             console.print(
