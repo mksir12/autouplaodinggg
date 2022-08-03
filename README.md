@@ -279,6 +279,7 @@ docker run --rm -it \
 
     Bug Fixes
         * Issue#52: ANT upload does not detect/set Atmos or other parameters
+        * Issue#69: Release group not identified when uploading movie folders
 
 
 ## **3.0**
