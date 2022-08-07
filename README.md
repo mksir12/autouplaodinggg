@@ -70,7 +70,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>Site Name</strong></td>
         </th>
         <tr style="text-align: center">
-            <td rowspan="11"><strong>UNIT3D</strong></td>
+            <td rowspan="12"><strong>UNIT3D</strong></td>
             <td><strong>ACM</strong></td>
             <td><strong><a href="https://asiancinema.me">AsianCinema</a></strong></td>
         </tr>
@@ -110,9 +110,13 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>RF</strong></td>
             <td><strong><a href="https://reelflix.xyz/">ReelFliX</a></strong></td>
         </tr>
-         <tr style="text-align: center">
+        <tr style="text-align: center">
             <td><strong>LST</strong></td>
             <td><strong><a href="https://lst.gg">LST</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>3EVILS</strong></td>
+            <td><strong><a href="https://3evils.net">3Evils</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td rowspan="1"><strong>XBTIT</strong></td>
