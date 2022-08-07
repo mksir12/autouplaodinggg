@@ -1,4 +1,3 @@
-import os
 import sys
 import logging
 import requests
@@ -7,7 +6,7 @@ from rich import box
 from rich.table import Table
 from rich.console import Console
 from rich.prompt import Prompt
-
+import modules.env as Environment
 
 console = Console()
 
@@ -17,7 +16,7 @@ def _do_tmdb_search(url):
 
 
 def __is_auto_reuploader():
-    return os.getenv("tmdb_result_auto_select_threshold", None) is not None
+    return Environment.get_tmdb_result_auto_select_threshold() is not None
 
 
 def _return_for_reuploader_and_exit_for_assistant(selected_tmdb_results_data=None):
@@ -63,7 +62,7 @@ def _metadata_search_tmdb_for_id(query_title, year, content_type, auto_mode):
         f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/search/{content_type}?api_key=<REDACTED>&query={escaped_query_title}&page=1&include_adult=false{query_year}")
     # doing search with escaped title (strict search)
     search_tmdb_request = _do_tmdb_search(
-        f"https://api.themoviedb.org/3/search/{content_type}?api_key={os.getenv('TMDB_API_KEY')}&query={escaped_query_title}&page=1&include_adult=false{query_year}")
+        f"https://api.themoviedb.org/3/search/{content_type}?api_key={Environment.get_tmdb_api_key()}&query={escaped_query_title}&page=1&include_adult=false{query_year}")
 
     if search_tmdb_request.ok:
         # print(json.dumps(search_tmdb_request.json(), indent=4, sort_keys=True))
@@ -72,7 +71,7 @@ def _metadata_search_tmdb_for_id(query_title, year, content_type, auto_mode):
             logging.info("[MetadataUtils] Attempting to do a more liberal TMDB Search")
             # doing request without escaped title (search is not strict)
             search_tmdb_request = _do_tmdb_search(
-                f"https://api.themoviedb.org/3/search/{content_type}?api_key={os.getenv('TMDB_API_KEY')}&query={query_title}&page=1&include_adult=false{query_year}")
+                f"https://api.themoviedb.org/3/search/{content_type}?api_key={Environment.get_tmdb_api_key()}&query={query_title}&page=1&include_adult=false{query_year}")
 
             if search_tmdb_request.ok:
                 if len(search_tmdb_request.json()["results"]) == 0:
@@ -188,7 +187,7 @@ def _metadata_search_tmdb_for_id(query_title, year, content_type, auto_mode):
 
 
         if __is_auto_reuploader():
-            if selected_tmdb_results <= int(os.getenv("tmdb_result_auto_select_threshold", 1)) or int(os.getenv("tmdb_result_auto_select_threshold", 1)) == 0:
+            if selected_tmdb_results <= int(Environment.get_tmdb_result_auto_select_threshold(1)) or int(Environment.get_tmdb_result_auto_select_threshold(1)) == 0:
                 console.print("Auto selected the #1 result from TMDB...")
                 user_input_tmdb_id_num = "1"
                 logging.info(f"[MetadataUtils] `tmdb_result_auto_select_threshold` is valid so we are auto selecting #1 from tmdb results (TMDB ID: {str(result_dict[user_input_tmdb_id_num])})")
@@ -202,7 +201,7 @@ def _metadata_search_tmdb_for_id(query_title, year, content_type, auto_mode):
                     "possible_matches": selected_tmdb_results_data
                 }
         else:
-            if auto_mode == 'true' or selected_tmdb_results == 1:
+            if auto_mode or selected_tmdb_results == 1:
                 console.print("Auto selected the #1 result from TMDB...")
                 user_input_tmdb_id_num = "1"
                 logging.info(f"[MetadataUtils] 'auto_mode' is enabled or 'only 1 result from TMDB', so we are auto selecting #1 from tmdb results (TMDB ID: {str(result_dict[user_input_tmdb_id_num])})")
@@ -243,8 +242,8 @@ def _metadata_get_external_id(id_site, id_value, external_site, content_type):
     # translation for TMDB API
     content_type = "tv" if content_type == "episode" else content_type
 
-    get_imdb_id_from_tmdb_url = f"https://api.themoviedb.org/3/{content_type}/{id_value}/external_ids?api_key={os.getenv('TMDB_API_KEY')}&language=en-US"
-    get_tmdb_id_from_imdb_url = f"https://api.themoviedb.org/3/find/{id_value}?api_key={os.getenv('TMDB_API_KEY')}&language=en-US&external_source=imdb_id"
+    get_imdb_id_from_tmdb_url = f"https://api.themoviedb.org/3/{content_type}/{id_value}/external_ids?api_key={Environment.get_tmdb_api_key()}&language=en-US"
+    get_tmdb_id_from_imdb_url = f"https://api.themoviedb.org/3/find/{id_value}?api_key={Environment.get_tmdb_api_key()}&language=en-US&external_source=imdb_id"
     get_tvmaze_id_from_imdb_url = f"https://api.tvmaze.com/lookup/shows?imdb={id_value}"
     get_imdb_id_from_tvmaze_url = f"https://api.tvmaze.com/shows/{id_value}"
 
@@ -297,7 +296,7 @@ def search_for_mal_id(content_type, tmdb_id, torrent_info):
         "tmdb": tmdb_id
     }
     if content_type == 'tv':
-        get_tvdb_id = f"https://api.themoviedb.org/3/tv/{tmdb_id}/external_ids?api_key={os.getenv('TMDB_API_KEY')}&language=en-US"
+        get_tvdb_id = f"https://api.themoviedb.org/3/tv/{tmdb_id}/external_ids?api_key={Environment.get_tmdb_api_key()}&language=en-US"
         logging.info(f"[MetadataUtils] GET Request For TVDB Lookup: https://api.themoviedb.org/3/tv/{tmdb_id}/external_ids?api_key=<REDACTED>&language=en-US")
         get_tvdb_id_response = requests.get(get_tvdb_id).json()
         # Look for the tvdb_id key
@@ -348,7 +347,7 @@ def metadata_compare_tmdb_data_local(torrent_info):
         content_title = "title"
 
     # We should only need 1 API request, so do that here
-    get_media_info_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key={os.getenv('TMDB_API_KEY')}"
+    get_media_info_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key={Environment.get_tmdb_api_key()}"
 
     try:
         get_media_info = requests.get(get_media_info_url).json()

@@ -23,7 +23,7 @@ tracker_api_key = "TRACKER_API_DUMMY"
 """
 
 """
-    Creating and starting a simple web-server. 
+    Creating and starting a simple web-server.
     The dupe check request will be sent to this server, and it'll return the hard-coded response.
 """
 
@@ -125,8 +125,9 @@ def __fetch_dupe_check_test_data():
     test_cases = []
 
     for case in sample_data:
-        test_cases.append(pytest.param(case["site_template"], case["imdb"], case["tmdb"], case["tvmaze"],
-                          case["auto_mode"], case["torrent_info"], case["expected"], id=case["name"]))
+        test_cases.append(
+            pytest.param(case["site_template"], case["imdb"], case["tmdb"], case["tvmaze"], case["auto_mode"], case["torrent_info"], case["expected"], id=case["name"])
+        )
 
     return test_cases
 
@@ -137,5 +138,4 @@ def test_search_for_dupes_api_api_key_based(site_template, imdb, tmdb, tvmaze, a
     #   `debug` to False
     #   `tracker_api` to TRACKER_API_DUMMY (tracker_api_key)
     mocker.patch("os.getenv", return_value=80)
-    assert search_for_dupes_api(site_template, imdb, tmdb, tvmaze, torrent_info,
-                                tracker_api_key, auto_mode, working_folder, "true") == expected
+    assert search_for_dupes_api(site_template, imdb, tmdb, tvmaze, torrent_info, tracker_api_key, True, working_folder, auto_mode) == expected

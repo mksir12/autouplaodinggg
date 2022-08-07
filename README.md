@@ -242,14 +242,12 @@ docker run --rm -it \
 <br>
 
 # Roadmap
-### v3.0.1
+### v3.0.2
 - [ ] Improved TMDB metadata search Phase 2
 - [ ] Better MAL id detection
 - [ ] Support for Dual Audio Detection
-- [X] Rewrote tag generation logic
-- [X] Issue#52: ANT upload does not detect/set Atmos or other parameters
 
-### v3.0.2
+### v3.0.3
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Ability to reuse already existing torrents.
 
@@ -273,11 +271,15 @@ docker run --rm -it \
 
 # Change Log
 
-## **3.0.1 UNRELEASED SUBJECTED TO CHANGE**
+## **3.0.1**
+    New Trackers
+        * 3Evils
+
     New Features
         * Added support for tag generation and use for tracker uploads
 
     Bug Fixes
+        * Fixing the broken reuploader in v3.0
         * Issue#52: ANT upload does not detect/set Atmos or other parameters
         * Issue#69: Release group not identified when uploading movie folders
 
