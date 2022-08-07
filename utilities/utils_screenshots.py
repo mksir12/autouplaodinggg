@@ -264,7 +264,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
             no_images.close()
         logging.error("[Screenshots] Continuing upload without screenshots")
         console.print('Continuing without screenshots\n', style='chartreuse1')
-        return
+        return False # indicates that screenshots are NOT available
 
     # ##### Now that we've verified that at least 1 imghost is available & has an api key etc we can try & upload the screenshots ##### #
     # We only generate screenshots if a valid image host is enabled/available
@@ -347,3 +347,4 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
         else:
             console.print(f'{len(screenshots_to_upload_list) - successfully_uploaded_image_count}/{len(screenshots_to_upload_list)} screenshots failed to upload', style='bold red', highlight=False)
             logging.error(f'[Screenshots] {len(screenshots_to_upload_list) - successfully_uploaded_image_count}/{len(screenshots_to_upload_list)} screenshots failed to upload')
+        return True # indicates that screenshots are available
