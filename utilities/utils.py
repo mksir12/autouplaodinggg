@@ -291,7 +291,7 @@ def validate_env_file(sample_env_location):
     sample_env_keys = dotenv_values(sample_env_location).keys()
     # validating env file with expected keys from sample file
     for key in sample_env_keys:
-        if os.getenv(key) is None:
+        if os.getenv(key, "") == "":
             console.print(f"Outdated config.env file. Variable [red][bold]{key}[/bold][/red] is missing.", style="blue")
             logging.error(f"Outdated config.env file. Variable {key} is missing.")
 
@@ -490,7 +490,6 @@ def perform_post_processing(torrent_info, torrent_client, working_folder, tracke
     # After we finish uploading, we can add all the dot torrent files to a torrent client to start seeding immediately.
     # This post processing step can be enabled or disabled based on the users configuration
     if bool(os.getenv("enable_post_processing", False)):
-
         # When running in a bare meta, there is a chance for the user to provide relative paths.
         """ data/movie_name/movie.mkv """
         # the way to identify a relative path is to check whether the `upload_media` starts with a `/`
