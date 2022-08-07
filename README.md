@@ -70,7 +70,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>Site Name</strong></td>
         </th>
         <tr style="text-align: center">
-            <td rowspan="10"><strong>UNIT3D</strong></td>
+            <td rowspan="11"><strong>UNIT3D</strong></td>
             <td><strong>ACM</strong></td>
             <td><strong><a href="https://asiancinema.me">AsianCinema</a></strong></td>
         </tr>
@@ -109,6 +109,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
         <tr style="text-align: center">
             <td><strong>RF</strong></td>
             <td><strong><a href="https://reelflix.xyz/">ReelFliX</a></strong></td>
+        </tr>
+         <tr style="text-align: center">
+            <td><strong>LST</strong></td>
+            <td><strong><a href="https://lst.gg">LST</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td rowspan="1"><strong>XBTIT</strong></td>
@@ -274,6 +278,7 @@ docker run --rm -it \
 ## **3.0.1**
     New Trackers
         * 3Evils
+        * LST
 
     New Features
         * Added support for tag generation and use for tracker uploads
