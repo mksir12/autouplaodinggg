@@ -1,4 +1,5 @@
 [
+    "3evils_api_key",
     "ant_api_key",
     "bhd_api_key",
     "dt_api_key",
@@ -16,6 +17,7 @@
     "szn_api_key",
     "stt_api_key",
     "bhdtv_api_key",
+    "lst_api_key",
     "nbl_api_key",
     "rf_api_key"
 ]

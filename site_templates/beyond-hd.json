@@ -45,7 +45,8 @@
         "nfo_file": "nfo_file",
         "complete_season": "pack",
         "season_number": "season_number",
-        "episode_number": "episode_number"
+        "episode_number": "episode_number",
+        "tags":"tags"
     },
 
     "Required": {
@@ -225,23 +226,26 @@
             "TWN",
             "USA"
         ],
-        "tags": [
-            "Commentary",
-            "2in1",
-            "Hybrid",
-            "OpenMatte",
-            "2D3D",
-            "WEBRip",
-            "WEBDL",
-            "3D",
-            "4kRemaster",
-            "DualAudio",
-            "EnglishDub",
-            "Personal",
-            "Scene",
-            "DigitalExtras",
-            "Extras"
-        ],
+        "tags": {
+            "type" : "string",
+            "tags": [
+                "Commentary",
+                "2in1",
+                "Hybrid",
+                "OpenMatte",
+                "2D3D",
+                "WEBRip",
+                "WEBDL",
+                "3D",
+                "4kRemaster",
+                "DualAudio",
+                "EnglishDub",
+                "Personal",
+                "Scene",
+                "DigitalExtras",
+                "Extras"
+            ]
+        },
         "nfo": "string",
         "nfo_file": "file",
         "pack": "string",

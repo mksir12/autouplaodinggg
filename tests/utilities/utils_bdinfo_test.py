@@ -181,8 +181,7 @@ def test_bdinfo_generate_and_parse_bdinfo(torrent_info, expected, debug, mocker)
 )
 def test_bdinfo_get_largest_playlist(input, mocker):
     mocker.patch("subprocess.check_output", return_value=input[1])
-    assert bdinfo_get_largest_playlist(
-        None, "true", input[0]) == ('', input[2])
+    assert bdinfo_get_largest_playlist(None, True, input[0]) == ('', input[2])
 
 
 @pytest.mark.parametrize(
@@ -223,8 +222,7 @@ def test_bdinfo_get_largest_playlist(input, mocker):
 def test_bdinfo_get_largest_playlist_manual_mode(input, user_choice, mocker):
     mocker.patch("subprocess.check_output", return_value=input[1])
     mocker.patch("rich.prompt.Prompt.ask", return_value=user_choice)
-    assert bdinfo_get_largest_playlist(
-        None, "false", input[0]) == ('', input[2])
+    assert bdinfo_get_largest_playlist(None, False, input[0]) == ('', input[2])
 
 
 @pytest.mark.parametrize(

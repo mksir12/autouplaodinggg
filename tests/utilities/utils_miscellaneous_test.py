@@ -212,4 +212,4 @@ def test_miscellaneous_identify_web_streaming_source(raw_file_name, guess_it_res
 )
 def test_miscellaneous_identify_source_type(raw_file_name, expected):
     assert miscellaneous_identify_source_type(
-        raw_file_name, "true", None) == expected
+        raw_file_name, True, None) == expected

@@ -1,10 +1,10 @@
 {
-    "name": "Anthelion",
-    "url": "https://anthelion.me",
-    "upload_form": "https://anthelion.me/api.php?api_key={api_key}",
-    "torrents_search": "https://anthelion.me/api?api_key={api_key}",
-    "source": "ANT",
-    "platform": "Gazelle",
+    "name": "LST",
+    "url": "https://lst.gg",
+    "upload_form": "https://lst.gg/api/torrents/upload?api_token={api_key}",
+    "torrents_search": "https://lst.gg/api/torrents/filter?api_token={api_key}",
+    "source": "LST",
+    "platform": "UNIT3D",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
 
@@ -25,38 +25,71 @@
     },
 
     "translation": {
-        "dot_torrent": "file_input",
+        "dot_torrent": "torrent",
         "torrent_title": "name",
+        "description": "description",
         "mediainfo": "mediainfo",
-        "url_images": "screenshots",
         "bdinfo": "bdinfo",
-        "anon": "anonymous",
-        "type": "category",
+        "type": "category_id",
         "source": "type_id",
-        "resolution": "ressel",
-        "tmdb": "tmdbid",
-        "imdb": "imdbid",
-        "tags": "flags[]"
+        "resolution": "resolution_id",
+        "season_number": "season_number",
+        "episode_number": "episode_number",
+        "tmdb": "tmdb",
+        "imdb": "imdb",
+        "tvdb": "tvdb",
+        "mal": "mal",
+        "igdb": "igdb",
+        "anon": "anonymous",
+        "live": "live",
+        "sd": "sd",
+        "nfo_file": "nfo",
+
+        "optimized": "stream",
+        "internal": "internal",
+        "featured": "featured",
+        "doubleup": "doubleup",
+        "sticky": "sticky",
+        "freeleech": "free"
     },
 
     "Required": {
-        "file_input": "file",
-        "tmdbid": "string",
-        "imdbid" : "string",
-        "name":"string",
-        "screenshots": "string",
+        "torrent": "file",
+        "name": "string",
+        "description": "string",
+        "anonymous": "string",
+        "sd": "string",
+        "stream": "string",
 
-        "category": {
-            "0": "movie"
+        "tvdb": "string",
+        "tmdb": "string",
+        "imdb": "string",
+        "mal": "string",
+        "igdb": "string",
+
+        "internal": "string",
+        "free": "string",
+        "featured": "string",
+        "doubleup": "string",
+        "sticky": "string",
+
+        "category_id": {
+            "1": "movie",
+            "2": "episode"
         },
 
         "type_id": {
-            "3": {
+            "1": {
+                "disc": 1,
+                "bluray_disc": 2,
+                "dvd_disc": 2
+            },
+            "2": {
                 "remux": 1,
                 "bluray_remux": 2,
                 "dvd_remux": 2
             },
-            "12": {
+            "3": {
                 "bluray_encode": 1
             },
             "4": {
@@ -70,53 +103,50 @@
             }
         },
 
-        "ressel": {
-            "2160p": {
+        "resolution_id": {
+            "1": {
+                "4360p": 1
+            },
+            "2": {
                 "2160p": 1
             },
-            "1080p": {
+            "3": {
                 "1080p": 1
             },
-            "1080i": {
+            "4": {
                 "1080i": 1
             },
-            "720p": {
+            "5": {
                 "720p": 1
             },
-            "SD": {
+            "6": {
+                "576p": 1
+            },
+            "7": {
+                "576i": 1
+            },
+            "8": {
+                "480p": 1
+            },
+            "9": {
+                "480i": 1
+            },
+            "10": {
                 "other": 1
             }
         }
     },
 
     "Optional": {
+        "nfo_file": "file",
+        "season_number": "string",
+        "episode_number": "string",
+
         "bdinfo": "string",
-        "mediainfo": "string",
-        "anonymous": "string",
-        "flags[]": {
-            "type" : "array",
-            "tags": [
-                "Directors",
-                "Extended",
-                "Uncut",
-                "Unrated",
-                "HDR10",
-                "DV",
-                "4KRemaster",
-                "Atmos",
-                "DualAudio",
-                "Commentary",
-                "Remux",
-                "3D",
-                "Criterion"
-            ]
-        }
+        "mediainfo": "string"
     },
 
-    "Default":{
-        "action" : "upload",
-        "flagchangereason" : "Uploaded with ❤ using GG-BOT Upload Assistant"
-    },
+    "Default":{},
 
     "dupes": {
 
@@ -126,15 +156,13 @@
             "request_method": "GET"
         },
 
-        "url_format": "{search_url}&tmdb={tmdb}&t=movie&o=json",
+        "url_format": "{search_url}&imdbId={imdb}",
         "strip_text": true,
 
         "parse_json": {
             "is_needed": true,
-            "top_lvl": "item",
-            "torrent_name": "title",
-            "combine_fields": true,
-            "fields": [ "title", "year", "resolution", "media", "flags", "audioFormat", "codec", "releaseGroup" ]
+            "top_lvl": "data",
+            "torrent_details": "attributes"
         },
 
         "different_cuts": "1",
@@ -145,8 +173,6 @@
         "720p_encode": 100,
         "else": 1
     },
-
-
 
     "torrent_title_format": {
         "episode": {
@@ -167,33 +193,35 @@
             "dvd": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {video_codec} {remux} {audio_codec} {audio_channels} {atmos} {release_group}"
         }
     },
-
     "banned_groups": [
-        "Ozlem",
-        "RARBG",
-        "FGT",
-        "STUTTERSHIT",
-        "LiGaS",
-        "DDR",
-        "Zeus",
-        "TBS",
-        "aXXo",
-        "CrEwSaDe",
-        "DNL",
-        "EVO",
-        "FaNGDiNG0",
-        "HD2DVD",
-        "HDTime",
-        "iPlanet",
-        "KiNGDOM",
-        "NhaNc3",
-        "PRoDJi",
-        "SANTi",
-        "ViSiON",
-        "WAF",
-        "YIFY",
-        "YTS",
-        "MkvCage",
-        "mSD"
+		"aXXo",
+		"BRrip",
+		"CM8",
+		"CrEwSaDe",
+		"CTFOH",
+		"DNL",
+		"FaNGDiNG0",
+		"HD2DVD",
+		"HDTime",
+		"ION10",
+		"iPlanet",
+		"mHD",
+		"mSD",
+		"nHD",
+		"nikt0",
+		"nSD",
+		"NhaNc3",
+		"OFT",
+		"PRODJi",
+		"SANTi",
+		"STUTTERSHIT",
+		"ViSION",
+		"VXT",
+		"WAF",
+		"x0r",
+		"YIFY",
+		"Sicario",
+		"RARBG",
+		"MeGusta"
     ]
 }

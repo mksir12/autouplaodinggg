@@ -40,6 +40,7 @@ import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_basic as basic_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils as utils
+import modules.env as Environment
 
 # Used for rich.traceback
 install()
@@ -74,9 +75,7 @@ acronym_to_tracker = json.load(open(f'{working_folder}/parameters/tracker/acrony
 api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict(f'{working_folder}/parameters/tracker/api_keys.json')
 
 # Import 'auto_mode' status
-if str(os.getenv('auto_mode')).lower() not in ['true', 'false']:
-    logging.error('[Main] `auto_mode` is not set to `true/false` in `config.env`. Defaulting to `false`')
-auto_mode = str(os.getenv('auto_mode', 'false')).lower()
+auto_mode = Environment.is_auto_mode()
 
 # Setup args
 parser = argparse.ArgumentParser()
@@ -158,7 +157,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
             tracker_api=temp_tracker_api_key,
             debug=args.debug,
             working_folder=working_folder,
-            auto_mode=os.getenv('auto_mode')
+            auto_mode=auto_mode
         )
     except Exception as e:
         logging.exception(f'[Main] Error occured while performing dupe check for tracker {tracker}. Error: {e}')
@@ -209,8 +208,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     keys_we_need_but_missing_torrent_info = []
     # We can (need to) have some other information in the final torrent title like 'editions', 'hdr', etc
     # All of that is important but not essential right now so we will try to extract that info later in the script
-    logging.debug(
-        f"Attempting to detect the following keys from guessit :: {keys_we_need_torrent_info}")
+    logging.debug(f"Attempting to detect the following keys from guessit :: {keys_we_need_torrent_info}")
     for basic_key in keys_we_need_torrent_info:
         if basic_key in guess_it_result:
             torrent_info[basic_key] = str(guess_it_result[basic_key])
@@ -235,15 +233,13 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     torrent_info["release_group"] = utils.sanitize_release_group_from_guessit(torrent_info)
 
     if "type" not in torrent_info:
-        raise AssertionError(
-            "'type' is not set in the guessit output, something is seriously wrong with this filename")
+        raise AssertionError("'type' is not set in the guessit output, something is seriously wrong with this filename")
 
     # ------------ Format Season & Episode (Goal is 'S01E01' type format) ------------ #
     # Depending on if this is a tv show or movie we have some other 'required' keys that we need (season/episode)
     # guessit uses 'episode' for all tv related content (including seasons)
     if torrent_info["type"] == "episode":
-        s00e00, season_number, episode_number, complete_season, individual_episodes, daily_episodes = basic_utilities.basic_get_episode_basic_details(
-            guess_it_result)
+        s00e00, season_number, episode_number, complete_season, individual_episodes, daily_episodes = basic_utilities.basic_get_episode_basic_details(guess_it_result)
         torrent_info["s00e00"] = s00e00
         torrent_info["season_number"] = season_number
         torrent_info["episode_number"] = episode_number
@@ -276,8 +272,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
             torrent_info["raw_video_file"] = raw_video_file
             torrent_info["largest_playlist"] = largest_playlist
         else:
-            raw_video_file = basic_utilities.basic_get_raw_video_file(
-                torrent_info['upload_media'])
+            raw_video_file = basic_utilities.basic_get_raw_video_file(torrent_info['upload_media'])
             if raw_video_file is not None:
                 torrent_info["raw_video_file"] = raw_video_file
 
@@ -313,13 +308,10 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     # For audio it will insert "Dolby Digital Plus" into the dict when what we want is "DD+"
     # ------------ If we are missing any other "basic info" we try to identify it here ------------ #
     if len(keys_we_need_but_missing_torrent_info) != 0:
-        logging.error(
-            "Unable to automatically extract all the required info from the FILENAME")
-        logging.error(
-            f"We are missing this info: {keys_we_need_but_missing_torrent_info}")
+        logging.error("Unable to automatically extract all the required info from the FILENAME")
+        logging.error(f"We are missing this info: {keys_we_need_but_missing_torrent_info}")
         # Show the user what is missing & the next steps
-        console.print(
-            f"[bold red underline]Unable to automatically detect the following info from the FILENAME:[/bold red underline] [green]{keys_we_need_but_missing_torrent_info}[/green]")
+        console.print(f"[bold red underline]Unable to automatically detect the following info from the FILENAME:[/bold red underline] [green]{keys_we_need_but_missing_torrent_info}[/green]")
 
     # We do some extra processing for the audio & video codecs since they are pretty important for the upload process & accuracy so they get appended each time
     # ['mediainfo', 'video_codec', 'audio_codec'] or ['video_codec', 'audio_codec'] for disks
@@ -335,8 +327,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
 
     if args.disc:
         # for full disk uploads the bdinfo summary itself will be set as the `mediainfo_summary`
-        logging.info(
-            "[Main] Full Disk Upload. Setting bdinfo summary as mediainfo summary")
+        logging.info("[Main] Full Disk Upload. Setting bdinfo summary as mediainfo summary")
         with open(f'{working_folder}/temp_upload/{torrent_info["working_folder"]}mediainfo.txt', 'r') as summary:
             bdInfo_summary = summary.read()
             torrent_info["mediainfo_summary"] = bdInfo_summary
@@ -358,11 +349,9 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     #  Now we'll try to use regex, mediainfo, ffprobe etc to try and auto get that required info
     for missing_val in keys_we_need_but_missing_torrent_info:
         # Save the analyze_video_file() return result into the 'torrent_info' dict
-        torrent_info[missing_val] = analyze_video_file(
-            missing_value=missing_val, media_info=media_info_result)
+        torrent_info[missing_val] = analyze_video_file(missing_value=missing_val, media_info=media_info_result)
 
-    logging.debug(
-        "::::::::::::::::::::::::::::: Torrent Information collected so far :::::::::::::::::::::::::::::")
+    logging.debug("::::::::::::::::::::::::::::: Torrent Information collected so far :::::::::::::::::::::::::::::")
     logging.debug(f"\n{pformat(torrent_info)}")
     # Show the user what we identified so far
     columns_we_want = {
@@ -383,24 +372,19 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     logging.debug(f"The columns that we want to show are {columns_we_want}")
     presentable_type = 'Movie' if torrent_info["type"] == 'movie' else 'TV Show'
 
-    codec_result_table = Table(
-        box=box.SQUARE, title='Basic media summary', title_style='bold #be58bf')
+    codec_result_table = Table(box=box.SQUARE, title='Basic media summary', title_style='bold #be58bf')
 
     for column_display_value in columns_we_want.values():
         if len(column_display_value) != 0:
-            logging.debug(
-                f"Adding column {column_display_value} to the torrent details result table")
-            codec_result_table.add_column(
-                f"{column_display_value}", justify='center', style='#38ACEC')
+            logging.debug(f"Adding column {column_display_value} to the torrent details result table")
+            codec_result_table.add_column(f"{column_display_value}", justify='center', style='#38ACEC')
 
     basic_info = []
     # add the actual data now
     for column_query_key, column_display_value in columns_we_want.items():
         if len(column_display_value) != 0:
-            torrent_info_key_failsafe = (torrent_info[column_query_key] if column_query_key !=
-                                         'type' else presentable_type) if column_query_key in torrent_info else None
-            logging.debug(
-                f"Getting value for {column_query_key} with display {column_display_value} as {torrent_info_key_failsafe} for the torrent details result table")
+            torrent_info_key_failsafe = (torrent_info[column_query_key] if column_query_key != 'type' else presentable_type) if column_query_key in torrent_info else None
+            logging.debug(f"Getting value for {column_query_key} with display {column_display_value} as {torrent_info_key_failsafe} for the torrent details result table")
             basic_info.append(torrent_info_key_failsafe)
 
     codec_result_table.add_row(*basic_info)
@@ -434,8 +418,7 @@ def analyze_video_file(missing_value, media_info):
 
     # ------------------- Source ------------------- #
     if missing_value == "source":
-        source, source_type = basic_utilities.basic_get_missing_source(
-            torrent_info, args.disc, auto_mode, missing_value)
+        source, source_type = basic_utilities.basic_get_missing_source(torrent_info, args.disc, auto_mode, missing_value)
         torrent_info["source"] = source
         torrent_info["source_type"] = source_type
         return source
@@ -450,10 +433,15 @@ def analyze_video_file(missing_value, media_info):
 
     # ---------------- Audio Codec ---------------- #
     if missing_value == "audio_codec":
-        audio_codec, atmos = basic_utilities.basic_get_missing_audio_codec(torrent_info=torrent_info, is_disc=args.disc, auto_mode=auto_mode,
-                                                                           audio_codec_file_path=f'{working_folder}/parameters/audio_codecs.json',
-                                                                           media_info_audio_track=media_info_audio_track, parse_me=parse_me,
-                                                                           missing_value=missing_value)
+        audio_codec, atmos = basic_utilities.basic_get_missing_audio_codec(
+            torrent_info=torrent_info,
+            is_disc=args.disc,
+            auto_mode=auto_mode,
+            audio_codec_file_path=f'{working_folder}/parameters/audio_codecs.json',
+            media_info_audio_track=media_info_audio_track,
+            parse_me=parse_me,
+            missing_value=missing_value
+        )
 
         if atmos is not None:
             torrent_info["atmos"] = atmos
@@ -549,8 +537,7 @@ def identify_miscellaneous_details(guess_it_result):
 
     # use regex (sourced and slightly modified from official radarr repo) to find torrent editions (Extended, Criterion, Theatrical, etc)
     # https://github.com/Radarr/Radarr/blob/5799b3dc4724dcc6f5f016e8ce4f57cc1939682b/src/NzbDrone.Core/Parser/Parser.cs#L21
-    torrent_info["edition"] = miscellaneous_utilities.miscellaneous_identify_bluray_edition(
-        torrent_info["upload_media"])
+    torrent_info["edition"] = miscellaneous_utilities.miscellaneous_identify_bluray_edition(torrent_info["upload_media"])
 
     # --------- Fix scene group tags --------- #
     # Whilst most scene group names are just capitalized but occasionally as you can see ^^ some are not (e.g. KOGi)
@@ -673,7 +660,7 @@ def upload_to_site(upload_to, tracker_api_key):
                 logging.info(f"[TrackerUpload] Optional key {key} will be added to payload")
             payload[key] = val
 
-    if auto_mode == "false":
+    if not auto_mode:
         # prompt the user to verify everything looks OK before uploading
 
         # ------- Show the user a table of the API KEY/VAL (TEXT) that we are about to send ------- #
@@ -856,12 +843,12 @@ If the above mentioned envs are true, we override the user configured `bdinfo_sc
 Similarly, from inside the normal full disk un-supported images, if user tries to upload a Full Disk,
 we stop upload process immediately with an error message.
 """
-bdinfo_script = os.getenv('bdinfo_script')
-if os.getenv("IS_CONTAINERIZED") == "true" and os.getenv("IS_FULL_DISK_SUPPORTED") == "true":
+bdinfo_script = Environment.get_bdinfo_script_location()
+if Environment.is_containerized() and Environment.is_full_disk_supported():
     logging.info("[Main] Full disk is supported inside this container. Setting overriding configured `bdinfo_script` to use alias `bdinfocli`")
     bdinfo_script = "bdinfocli"
 
-if args.disc and os.getenv("IS_CONTAINERIZED") == "true" and not os.getenv("IS_FULL_DISK_SUPPORTED") == "true":
+if args.disc and Environment.is_containerized() and not Environment.is_full_disk_supported():
     logging.fatal("[Main] User tried to upload Full Disk from an unsupported image!. Stopping upload process.")
     console.print("\n[bold red on white] ---------------------------- :warning: Unsupported Operation :warning: ---------------------------- [/bold red on white]")
     console.print("You're trying to upload a [bold red]Full Disk[/bold red] to trackers.",  highlight=False)
@@ -899,7 +886,7 @@ for tracker in upload_to_trackers:
 console.print(upload_to_trackers_overview)
 
 # If not in 'auto_mode' then verify with the user that they want to continue with the upload
-if auto_mode == "false":
+if not auto_mode:
     if not Confirm.ask("Continue upload to these sites?", default='y'):
         logging.info("[Main] User canceled upload when asked to confirm sites to upload to")
         sys.exit(console.print("\nOK, quitting now..\n", style="bold red", highlight=False))
@@ -959,6 +946,10 @@ logging.debug(f"[Main] Upload queue: {upload_queue}")
 for file in upload_queue:
     # Remove all old temp_files & data from the previous upload
     torrent_info.clear()
+    # This list will contain tags that are applicable to the torrent being uploaded.
+    # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
+    torrent_info["tag_grouping"] = json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+    torrent_info["tags"] = []
     # the working_folder will container a hash value with succeeding /
     torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, resume=args.resume, file=file)
 
@@ -1028,7 +1019,7 @@ for file in upload_queue:
         console.print(f"\nUsing the user supplied edition: [medium_spring_green]{user_input_edition}[/medium_spring_green]")
         torrent_info["edition"] = user_input_edition
 
-    if auto_mode == "false" and Confirm.ask("Do you want to add custom texts to torrent description?", default=False):
+    if not auto_mode and Confirm.ask("Do you want to add custom texts to torrent description?", default=False):
         logging.debug('[Main] User decided to add custom text to torrent description. Handing control to custom_user_input module')
         torrent_info["custom_user_inputs"] = collect_custom_messages_from_user(f'{working_folder}/parameters/custom_text_components.json')
     else:
@@ -1040,7 +1031,7 @@ for file in upload_queue:
     # -------- Dupe check for single tracker uploads --------
     # If user has provided only one Tracker to upload to, then we do dupe check prior to taking screenshots. [if dupe_check is enabled]
     # If there are duplicates in the tracker, then we do not waste time taking and uploading screenshots.
-    if os.getenv('check_dupes') == 'true' and len(upload_to_trackers) == 1:
+    if Environment.is_check_dupes() and len(upload_to_trackers) == 1:
         tracker = upload_to_trackers[0]
         temp_tracker_api_key = api_keys_dict[f"{str(tracker).lower()}_api_key"]
 
@@ -1053,7 +1044,7 @@ for file in upload_queue:
         # False == no_dupes/continue upload
         if dupe_check_response:
             logging.error(f"[Main] Could not upload to: {tracker} because we found a dupe on site")
-            if auto_mode == "true":
+            if auto_mode:
                 continue
             else:
                 sys.exit(console.print("\nOK, quitting now..\n",style="bold red", highlight=False))
@@ -1137,7 +1128,7 @@ for file in upload_queue:
         # we take the screenshots and uploads them, then do dupe check for the trackers.
         # dupe check need not be performed if user provided only one tracker.
         # in cases where only one tracker is provided, dupe check will be performed prior to taking screenshots.
-        if os.getenv('check_dupes') == 'true' and len(upload_to_trackers) > 1:
+        if Environment.is_check_dupes() and len(upload_to_trackers) > 1:
             console.line(count=2)
             console.rule(f"Dupe Check [bold]({tracker})[/bold]", style='red', align='center')
             logging.debug(f"[Main] Dumping torrent_info contents to log before dupe check: \n{pformat(torrent_info)}")
@@ -1163,7 +1154,7 @@ for file in upload_queue:
 
         torrent_utilities.generate_dot_torrent(
             media=torrent_media,
-            announce=list(os.getenv(f"{str(tracker).upper()}_ANNOUNCE_URL").split(" ")),
+            announce=list(Environment.get_tracker_announce_url(tracker).split(" ")),
             source=config["source"],
             working_folder=working_folder,
             hash_prefix=torrent_info["working_folder"],
@@ -1171,6 +1162,9 @@ for file in upload_queue:
             tracker=tracker,
             torrent_title=torrent_info["torrent_title"]
         )
+
+        # TAGS GENERATION. Generations all the tags that are applicable to this upload
+        translation_utilities.generate_all_applicable_tags(torrent_info)
 
         # -------- Assign specific tracker keys --------
         # This function takes the info we have the dict torrent_info and associates with the right key/values needed for us to use X trackers API

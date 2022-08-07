@@ -41,7 +41,7 @@ import utilities.utils as utils
 # processing modules
 from modules.cache import CacheFactory, CacheVendor
 from modules.torrent_client import Clients, TorrentClientFactory
-
+import modules.env as Environment
 # Used for rich.traceback
 install()
 
@@ -131,10 +131,10 @@ logging.info("[Main] Going to establish connection to the torrent client configu
 # getting an instance of the torrent client factory
 torrent_client_factory = TorrentClientFactory()
 # creating the torrent client using the factory based on the users configuration
-torrent_client = torrent_client_factory.create(Clients[os.getenv('client')])
+torrent_client = torrent_client_factory.create(Clients[Environment.get_client_type()])
 # checking whether the torrent client connection has been created successfully or not
 torrent_client.hello()
-logging.info(f"[Main] Successfully established connection to the torrent client {os.getenv('client')}")
+logging.info(f"[Main] Successfully established connection to the torrent client {Environment.get_client_type()}")
 
 
 logging.info("[Main] Going to establish connection to the cache server configured")
@@ -144,7 +144,7 @@ logging.info("[Main] Going to establish connection to the cache server configure
 # getting an instance of the torrent client factory
 cache_client_factory = CacheFactory()
 # creating the torrent client using the factory based on the users configuration
-cache = cache_client_factory.create(CacheVendor[os.getenv('cache_type')])
+cache = cache_client_factory.create(CacheVendor[Environment.get_cache_type()])
 # checking whether the cache connection has been created successfully or not
 cache.hello()
 logging.info("[Main] Successfully established connection to the cache server configured")
@@ -829,6 +829,11 @@ def reupload_job():
         torrent_path = reupload_utilities.reupload_get_translated_torrent_path(torrent["content_path"])
 
         torrent_info.clear()
+        # This list will contain tags that are applicable to the torrent being uploaded.
+        # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
+        torrent_info["tag_grouping"] = json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+        torrent_info["tags"] = []
+
         # Remove all old temp_files & data from the previous upload
         torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, file=torrent_path, resume=False)
 
@@ -899,7 +904,7 @@ def reupload_job():
         # -------- Dupe check for single tracker uploads --------
         # If user has provided only one Tracker to upload to, then we do dupe check prior to taking screenshots. [if dupe_check is enabled]
         # If there are duplicates in the tracker, then we do not waste time taking and uploading screenshots.
-        if os.getenv('check_dupes') == 'true' and len(upload_to_trackers_working) == 1:
+        if Environment.is_check_dupes() and len(upload_to_trackers_working) == 1:
             tracker = upload_to_trackers_working[0]
             temp_tracker_api_key = api_keys_dict[f"{str(tracker).lower()}_api_key"]
 
@@ -993,7 +998,7 @@ def reupload_job():
             # we take the screenshots and uploads them, then do dupe check for the trackers.
             # dupe check need not be performed if user provided only one tracker.
             # in cases where only one tracker is provided, dupe check will be performed prior to taking screenshots.
-            if os.getenv('check_dupes') == 'true' and len(upload_to_trackers_working) > 1:
+            if Environment.is_check_dupes() and len(upload_to_trackers_working) > 1:
                 console.line(count=2)
                 console.rule(f"Dupe Check [bold]({tracker})[/bold]", style='red', align='center')
                 # Call the function that will search each site for dupes and return a similarity percentage, if it exceeds what the user sets in config.env we skip the upload
@@ -1019,7 +1024,7 @@ def reupload_job():
 
             torrent_utilities.generate_dot_torrent(
                 media=torrent_media,
-                announce=list(os.getenv(f"{str(tracker).upper()}_ANNOUNCE_URL").split(" ")),
+                announce=list(Environment.get_tracker_announce_url(tracker).split(" ")),
                 source=config["source"],
                 working_folder=working_folder,
                 hash_prefix=torrent_info["working_folder"],
@@ -1027,6 +1032,9 @@ def reupload_job():
                 tracker=tracker,
                 torrent_title=torrent_info["torrent_title"]
             )
+
+            # TAGS GENERATION. Generations all the tags that are applicable to this upload
+            translation_utilities.generate_all_applicable_tags(torrent_info)
 
             # -------- Assign specific tracker keys --------
             # This function takes the info we have the dict torrent_info and associates with the right key/values needed for us to use X trackers API
