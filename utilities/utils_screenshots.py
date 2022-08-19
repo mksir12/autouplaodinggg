@@ -11,6 +11,7 @@ import ptpimg_uploader
 from rich.progress import track
 from rich.console import Console
 
+from pprint import pformat
 from ffmpy import FFmpeg
 from pathlib import Path
 from datetime import datetime
@@ -79,6 +80,9 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
         try:
             ptp_img_upload = ptpimg_uploader.upload(api_key=Environment.get_ptpimg_api_key(), files_or_urls=[image_path], timeout=5)
             # Make sure the response we get from ptpimg is a list
+            logging.debug("**********")
+            logging.debug(pformat(ptp_img_upload))
+            logging.debug("**********")
             if not isinstance(ptp_img_upload, ptp_img_upload):
                 return False
             # assuming it is, we can then get the img url, format it into bbcode & return it
