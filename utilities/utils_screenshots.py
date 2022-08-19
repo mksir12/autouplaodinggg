@@ -96,8 +96,8 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
             logging.error('[Screenshots] ptpimg uploaded an image but returned something unexpected (should be a list)')
             console.print("\nUnexpected response from ptpimg upload (should be a list). No image link found\n", style='Red', highlight=False)
             return False
-        except Exception:
-            logging.error('[Screenshots] ptpimg upload failed, double check the ptpimg API Key & try again.')
+        except Exception as ex:
+            logging.error('[Screenshots] ptpimg upload failed, double check the ptpimg API Key & try again.', ex)
             console.print("\nptpimg upload failed. double check the [bold]ptpimg_api_key[/bold] in [bold]config.env[/bold]\n", style='Red', highlight=False)
             return False
 
