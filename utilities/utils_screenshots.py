@@ -11,7 +11,6 @@ import ptpimg_uploader
 from rich.progress import track
 from rich.console import Console
 
-from pprint import pformat
 from ffmpy import FFmpeg
 from pathlib import Path
 from datetime import datetime
