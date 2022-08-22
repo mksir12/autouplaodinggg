@@ -929,7 +929,7 @@ def reupload_job():
 
         # This is used to evenly space out timestamps for screenshots
         # Call function to actually take screenshots & upload them (different file)
-        take_upload_screens(
+        is_screenshots_available = take_upload_screens(
             duration=torrent_info["duration"],
             upload_media_import=torrent_info["raw_video_file"] if "raw_video_file" in torrent_info else torrent_info["upload_media"],
             torrent_title_import=torrent_info["title"],
@@ -938,12 +938,13 @@ def reupload_job():
             skip_screenshots=args.skip_screenshots
         )
 
-        screenshots_data = json.load(open(f"{working_folder}/temp_upload/{torrent_info['working_folder']}screenshots/screenshots_data.json"))
-        torrent_info["bbcode_images"] = screenshots_data["bbcode_images"]
-        torrent_info["bbcode_images_nothumb"] = screenshots_data["bbcode_images_nothumb"]
-        torrent_info["bbcode_thumb_nothumb"] = screenshots_data["bbcode_thumb_nothumb"]
-        torrent_info["url_images"] = screenshots_data["url_images"]
-        torrent_info["data_images"] = screenshots_data["data_images"]
+        if is_screenshots_available:
+            screenshots_data = json.load(open(f"{working_folder}/temp_upload/{torrent_info['working_folder']}screenshots/screenshots_data.json"))
+            torrent_info["bbcode_images"] = screenshots_data["bbcode_images"]
+            torrent_info["bbcode_images_nothumb"] = screenshots_data["bbcode_images_nothumb"]
+            torrent_info["bbcode_thumb_nothumb"] = screenshots_data["bbcode_thumb_nothumb"]
+            torrent_info["url_images"] = screenshots_data["url_images"]
+            torrent_info["data_images"] = screenshots_data["data_images"]
 
         # At this point the only stuff that remains to be done is site specific so we can start a loop here for each site we are uploading to
         logging.info("[Main] Now starting tracker specific tasks")
