@@ -77,7 +77,7 @@ unit-test-mr:
         - junit_report.xml
     expire_in: 30 days
   environment:
-    name: test/reports/$CI_COMMIT_REF_NAME
+    name: test/reports/mr/$CI_COMMIT_REF_NAME
     auto_stop_in: 1 months
     url: $PAGES_URL/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
   rules:
