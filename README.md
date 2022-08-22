@@ -250,14 +250,13 @@ docker run --rm -it \
 <br>
 
 # Roadmap
-### v3.0.2
-- [X] Issue#71: Unable to upload to PTPImg
-- [X] Issue#70: Support SDTV uploads to TDB
+
+### v3.0.3
 - [ ] Improved TMDB metadata search Phase 2
 - [ ] Better MAL id detection
 - [ ] Support for Dual Audio Detection
 
-### v3.0.3
+### v3.0.4
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Ability to reuse already existing torrents.
 
@@ -280,6 +279,12 @@ docker run --rm -it \
 <br>
 
 # Change Log
+
+## **3.0.2**
+    Bug Fixes
+        * Issue#70: Support SDTV uploads to TDB
+        * Issue#71: Unable to upload to PTPImg
+
 
 ## **3.0.1**
     New Trackers
