@@ -252,6 +252,7 @@ docker run --rm -it \
 # Roadmap
 ### v3.0.2
 - [X] Issue#71: Unable to upload to PTPImg
+- [X] Issue#70: Support SDTV uploads to TDB
 - [ ] Improved TMDB metadata search Phase 2
 - [ ] Better MAL id detection
 - [ ] Support for Dual Audio Detection
