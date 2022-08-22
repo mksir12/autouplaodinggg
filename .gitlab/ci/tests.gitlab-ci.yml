@@ -45,6 +45,8 @@ unit-test:
     name: test/reports/$CI_COMMIT_REF_NAME
     auto_stop_in: 2 months
     url: $PAGES_URL/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' || $CI_COMMIT_TAG || $CI_COMMIT_BRANCH
 
 sast:
   stage: test
