@@ -63,8 +63,8 @@ unit-test-mr:
     - sed -i "s;filename=\";filename=\"${SOURCE_DIRECTORY}/;g" coverage.xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
-    name: "test-report-$CI_COMMIT_REF_NAME"
-    expose_as: Unit test and coverage results
+    name: "test-report-mr-$CI_COMMIT_REF_NAME"
+    expose_as: Unit test and coverage results for Merge Request
     paths:
       - coverage.xml
       - junit_report.xml
