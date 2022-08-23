@@ -70,7 +70,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>Site Name</strong></td>
         </th>
         <tr style="text-align: center">
-            <td rowspan="10"><strong>UNIT3D</strong></td>
+            <td rowspan="12"><strong>UNIT3D</strong></td>
             <td><strong>ACM</strong></td>
             <td><strong><a href="https://asiancinema.me">AsianCinema</a></strong></td>
         </tr>
@@ -109,6 +109,14 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
         <tr style="text-align: center">
             <td><strong>RF</strong></td>
             <td><strong><a href="https://reelflix.xyz/">ReelFliX</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>LST</strong></td>
+            <td><strong><a href="https://lst.gg">LST</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>3EVILS</strong></td>
+            <td><strong><a href="https://3evils.net">3Evils</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td rowspan="1"><strong>XBTIT</strong></td>
@@ -242,12 +250,13 @@ docker run --rm -it \
 <br>
 
 # Roadmap
-### v3.0.2
+
+### v3.0.3
 - [ ] Improved TMDB metadata search Phase 2
 - [ ] Better MAL id detection
 - [ ] Support for Dual Audio Detection
 
-### v3.0.3
+### v3.0.4
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Ability to reuse already existing torrents.
 
@@ -271,9 +280,16 @@ docker run --rm -it \
 
 # Change Log
 
+## **3.0.2**
+    Bug Fixes
+        * Issue#70: Support SDTV uploads to TDB
+        * Issue#71: Unable to upload to PTPImg
+
+
 ## **3.0.1**
     New Trackers
         * 3Evils
+        * LST
 
     New Features
         * Added support for tag generation and use for tracker uploads
@@ -281,6 +297,7 @@ docker run --rm -it \
     Bug Fixes
         * Fixing the broken reuploader in v3.0
         * Issue#52: ANT upload does not detect/set Atmos or other parameters
+        * Issue#69: Release group not identified when uploading movie folders
 
 
 ## **3.0**
@@ -317,9 +334,9 @@ docker run --rm -it \
         * Issue#37: Automatic cross-seeding not working
         * Issue#39: Info log says translation needed even when disabled
         * Issue#40: False positive DV detection
-        * Issue:47: TDB uploads fails from auto-reuploader
-        * Issue:51: Setting DV as release group instead of NOGROUP
-        * Issue:61: TVMaze ID argument overridden when no result returned
+        * Issue#47: TDB uploads fails from auto-reuploader
+        * Issue#51: Setting DV as release group instead of NOGROUP
+        * Issue#61: TVMaze ID argument overridden when no result returned
 
 <br>
 

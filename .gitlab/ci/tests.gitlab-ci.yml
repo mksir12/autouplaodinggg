@@ -3,6 +3,7 @@
 #                Unit Tests GG-BOT               #
 # ********************************************** #
 # ********************************************** #
+# Unit test for Parent Repo with report generation
 unit-test:
   stage: test
   image: noobmaster669/gg-bot-base:test-latest
@@ -45,6 +46,42 @@ unit-test:
     name: test/reports/$CI_COMMIT_REF_NAME
     auto_stop_in: 2 months
     url: $PAGES_URL/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
+
+# Unit tests for MRs without any report generation
+unit-test-mr:
+  stage: test
+  image: noobmaster669/gg-bot-base:test-latest
+  variables:
+    SOURCE_DIRECTORY: gg-bot-upload-assistant
+  script:
+    - pip install -r requirements/requirements_test.txt
+    - pip freeze > requirements/requirements_test.txt
+    - pytest -vv --show-capture=stdout --cov-report=html --junitxml=junit_report.xml --cov=./ .
+    - coverage report
+    - coverage xml -o coverage.xml
+    - sed -i "s=<source>.*${SOURCE_DIRECTORY}</source>=<source>./${SOURCE_DIRECTORY}</source>=g" coverage.xml
+    - sed -i "s;filename=\";filename=\"${SOURCE_DIRECTORY}/;g" coverage.xml
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    name: "test-report-mr-$CI_COMMIT_REF_NAME"
+    expose_as: Unit test and coverage results for Merge Request
+    paths:
+      - coverage.xml
+      - junit_report.xml
+      - coverage
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+      junit:
+        - junit_report.xml
+    expire_in: 30 days
+  environment:
+    name: test/reports/mr/$CI_COMMIT_REF_NAME
+    auto_stop_in: 1 months
+    url: $PAGES_URL/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
 sast:
   stage: test

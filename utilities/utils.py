@@ -530,18 +530,22 @@ def display_banner(mode):
 def sanitize_release_group_from_guessit(torrent_info):
     # setting NOGROUP as group if the release_group cannot be identified from guessit
     if "release_group" in torrent_info and len(torrent_info["release_group"]) > 0:
+        logging.debug(f"[Utils] Release group identified by guessit: '{torrent_info['release_group']}'")
         # sometimes, guessit identifies wrong release groups. So we just do another sanity check just to ensure that the release group
         # provided by guessit is correct.
-        if torrent_info["upload_media"].replace(".mkv", "").replace(".mp4", "").endswith(f"-{torrent_info['release_group']}"):
+        # removing the trailing / if present
+        upload_media = torrent_info["upload_media"][:-1] if torrent_info["upload_media"].endswith("/") else torrent_info["upload_media"]
+        if upload_media.replace(".mkv", "").replace(".mp4", "").endswith(f"-{torrent_info['release_group']}"):
             # well the release group identified by guessit seems correct.
+            logging.debug(f"[Utils] Release group identified by guessit: '{torrent_info['release_group']}' passed validation successfully")
             if torrent_info["release_group"].startswith("X-"):
                 # a special case where title ends with DTS-X-EPSILON and guess it extracts release group as X-EPSILON
-                logging.info(f'Guessit identified release group as {torrent_info["release_group"]}. Since this starts with X- (probably from DTS-X-RELEASE_GROUP), overwriting release group as {torrent_info["release_group"][2:]}')
+                logging.info(f'[Utils]Guessit identified release group as {torrent_info["release_group"]}. Since this starts with X- (probably from DTS-X-RELEASE_GROUP), overwriting release group as {torrent_info["release_group"][2:]}')
                 return torrent_info["release_group"][2:]
         else:
-            logging.debug("Release group could not be identified by guessit. Setting release group as NOGROUP")
+            logging.debug("[Utils]Release group could not be identified by guessit. Setting release group as NOGROUP")
             return "NOGROUP"
     else:
-        logging.debug("Release group could not be identified by guessit. Setting release group as NOGROUP")
+        logging.debug("[Utils]Release group could not be identified by guessit. Setting release group as NOGROUP")
         return "NOGROUP"
     return torrent_info["release_group"]

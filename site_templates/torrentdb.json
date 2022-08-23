@@ -321,6 +321,9 @@
             },
             "6": {
                 "hdtv": 1
+            },
+            "7": {
+                "sdtv": 1
             }
         },
         "resolution": {
@@ -391,7 +394,8 @@
             "bluray_encode": "{title} {s00e00} {repack} {screen_size} {uhd} {hybrid} {source} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
             "web": "{title} {s00e00} {repack} {screen_size} {web_source} {web_type} {dv} {hdr} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
             "hdtv": "{title} {s00e00} {repack} {screen_size} {hybrid} {source} {video_codec} {audio_codec} {audio_channels} {release_group}",
-            "dvd": "{title} {s00e00} {edition} {repack} {screen_size} {region} {hybrid} {source} {remux} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}"
+            "dvd": "{title} {s00e00} {edition} {repack} {screen_size} {region} {hybrid} {source} {remux} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
+            "sdtv":  "{title} {s00e00} {edition} {repack} {screen_size} {region} {hybrid} {source} {remux} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}"
         },
         "movie": {
             "bluray_disc": "{title} {year} {edition} {repack} {screen_size} {region} {source} {dv} {hdr} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
@@ -399,7 +403,8 @@
             "bluray_encode": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {dv} {hdr} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
             "web": "{title} {year} {edition} {repack} {screen_size} {hybrid} {web_source} {web_type} {dv} {hdr} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
             "hdtv": "{title} {year} {edition} {repack} {screen_size} {hybrid} {source} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
-            "dvd": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {remux} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}"
+            "dvd": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {remux} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}",
+            "sdtv": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {remux} {video_codec} {audio_codec} {atmos} {audio_channels} {release_group}"
         }
     },
     "torrent_title_translation" : {

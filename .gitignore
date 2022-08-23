@@ -133,3 +133,4 @@ dmypy.json
 .pyre/
 entry.py
 *server.py
+tvmaze_search.py
