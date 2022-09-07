@@ -1,3 +1,9 @@
+## **3.0.3**
+    Bug Fixes
+        * Issue#77: NOGROUP identified as group when title has spaces instead of dot
+
+<br>
+
 ## **3.0.2**
     Bug Fixes
         * Issue#70: Support SDTV uploads to TDB
