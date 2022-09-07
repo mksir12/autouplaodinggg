@@ -186,6 +186,11 @@ def test_create_temp_upload_itself():
             "NOGROUP",
             id="group_from_guessit_when_no_group"
         ),
+        pytest.param(
+            { "release_group" : "RELEASE_GROUP", "upload_media" : "/data/Movies/Miss Sadie Thompson 1953 1080p Blu-ray Remux AVC FLAC 2.0 - RELEASE_GROUP.mkv" },
+            "RELEASE_GROUP",
+            id="group_from_guessit_with_space_in_title"
+        ),
     ]
 )
 def test_sanitize_release_group_from_guessit(torrent_info, expected):
