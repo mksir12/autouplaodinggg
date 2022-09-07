@@ -255,6 +255,7 @@ docker run --rm -it \
 - [ ] Improved TMDB metadata search Phase 2
 - [ ] Better MAL id detection
 - [ ] Support for Dual Audio Detection
+- [X] Issue#71: Unable to upload to PTPImg
 
 ### v3.0.4
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
