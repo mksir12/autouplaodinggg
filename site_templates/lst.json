@@ -3,7 +3,7 @@
     "url": "https://lst.gg",
     "upload_form": "https://lst.gg/api/torrents/upload?api_token={api_key}",
     "torrents_search": "https://lst.gg/api/torrents/filter?api_token={api_key}",
-    "source": "LST",
+    "source": "LST.GG",
     "platform": "UNIT3D",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
