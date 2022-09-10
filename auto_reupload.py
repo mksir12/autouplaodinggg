@@ -879,9 +879,12 @@ def reupload_job():
         if torrent_info["tmdb"] == "0" and torrent_info["imdb"] == "0" and torrent_info["tvmaze"] == "0":
             # here we couldn't select a tmdb id automatically / no results from tmdb. Hence we mark this as a special case and stop the upload of the torrent
             # updating the voerall status of the torrent
+            logging.error("[Main] Marking upload as TMDB Identification failed.")
             reupload_utilities.update_field(torrent["hash"], "status", reupload_utilities.TorrentStatus.TMDB_IDENTIFICATION_FAILED, False, cache)
             reupload_utilities.update_field(torrent["hash"], "possible_matches", possible_matches, True, cache)
             continue
+        else:
+            logging.info("[Main] Obtained metadata database ids. Proceeding with upload process")
 
         original_title = torrent_info["title"]
         original_year = torrent_info["year"] if "year" in torrent_info else ""

@@ -43,6 +43,9 @@ def get_bdinfo_script_location(default=None):
 def get_tmdb_api_key(default=None):
     return os.getenv('TMDB_API_KEY', default)
 
+def get_imdb_api_key(default=None):
+    return os.getenv("IMDB_API_KEY", default)
+
 def get_tmdb_result_auto_select_threshold(default=None):
     return os.getenv("tmdb_result_auto_select_threshold", default)
 
@@ -161,3 +164,15 @@ def get_cache_port():
 def get_cache_database():
     return os.getenv('cache_database')
 # Cache properties
+
+
+# GGBOT Metadata Aggregator
+def is_aggregator_enabled():
+    return False
+
+def gg_bot_metadata_aggregator():
+    return None
+
+def can_share_with_community():
+    return False
+# GGBOT Metadata Aggregator

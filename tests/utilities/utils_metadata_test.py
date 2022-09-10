@@ -101,6 +101,7 @@ def test_tmdb_movie_no_results(mocker, monkeypatch):
         "tmdb": "0",
         "imdb": "0",
         "tvmaze": "0",
+        "tvdb": "0",
         "possible_matches": None
     }
 
@@ -255,7 +256,7 @@ def test_metadata_get_external_id(id_site, id_value, external_site, content_type
     mock_response_file_data = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/external_id_search/{mock_response_file}.json")))
     mocker.patch("requests.get", return_value=mock_response_file_data)
 
-    assert metadata._metadata_get_external_id(id_site, id_value, external_site, content_type) == expected
+    assert metadata._get_external_id(id_site, id_value, external_site, content_type) == expected
 
 
 def __api_return_values(url, **kwargs):
@@ -395,6 +396,7 @@ def test_fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode,
 
     possible_match = metadata.fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode)
     print(torrent_info)
+    print(expected)
     print(possible_match)
     assert torrent_info["imdb"] == expected["imdb"]
     assert torrent_info["tmdb"] == expected["tmdb"]
@@ -404,3 +406,108 @@ def test_fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode,
     else:
         assert possible_match == json.load(open(expected["possible_match"]))
 
+
+@pytest.mark.parametrize(
+    ("imdbId", "expected"),
+    [
+        pytest.param("tt0110413", {
+            "imdb": "tt0110413",
+            "tmdb": "101",
+            "tvdb": "0"
+        }, id="imdbId_external_for_movie"),
+        pytest.param("tt0168366", {
+            "imdb": "tt0168366",
+            "tmdb": "60572",
+            "tvdb": "76703"
+        }, id="imdbId_external_for_tv"),
+        pytest.param("tt12851524", {
+            "imdb": "tt12851524",
+            "tmdb": "0",
+            "tvdb": "399959"
+        }, id="imdbId_external_for_tv_no_tmdb"),
+        pytest.param("tt10857160", {
+            "imdb": "tt10857160",
+            "tmdb": "92783",
+            "tvdb": "0"
+        }, id="imdbId_external_for_tv_no_tvdb"),
+        pytest.param("tt128515242", None, id="imdbId_external_invalid_imdb_id")
+    ]
+)
+def test_get_external_ids_from_imdb(imdbId, expected, mocker):
+    mocker.patch("os.getenv", return_value=imdbId)
+    mock_response_file_data = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/imdb_external_ids/{imdbId}.json")))
+    mocker.patch("requests.get", return_value=mock_response_file_data)
+
+    assert expected == metadata._get_external_ids_from_imdb(imdbId)
+
+
+def test_get_external_ids_from_imdb_no_api_key():
+    assert None == metadata._get_external_ids_from_imdb("imdbId")
+
+
+@pytest.mark.parametrize(
+    ("content_type", "tmdb_id", "expected"),
+    [
+        pytest.param("movie", "634649", {
+            "imdb": "tt10872600",
+            "tmdb": "634649",
+            "tvdb": "0"
+        }, id="tmdb_external_for_movie"),
+        pytest.param("episode", "76479", {
+            "imdb": "tt1190634",
+            "tmdb": "76479",
+            "tvdb": "355567"
+        }, id="tmdb_external_for_tv"),
+        pytest.param("episode", "60625", {
+            "imdb": "0",
+            "tmdb": "60625",
+            "tvdb": "275274"
+        }, id="tmdb_external_for_tv_no_imdb"),
+        pytest.param("movie", "453395", {
+            "imdb": "tt9419884",
+            "tmdb": "453395",
+            "tvdb": "0"
+        }, id="tmdb_external_for_tv_no_tvdb"),
+        pytest.param("episode", "invalid", None, id="tmdb_external_for_tv_invalid_tmdb_id")
+    ]
+)
+def test_get_external_ids_from_tmdb(content_type, tmdb_id, expected, mocker):
+    mocker.patch("os.getenv", return_value=tmdb_id)
+    mock_response_file_data = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb_external_ids/{content_type}/{tmdb_id}.json")))
+    mocker.patch("requests.get", return_value=mock_response_file_data)
+
+    assert expected == metadata._get_external_ids_from_tmdb(content_type, tmdb_id)
+
+
+@pytest.mark.parametrize(
+    ("tvmaze", "expected"),
+    [
+        pytest.param("34650", {
+            "imdb": "tt7772602",
+            "tvdb": "347645",
+            "tvmaze": "34650"
+        }, id="tvmaze_external_for_tv"),
+        pytest.param("100", {
+            "imdb": "tt1595859",
+            "tvdb": "0",
+            "tvmaze": "100"
+        }, id="tvmaze_external_for_tv_no_tvdb"),
+        pytest.param("101", {
+            "imdb": "0",
+            "tvdb": "95451",
+            "tvmaze": "101"
+        }, id="tvmaze_external_for_tv_no_imdb"),
+    ]
+)
+def test_get_external_ids_from_tvmaze(tvmaze, expected, mocker):
+    mock_response_file_data = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tvmaze_external_ids/{tvmaze}.json")))
+    mocker.patch("requests.get", return_value=mock_response_file_data)
+
+    assert expected == metadata._get_external_ids_from_tvmaze(tvmaze)
+
+
+def test_get_external_ids_from_tvmaze_invalid(mocker):
+    mock_response_file_data = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tvmaze_external_ids/invalid.json")))
+    mocker.patch("requests.get", return_value=mock_response_file_data)
+
+    assert None == metadata._get_external_ids_from_tvmaze("invalid")
