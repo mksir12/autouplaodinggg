@@ -23,37 +23,17 @@ class TMDBResponse:
 
 
 
-def test_tmdb_movie_auto_select(mocker):
+def test_tmdb_movie_auto_select(mocker, monkeypatch):
     query_title = "Gods of Egypt"
     query_year = "2016"
     content_type = "movie"
 
     tmdb_response = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Gods of Egypt.json")))
-    mocker.patch("requests.get", return_value=tmdb_response)
+    tmdb_external_response = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Gods of Egypt_external.json")))
+    tmdb_responses = iter([tmdb_response, tmdb_external_response])
+    monkeypatch.setattr('requests.get', lambda url: next(tmdb_responses))
 
     assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Gods of Egypt.json"))
-
-
-def test_tmdb_movie_cannot_auto_select(mocker):
-    query_title = "Uncharted"
-    query_year = "2022"
-    content_type = "movie"
-
-    tmdb_response = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Uncharted.json")))
-    mocker.patch("requests.get", return_value=tmdb_response)
-    mocker.patch("rich.prompt.Prompt.ask", return_value="1")
-    assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Uncharted.json"))
-
-
-def test_tmdb_tv_auto_select(mocker):
-    query_title = "Bosch Legacy"
-    query_year = ""
-    content_type = "episode"
-
-    tmdb_response = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Bosch Legacy.json")))
-    mocker.patch("requests.get", return_value=tmdb_response)
-
-    assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Bosch Legacy.json"))
 
 
 def test_tmdb_movie_loose_search(mocker, monkeypatch):
@@ -69,6 +49,33 @@ def test_tmdb_movie_loose_search(mocker, monkeypatch):
 
     assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Kung Fu Panda 1.json"))
 
+
+def test_tmdb_movie_cannot_auto_select(mocker, monkeypatch):
+    query_title = "Uncharted"
+    query_year = "2022"
+    content_type = "movie"
+
+    tmdb_response = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Uncharted.json")))
+    tmdb_response_external = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Uncharted_external.json")))
+    tmdb_responses = iter([tmdb_response, tmdb_response_external])
+
+    monkeypatch.setattr('requests.get', lambda url: next(tmdb_responses))
+    mocker.patch("rich.prompt.Prompt.ask", return_value="1")
+    assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Uncharted.json"))
+
+
+def test_tmdb_tv_auto_select(mocker, monkeypatch):
+    query_title = "Bosch Legacy"
+    query_year = ""
+    content_type = "episode"
+
+    tmdb_response = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Bosch Legacy.json")))
+    tmdb_response_external = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Bosch Legacy_external.json")))
+    tvmaze_search_by_imdb = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Bosch Legacy_tvmaze_imdb.json")))
+    tmdb_responses = iter([tmdb_response, tmdb_response_external, tvmaze_search_by_imdb])
+    monkeypatch.setattr('requests.get', lambda url: next(tmdb_responses))
+
+    assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Bosch Legacy.json"))
 
 def __auto_reuploader(key, default=None):
     if key == "tmdb_result_auto_select_threshold":
@@ -115,16 +122,11 @@ def test_tmdb_movie_loosely_configured_reuploader(mocker, monkeypatch):
 
     tmdb_response_strict = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Kung Fu Panda 1_strict.json")))
     tmdb_response_loose = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Kung Fu Panda 1.json")))
-    tmdb_responses = iter([tmdb_response_strict, tmdb_response_loose])
+    tmdb_response_external = TMDBResponse(json.load(open(f"{working_folder}/tests/resources/tmdb/results/Kung Fu Panda 1_external.json")))
+    tmdb_responses = iter([tmdb_response_strict, tmdb_response_loose, tmdb_response_external])
     monkeypatch.setattr('requests.get', lambda url: next(tmdb_responses))
     mocker.patch('os.getenv', side_effect=__auto_reuploader_loosely_configured)
 
-    expected = {
-        "tmdb": "0",
-        "imdb": "0",
-        "tvmaze": "0",
-        "possible_matches": None
-    }
     assert metadata._metadata_search_tmdb_for_id(query_title, query_year, content_type, False) == json.load(open(f"{working_folder}/tests/resources/tmdb/expected/Kung Fu Panda 1_loose_reuploader.json"))
 
 
@@ -203,52 +205,6 @@ def test_tmdb_movie_no_results_exit(mocker, monkeypatch):
             "tmdb_available_need_tvmaze_for_episode", # mock_response_file
             "0", # expected
             id="tmdb_available_need_tvmaze_for_episode" # tvmaze can be obtained only using imdb id
-        ),
-        pytest.param(
-            "tmdb", # id_site
-            "123456", # id_value
-            "imdb", # external_site
-            "movie", # content_type
-            "tmdb_available_need_imdb_for_movie", # mock_response_file
-            "tt0145487", # expected
-            id="tmdb_available_need_imdb_for_movie" # tvmaze can be obtained only using imdb id
-        ),
-        pytest.param(
-            "tmdb", # id_site
-            "123456", # id_value
-            "imdb", # external_site
-            "movie", # content_type
-            "tmdb_available_need_imdb_for_movie", # mock_response_file
-            "tt0145487", # expected
-            id="tmdb_available_need_imdb_for_movie" # tvmaze can be obtained only using imdb id
-        ),
-        pytest.param(
-            "tmdb", # id_site
-            "123456", # id_value
-            "imdb", # external_site
-            "episode", # content_type
-            "tmdb_available_need_imdb_for_episode", # mock_response_file
-            "tt0898266", # expected
-            id="tmdb_available_need_imdb_for_episode" # tvmaze can be obtained only using imdb id
-        ),
-        pytest.param(
-            "tmdb", # id_site
-            "123456", # id_value
-            "imdb", # external_site
-            "episode", # content_type
-            "tmdb_available_need_imdb_for_movie_error", # mock_response_file
-            "0", # expected
-            id="tmdb_available_need_imdb_for_movie_error" # tvmaze can be obtained only using imdb id
-        ),
-        # TVMAZE Available
-        pytest.param(
-            "tvmaze", # id_site
-            "123123", # id_value
-            "imdb", # external_site
-            "episode", # content_type
-            "tvmaze_available_need_imdb_for_episode", # mock_response_file
-            "tt7772602", # expected
-            id="tvmaze_available_need_imdb_for_episode" # tvmaze can be obtained only using imdb id
         ),
     ]
 )
