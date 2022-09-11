@@ -253,14 +253,19 @@ docker run --rm -it \
 
 ### v3.0.3
 - [ ] Improved TMDB metadata search Phase 2
-- [ ] Better MAL id detection
 - [ ] Support for Dual Audio Detection
+- [ ] Support for detecting and identifying subtitle information.
 
 ### v3.0.4
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Ability to reuse already existing torrents.
+- [ ] New Tracker: PTP
+- [ ] New Image Host: Pixhost
 
 ### Backlogs
+- [ ] EPIC: GGBOT Metadata Aggregator
+- [ ] EPIC: GGBOT P2P Network Relay
+- [ ] Better MAL id detection
 - [ ] EPIC: Migrate GG-BOT Runtime to work with GG-BOT Auto ReUploader
 - [ ] EPIC: Refactor GG-BOT Admin to handle GG-BOT Auto ReUploader
 - [ ] Improved Full Disk Support
@@ -285,6 +290,7 @@ docker run --rm -it \
         * Issue#70: Support SDTV uploads to TDB
         * Issue#71: Unable to upload to PTPImg
 
+<br>
 
 ## **3.0.1**
     New Trackers
@@ -299,6 +305,7 @@ docker run --rm -it \
         * Issue#52: ANT upload does not detect/set Atmos or other parameters
         * Issue#69: Release group not identified when uploading movie folders
 
+<br>
 
 ## **3.0**
     New Trackers
