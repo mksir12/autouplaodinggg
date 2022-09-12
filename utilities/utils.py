@@ -535,6 +535,7 @@ def sanitize_release_group_from_guessit(torrent_info):
         # provided by guessit is correct.
         # removing the trailing / if present
         upload_media = torrent_info["upload_media"][:-1] if torrent_info["upload_media"].endswith("/") else torrent_info["upload_media"]
+        # if title has spaces in it, then we remove them. [...H.264 - RELEASE_GROUP  ==> ...H.264-RELEASE_GROUP]
         upload_media = upload_media.replace(" ", "")
         if upload_media.replace(".mkv", "").replace(".mp4", "").endswith(f"-{torrent_info['release_group']}"):
             # well the release group identified by guessit seems correct.
