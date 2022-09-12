@@ -1,0 +1,61 @@
+{
+    "id": 100,
+    "url": "https://www.tvmaze.com/shows/100/blue-bloods",
+    "name": "Blue Bloods",
+    "type": "Scripted",
+    "language": "English",
+    "genres": [
+        "Drama",
+        "Crime"
+    ],
+    "status": "Running",
+    "runtime": 60,
+    "averageRuntime": 60,
+    "premiered": "2010-09-24",
+    "ended": null,
+    "officialSite": "http://www.cbs.com/shows/blue_bloods/",
+    "schedule": {
+        "time": "22:00",
+        "days": [
+            "Friday"
+        ]
+    },
+    "rating": {
+        "average": 8.2
+    },
+    "weight": 99,
+    "network": {
+        "id": 2,
+        "name": "CBS",
+        "country": {
+            "name": "United States",
+            "code": "US",
+            "timezone": "America/New_York"
+        },
+        "officialSite": "https://www.cbs.com/"
+    },
+    "webChannel": null,
+    "dvdCountry": null,
+    "externals": {
+        "tvrage": 25756,
+        "thetvdb": null,
+        "imdb": "tt1595859"
+    },
+    "image": {
+        "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/361/903737.jpg",
+        "original": "https://static.tvmaze.com/uploads/images/original_untouched/361/903737.jpg"
+    },
+    "summary": "<p><b>Blue Bloods </b>is a drama about a multi-generational family of cops dedicated to New York City law enforcement. Frank Reagan is the New York Police Commissioner and heads both the police force and the Reagan brood. He runs his department as diplomatically as he runs his family, even when dealing with the politics that plagued his unapologetically bold father, Henry, during his stint as Chief. A source of pride and concern for Frank is his eldest son Danny, a seasoned detective, family man and Iraq War vet who on occasion uses dubious tactics to solve cases with his loyal and tough partner, Detective Jackie Curatola. The Reagan women in the family include Erin, a N.Y. Assistant D.A., who also serves as the legal compass for her siblings and father, and single parent to her teenage daughter Nicky; and Linda, Danny's supportive wife. Jamie is the youngest Reagan, a recent grad of Harvard Law and the family's \"golden boy.\" Unable to deny the family tradition, Jamie has decided to give up a lucrative future in law and follow in the family footsteps as a cop.</p>",
+    "updated": 1661957982,
+    "_links": {
+        "self": {
+            "href": "https://api.tvmaze.com/shows/100"
+        },
+        "previousepisode": {
+            "href": "https://api.tvmaze.com/episodes/2310009"
+        },
+        "nextepisode": {
+            "href": "https://api.tvmaze.com/episodes/2351668"
+        }
+    }
+}

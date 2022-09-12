@@ -1,0 +1,55 @@
+{
+    "id": 60175,
+    "url": "https://www.tvmaze.com/shows/60175/bosch-legacy",
+    "name": "Bosch: Legacy",
+    "type": "Scripted",
+    "language": "English",
+    "genres": [
+        "Drama",
+        "Crime",
+        "Legal"
+    ],
+    "status": "Running",
+    "runtime": null,
+    "averageRuntime": 47,
+    "premiered": "2022-05-06",
+    "ended": null,
+    "officialSite": "https://www.amazon.com/dp/B09PQPSX34/",
+    "schedule": {
+        "time": "",
+        "days": [
+            "Friday"
+        ]
+    },
+    "rating": {
+        "average": 8.5
+    },
+    "weight": 98,
+    "network": null,
+    "webChannel": {
+        "id": 251,
+        "name": "Amazon Freevee",
+        "country": null,
+        "officialSite": null
+    },
+    "dvdCountry": null,
+    "externals": {
+        "tvrage": null,
+        "thetvdb": 414553,
+        "imdb": "tt14168162"
+    },
+    "image": {
+        "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/399/998258.jpg",
+        "original": "https://static.tvmaze.com/uploads/images/original_untouched/399/998258.jpg"
+    },
+    "summary": "<p>Harry Bosch, retired homicide detective turned Private Investigator, fights to work cases without the authority his former job provided. Attorney Honey \"Money\" Chandler, having survived an attempted murder, struggles to maintain her faith in the justice system. And Maddie Bosch discovers the possibilities and challenges of being a rookie patrol cop on the streets of Los Angeles.</p>",
+    "updated": 1653788337,
+    "_links": {
+        "self": {
+            "href": "https://api.tvmaze.com/shows/60175"
+        },
+        "previousepisode": {
+            "href": "https://api.tvmaze.com/episodes/2308805"
+        }
+    }
+}

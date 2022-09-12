@@ -102,13 +102,12 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
                                            r'(?P<VC1>VC(-1|1))', torrent_info["raw_file_name"], re.IGNORECASE)
     regex_video_codec = None
     if filename_video_codec_regex is not None:
-        rename_codec = {'VC1': 'VC-1', 'MPEG2': 'MPEG-2',
-                        'H264': 'H.264', 'H265': 'H.265'}
+        rename_codec = {'VC1': 'VC-1', 'MPEG2': 'MPEG-2', 'H264': 'H.264', 'H265': 'H.265'}
 
         for video_codec in ["HEVC", "AVC", "H265", "H264", "x265", "x264", "MPEG2", "VC1"]:
             if filename_video_codec_regex.group(video_codec) is not None:
                 # Now check to see if the 'codec' is in the rename_codec dict we created earlier
-                if video_codec in rename_codec.keys():
+                if video_codec in rename_codec:
                     regex_video_codec = rename_codec[video_codec]
                 else:
                     # if this executes its AVC/HEVC or x265/x264
