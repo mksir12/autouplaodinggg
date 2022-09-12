@@ -563,7 +563,7 @@ def fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb
         # we need to do this operation twice. Since suppose user provided a tvmaze id, which will give us tvdb.
         # using this tvdb id we might be able to resolve imdb and tvdb ids. But without attempting for a second time we won't be
         # able to get these data.
-        for i in range(0, 2):
+        for _ in range(0, 2):
             # Filling all the database ids from the external id requests
             if "imdb" in ids_present and any(x in ids_missing and torrent_info[x] == "0" for x in ['tmdb', 'tvdb']):
                 # if imdb is available and imdb api is enabled, then we make a request to imdb api and gets the list of external ids

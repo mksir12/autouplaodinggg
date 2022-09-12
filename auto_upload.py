@@ -509,7 +509,7 @@ def identify_miscellaneous_details(guess_it_result):
 
     for word in hdr_hybrid_remux_keyword_search:
         word = str(word)
-        if word in key_words.keys():
+        if word in key_words:
             logging.info(f"extracted the key_word: {word} from the filename")
             # special case. TODO find a way to generalize and handle this
             if word == 'ddpa':
