@@ -552,3 +552,115 @@ def test_user_gave_tvmaze_for_movie(mocker, monkeypatch):
     assert torrent_info["tmdb"] == expected_ids["tmdb"]
     assert torrent_info["tvmaze"] == expected_ids["tvmaze"]
     assert torrent_info["tvdb"] == expected_ids["tvdb"]
+
+
+def test_user_gave_imdb_for_tv(mocker, monkeypatch):
+    auto_mode = False
+    torrent_info = { "type":"episode" }
+    tmdb_id = None
+    imdb_id = "tt10857160"
+    tvmaze_id = None
+    tvdb_id= None
+    expected_ids = {"imdb": "tt10857160", "tmdb": "92783", "tvmaze": "43517", "tvdb": "368613"}
+
+    mocker.patch("os.getenv", return_value="IMDB_API_KEY")
+
+
+    imdb_external_response = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_imdb/imdb_external.json")))
+    tmdb_external_response = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_imdb/tmdb_external.json")))
+    tvmaze_from_imdb = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_imdb/tvmaze_from_imdb.json")))
+    api_responses = iter([imdb_external_response, tmdb_external_response, tvmaze_from_imdb])
+    monkeypatch.setattr('requests.get', lambda url: next(api_responses))
+
+    possible_matches = metadata.fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb_id)
+    assert possible_matches is None
+    assert torrent_info["imdb"] == expected_ids["imdb"]
+    assert torrent_info["tmdb"] == expected_ids["tmdb"]
+    assert torrent_info["tvmaze"] == expected_ids["tvmaze"]
+    assert torrent_info["tvdb"] == expected_ids["tvdb"]
+
+
+def test_user_gave_tmdb_for_tv(mocker, monkeypatch):
+    auto_mode = False
+    torrent_info = { "type":"episode" }
+    tmdb_id = "92783"
+    imdb_id = None
+    tvmaze_id = None
+    tvdb_id= None
+    expected_ids = {"imdb": "tt10857160", "tmdb": "92783", "tvmaze": "43517", "tvdb": "368613"}
+
+    mocker.patch("os.getenv", return_value="IMDB_API_KEY")
+
+    tmdb_external_response = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tmdb/tmdb_external.json")))
+    tvmaze_from_imdb = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tmdb/tvmaze_from_imdb.json")))
+    api_responses = iter([tmdb_external_response, tvmaze_from_imdb])
+    monkeypatch.setattr('requests.get', lambda url: next(api_responses))
+
+    possible_matches = metadata.fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb_id)
+    assert possible_matches is None
+    assert torrent_info["imdb"] == expected_ids["imdb"]
+    assert torrent_info["tmdb"] == expected_ids["tmdb"]
+    assert torrent_info["tvmaze"] == expected_ids["tvmaze"]
+    assert torrent_info["tvdb"] == expected_ids["tvdb"]
+
+
+def test_user_gave_tvmaze_for_tv(mocker, monkeypatch):
+    auto_mode = False
+    torrent_info = { "type":"episode" }
+    tmdb_id = None
+    imdb_id = None
+    tvmaze_id = "43517"
+    tvdb_id= None
+    expected_ids = {"imdb": "tt10857160", "tmdb": "92783", "tvmaze": "43517", "tvdb": "368613"}
+
+    mocker.patch("os.getenv", return_value="IMDB_API_KEY")
+
+    tvmaze_details_response = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tvmaze/tvmaze_details.json")))
+    tmdb_search_by_tvdb = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tvmaze/tmdb_search_by_tvdb.json")))
+    api_responses = iter([tvmaze_details_response, tmdb_search_by_tvdb])
+
+    monkeypatch.setattr('requests.get', lambda url: next(api_responses))
+
+    possible_matches = metadata.fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb_id)
+    assert possible_matches is None
+    assert torrent_info["imdb"] == expected_ids["imdb"]
+    assert torrent_info["tmdb"] == expected_ids["tmdb"]
+    assert torrent_info["tvmaze"] == expected_ids["tvmaze"]
+    assert torrent_info["tvdb"] == expected_ids["tvdb"]
+
+
+def test_user_gave_tvdb_for_tv(mocker, monkeypatch):
+    auto_mode = False
+    torrent_info = { "type":"episode" }
+    tmdb_id = None
+    imdb_id = None
+    tvmaze_id = None
+    tvdb_id= "368613"
+    expected_ids = {"imdb": "tt10857160", "tmdb": "92783", "tvmaze": "43517", "tvdb": "368613"}
+
+    mocker.patch("os.getenv", return_value="IMDB_API_KEY")
+
+    tmdb_search_by_tvdb = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tvdb/tmdb_search_by_tvdb.json")))
+    tvmaze_search_by_tvdb = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tvdb/tvmaze_search_by_tvdb.json")))
+    tmdb_external = TMDBResponse(json.load(
+        open(f"{working_folder}/tests/resources/user_provided_metadata_arguments/{torrent_info['type']}/user_provided_tvdb/tmdb_external.json")))
+
+    api_responses = iter([tmdb_search_by_tvdb, tvmaze_search_by_tvdb, tmdb_external])
+
+    monkeypatch.setattr('requests.get', lambda url: next(api_responses))
+
+    possible_matches = metadata.fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb_id)
+    assert possible_matches is None
+    assert torrent_info["imdb"] == expected_ids["imdb"]
+    assert torrent_info["tmdb"] == expected_ids["tmdb"]
+    assert torrent_info["tvmaze"] == expected_ids["tvmaze"]
+    assert torrent_info["tvdb"] == expected_ids["tvdb"]

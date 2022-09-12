@@ -595,16 +595,10 @@ def fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb
 
                     if "imdb" in ids_missing:
                         if torrent_info["tmdb"] != "0":
-                            torrent_info["imdb"] = _get_external_id(id_site="tmdb", id_value=torrent_info["tmdb"], external_site="imdb", content_type=torrent_info["type"])
-                            if torrent_info["imdb"] != "0":
-                                ids_missing.remove("imdb")
-                                ids_present.append("imdb")
+                             _fill_ids_from_external_response(_get_external_ids_from_tmdb(torrent_info["type"], torrent_info["tmdb"]), torrent_info, ids_missing, ids_present)
 
                         if torrent_info["tvmaze"] != "0" and "imdb" in ids_missing:
-                            torrent_info["imdb"] = _get_external_id(id_site="tvmaze", id_value=torrent_info["tvmaze"], external_site="imdb", content_type=torrent_info["type"])
-                            if torrent_info["imdb"] != "0":
-                                ids_missing.remove("imdb")
-                                ids_present.append("imdb")
+                            _fill_ids_from_external_response(_get_external_ids_from_tvmaze(torrent_info["tvmaze"]), torrent_info, ids_missing, ids_present)
             # end of torrent_info["type"] == "episode"
 
         logging.info("[MetadataUtils] Finished fetching external ids from the provided ids. Information collected so far...")
