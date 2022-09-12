@@ -370,12 +370,11 @@ def metadata_compare_tmdb_data_local(torrent_info):
     get_media_info_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key={Environment.get_tmdb_api_key()}"
 
     try:
+        logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key=<REDACTED>")
         get_media_info = requests.get(get_media_info_url).json()
     except Exception:
         logging.exception('[MetadataUtils] Failed to get TVDB and MAL id from TMDB.')
         return title, year, tvdb, mal
-
-    logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key=<REDACTED>")
 
     # Check the genres for 'Animation', if we get a hit we should check for a MAL ID just in case
     if "genres" in get_media_info:
@@ -637,6 +636,12 @@ def fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb
                 torrent_info["tvmaze"] = _get_external_id(id_site="tvdb", id_value=torrent_info["tvdb"], external_site="tvmaze", content_type=torrent_info["type"])
                 if torrent_info["tvmaze"] != "0":
                     ids_missing.remove("tvmaze")
+
+        logging.info("[MetadataUtils] Metadata Information collected after individual searches...")
+        logging.info(f'[MetadataUtils] IMDB ID: {torrent_info["imdb"]}')
+        logging.info(f'[MetadataUtils] TMDB ID: {torrent_info["tmdb"]}')
+        logging.info(f'[MetadataUtils] TVMAZE ID: {torrent_info["tvmaze"]}')
+        logging.info(f'[MetadataUtils] TVDB ID: {torrent_info["tvdb"]}')
 
         # once we try to resolve everything and still we couldn't get tmdb, then we need to fall back to search
         if torrent_info["tmdb"] == "0":
