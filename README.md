@@ -257,17 +257,17 @@ docker run --rm -it \
 - [ ] Support for detecting and identifying subtitle information.
 
 ### v3.0.4
-- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
-- [ ] Ability to reuse already existing torrents.
 - [ ] New Tracker: PTP
 - [ ] New Image Host: Pixhost
 
 ### Backlogs
+- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] EPIC: GGBOT Metadata Aggregator
 - [ ] EPIC: GGBOT P2P Network Relay
-- [ ] Better MAL id detection
 - [ ] EPIC: Migrate GG-BOT Runtime to work with GG-BOT Auto ReUploader
 - [ ] EPIC: Refactor GG-BOT Admin to handle GG-BOT Auto ReUploader
+- [ ] Better MAL id detection
+- [ ] Ability to reuse already existing torrents.
 - [ ] Improved Full Disk Support
     - [ ] Support for Bluray Distributors
     - [ ] Detect Bluray disk region automatically
