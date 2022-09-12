@@ -252,7 +252,7 @@ docker run --rm -it \
 # Roadmap
 
 ### v3.0.3
-- [ ] Improved TMDB metadata search Phase 2
+- [X] Improved TMDB metadata search Phase 2
 - [ ] Support for Dual Audio Detection
 - [ ] Support for detecting and identifying subtitle information.
 
