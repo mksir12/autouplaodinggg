@@ -84,6 +84,7 @@ def test_take_upload_screens_1_screenshots(mocker):
         assert completed_mark.readline() == "ALL_SCREENSHOT_UPLOADED_SUCCESSFULLY"
         completed_mark.close()
 
+
 def screenshot_side_effect_pixhost(key, default=None):
     if key == "num_of_screenshots":
         return "1"
