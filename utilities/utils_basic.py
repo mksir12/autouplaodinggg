@@ -102,8 +102,7 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
 
         Return value (dv, hdr, video_codec)
     """
-    logging.debug(
-        f"[BasicUtils] Dumping torrent_info before video_codec identification. {pformat(torrent_info)}")
+    logging.debug(f"[BasicUtils] Dumping torrent_info before video_codec identification. {pformat(torrent_info)}")
     if is_disc and torrent_info["bdinfo"] is not None:
         return bdinfo_utilities.bdinfo_get_video_codec_from_bdinfo(torrent_info["bdinfo"])
 

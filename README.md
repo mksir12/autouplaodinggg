@@ -256,12 +256,12 @@ docker run --rm -it \
 - [X] Accept TVDB id from runtime argument
 - [X] Updated source for lst
 - [X] Issue#71: Unable to upload to PTPImg
-- [ ] Support for Dual Audio Detection
+- [X] New Image Host: Pixhost
 - [ ] Support for detecting and identifying subtitle information.
 
 ### v3.0.4
 - [ ] New Tracker: PTP
-- [ ] New Image Host: Pixhost
+- [ ] Support for Dual Audio Detection
 
 ### Backlogs
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
