@@ -70,7 +70,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>Site Name</strong></td>
         </th>
         <tr style="text-align: center">
-            <td rowspan="12"><strong>UNIT3D</strong></td>
+            <td rowspan="13"><strong>UNIT3D</strong></td>
             <td><strong>ACM</strong></td>
             <td><strong><a href="https://asiancinema.me">AsianCinema</a></strong></td>
         </tr>
@@ -117,6 +117,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
         <tr style="text-align: center">
             <td><strong>3EVILS</strong></td>
             <td><strong><a href="https://3evils.net">3Evils</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>TELLY</strong></td>
+            <td><strong><a href="https://telly.wtf">Telly</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td rowspan="1"><strong>XBTIT</strong></td>
@@ -257,6 +261,7 @@ docker run --rm -it \
 - [X] Updated source for lst
 - [X] Issue#71: Unable to upload to PTPImg
 - [X] New Image Host: Pixhost
+- [X] Restored tracker: Telly
 - [ ] Support for detecting and identifying subtitle information.
 
 ### v3.0.4
