@@ -326,6 +326,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
         # `-itsoffset -2` added for Frame accurate screenshot
         print(base_path)
         print(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
+        print(Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/').is_dir())
         if not Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png').is_file():
             FFmpeg(inputs={upload_media_import: f'-loglevel panic -ss {ss_timestamp} -itsoffset -2'},
                    outputs={f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png': '-frames:v 1 -q:v 10'}).run()
