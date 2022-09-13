@@ -262,6 +262,7 @@ docker run --rm -it \
 - [X] Issue#71: Unable to upload to PTPImg
 - [X] New Image Host: Pixhost
 - [X] Restored tracker: Telly
+- [X] Support for IMDB api
 - [ ] Support for detecting and identifying subtitle information.
 
 ### v3.0.4
