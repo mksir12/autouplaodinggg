@@ -324,6 +324,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
         screenshots_to_upload_list.append(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
         # Now with each of those timestamps we can take a screenshot and update the progress bar
         # `-itsoffset -2` added for Frame accurate screenshot
+        print(upload_media_import)
         print(base_path)
         print(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
         print(Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/').is_dir())
