@@ -127,6 +127,8 @@ RUN set -eux; \
 RUN \
 	apk add --no-cache --upgrade unrar; \
 	apk add --no-cache --upgrade mktorrent; \
+	apk add --no-cache --upgrade ffmpeg; \
+	apk add --no-cache --upgrade mediainfo; \
 	apk add --no-cache --upgrade curl; \
 	apk add --no-cache --virtual=build-dependencies g++;
 

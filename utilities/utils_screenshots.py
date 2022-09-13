@@ -73,7 +73,37 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
     # 5. Full Image URL
     #
     thumb_size = Environment.get_thumb_size()
-    if img_host == 'imgur':
+    if img_host == 'DUMMY':
+        # this is a case just for testing screenshots feature
+        return [
+            True,
+            f'[url=http://ggbot/img1][img={thumb_size}]{"m.".join("http://ggbot/img1".rsplit(".", 1))}[/img][/url]',
+            f'[url=http://ggbot/img1][img]{"m.".join("http://ggbot/img1".rsplit(".", 1))}[/img][/url]',
+            f'[url=http://ggbot/img1][img]{"t.".join("http://ggbot/img1".rsplit(".", 1))}[/img][/url]',
+            "http://ggbot/img1"
+        ]
+    elif img_host == 'pixhost':
+        data = { "content_type": "0", "max_th_size": thumb_size }
+        files = {'img': open(image_path, 'rb')}
+        img_upload_request = requests.post(url="https://api.pixhost.to/images", data=data, files=files)
+
+        if img_upload_request.ok:
+            img_upload_response = img_upload_request.json()
+            logging.debug(f'[Screenshots] Image upload response: {img_upload_response}')
+            image_url = img_upload_response["th_url"].replace("t77","img77").replace("/thumbs/", "/images/")
+            return [
+                True,
+                f'[url={img_upload_response["show_url"]}][img={thumb_size}]{image_url}[/img][/url]',
+                f'[url={img_upload_response["show_url"]}][img]{image_url}[/img][/url]',
+                f'[url={img_upload_response["show_url"]}][img]{img_upload_response["th_url"]}[/img][/url]',
+                image_url
+            ]
+        else:
+            logging.error(f'[Screenshots] {img_host} upload failed. JSON Response: {img_upload_request.json()}')
+            console.print(f"{img_host} upload failed. Status code: [bold]{img_upload_request.status_code}[/bold]", style='red3', highlight=False)
+            return False
+
+    elif img_host == 'imgur':
         try:
             client = ImgurClient(client_id=Environment.get_imgur_client_id(), client_secret=Environment.get_imgur_api_key())
             response = client.upload_from_path(image_path)
@@ -127,7 +157,7 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
         image_host_url = available_image_host_urls[img_host]
         try:
             img_upload_request = None
-            data = {'key': img_host_api}
+            data = { 'key': img_host_api }
             if img_host in ('imgfi', 'snappie'):
                 files = {'source': open(image_path, 'rb')}
                 img_upload_request = requests.post(url=image_host_url, data=data, files=files)
@@ -220,13 +250,13 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
                 imgbox_asyncio_upload[3],
                 imgbox_asyncio_upload[4]
             ]
+
     else:
         logging.fatal(f'[Screenshots] Invalid imagehost {img_host}. Cannot upload screenshots.')
+        return False
 
 
 def take_upload_screens(duration, upload_media_import, torrent_title_import, base_path, hash_prefix, skip_screenshots=False):
-    logging.basicConfig(filename=f'{base_path}/upload_script.log', level=logging.INFO,format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-
     console.line(count=2)
     console.rule("Screenshots", style='red', align='center')
     console.line(count=1)
@@ -274,7 +304,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     # TODO: update this to work in line with the new json screenshot data
     if not bool(enabled_img_hosts_list):
         with open(f"{base_path}/temp_upload/{hash_prefix}bbcode_images.txt", "w") as no_images, open(f"{base_path}/temp_upload/{hash_prefix}url_images.txt", "a") as append_url_txt:
-            no_images.write("[b][color=#FF0000][size=22]None[/size][/color][/b]")
+            no_images.write("[b][color=#FF0000][size=22]No Screenshots Available[/size][/color][/b]")
             append_url_txt.write("No Screenshots Available")
             append_url_txt.close()
             no_images.close()
@@ -309,10 +339,8 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     # if screenshots were not uploaded previously, then we'll upload them.
     # As of now partial uploads are not discounted for. During upload, all screenshots will be uploaded
     if Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark').is_file():
-        logging.info(
-            "[Screenshots] Noticed that all screenshots have been uploaded to image hosts. Skipping Uploads")
-        console.print(
-            'Reusing previously uploaded screenshot urls!\n', style='sea_green3')
+        logging.info("[Screenshots] Noticed that all screenshots have been uploaded to image hosts. Skipping Uploads")
+        console.print('Reusing previously uploaded screenshot urls!\n', style='sea_green3')
     else:
         # ---------------------------------------------------------------------------------------- #
         # all different type of screenshots that the upload takes.
