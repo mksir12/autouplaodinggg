@@ -257,8 +257,6 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
 
 
 def take_upload_screens(duration, upload_media_import, torrent_title_import, base_path, hash_prefix, skip_screenshots=False):
-    logging.basicConfig(filename=f'{base_path}/upload_script.log', level=logging.INFO,format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-
     console.line(count=2)
     console.rule("Screenshots", style='red', align='center')
     console.line(count=1)
