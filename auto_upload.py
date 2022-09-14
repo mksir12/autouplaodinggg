@@ -121,6 +121,7 @@ uncommon_args.add_argument('-disc', action='store_true',help="If you are uploadi
 uncommon_args.add_argument('-e', '--edition', nargs='*',help="Manually provide an 'edition' (e.g. Criterion Collection, Extended, Remastered, etc)")
 uncommon_args.add_argument('-nfo', nargs=1, help="Use this to provide the path to an nfo file you want to upload")
 uncommon_args.add_argument('-d', '--debug', action='store_true',help="Used for debugging. Writes debug lines to log file")
+uncommon_args.add_argument('-dry', '--dry_run', action='store_true',help="Used for debugging. Writes debug lines to log and will also skip the upload")
 uncommon_args.add_argument('-mkt', '--use_mktorrent', action='store_true',help="Use mktorrent instead of torf (Latest git version only)")
 uncommon_args.add_argument('-fpm', '--force_pymediainfo', action='store_true',help="Force use PyMediaInfo to extract video codec over regex extraction from file name")
 uncommon_args.add_argument('-ss', '--skip_screenshots', action='store_true',help="Skip screenshot generation and upload for a run (overrides config.env)")
@@ -166,13 +167,13 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
     # Call the function that will search each site for dupes and return a similarity percentage, if it exceeds what the user sets in config.env we skip the upload
     try:
         return dupe_utilities.search_for_dupes_api(
-            acronym_to_tracker[str(tracker).lower()],
+            tracker=tracker,
+            search_site=acronym_to_tracker[str(tracker).lower()],
             imdb=torrent_info["imdb"],
             tmdb=torrent_info["tmdb"],
             tvmaze=torrent_info["tvmaze"],
             torrent_info=torrent_info,
             tracker_api=temp_tracker_api_key,
-            debug=args.debug,
             working_folder=working_folder,
             auto_mode=auto_mode
         )
@@ -594,11 +595,15 @@ def upload_to_site(upload_to, tracker_api_key):
         headers = {'Authorization': f'Bearer {tracker_api_key}'}
         logging.info(f"[TrackerUpload] Using Bearer Token authentication method for tracker {upload_to}")
     elif config["technical_jargons"]["authentication_mode"] == "HEADER":
-        if len(config["technical_jargons"]["header_key"]) > 0:
-            headers = {config["technical_jargons"]["header_key"]: tracker_api_key}
-            logging.info(f"[DupeCheck] Using Header based authentication method for tracker {upload_to}")
+        if len(config["technical_jargons"]["headers"]) > 0:
+            headers = {}
+            logging.info(f"[TrackerUpload] Using Header based authentication method for tracker {upload_to}")
+            for header in config["technical_jargons"]["headers"]:
+                logging.info(f"[TrackerUpload] Adding header '{header['key']}' to request")
+                headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{upload_to}_{header['value']}", "")
+            return headers
         else:
-            logging.fatal(f'[DupeCheck] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
+            logging.fatal(f'[TrackerUpload] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
     # TODO add support for cookie based authentication
     elif config["technical_jargons"]["authentication_mode"] == "COOKIE":
         logging.fatal('[TrackerUpload] Cookie based authentication is not supported as for now.')
@@ -728,90 +733,94 @@ def upload_to_site(upload_to, tracker_api_key):
     logging.fatal(f"[TrackerUpload] URL: {url_masked} \n Data: {payload} \n Files: {files}")
 
     response = None
-    if config["technical_jargons"]["payload_type"] == "JSON":
-        response = requests.request("POST", url, json=payload, files=files, headers=headers)
-    else:
-        response = requests.request("POST", url, data=payload, files=files, headers=headers)
-
-    logging.info(f"[TrackerUpload] POST Request: {url}")
-    logging.info(f"[TrackerUpload] Response code: {response.status_code}")
-
-    console.print(f'\nSite response: [blue]{response.text}[/blue]')
-    logging.info(f'[TrackerUpload] {response.text}')
-
-    if response.status_code in (200, 201):
-        logging.info(f"[TrackerUpload] Upload response for {upload_to}: {response.text.encode('utf8')}")
-        if "success" in response.json():
-            if str(response.json()["success"]).lower() == "true":
-                logging.info(f"[TrackerUpload] Upload to {upload_to} was a success!")
-                console.line(count=2)
-                console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
-                return True
-            else:
-                console.print('Upload to tracker failed.', style='bold red')
-                logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
-        elif "status" in response.json():
-            if str(response.json()["status"]).lower() == "true" or str(response.json()["status"]).lower() == "success":
-                logging.info("[TrackerUpload] Upload to {} was a success!".format(upload_to))
-                console.line(count=2)
-                console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
-                return True
-            else:
-                console.print('Upload to tracker failed.', style='bold red')
-                logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
-                return False
-        elif "success" in str(response.json()).lower():
-            if str(response.json()["success"]).lower() == "true":
-                logging.info("[TrackerUpload] Upload to {} was a success!".format(upload_to))
-                console.line(count=2)
-                console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
-                return True
-            else:
-                console.print('Upload to tracker failed.', style='bold red')
-                logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
-                return False
-        elif "status" in str(response.json()).lower():
-            if str(response.json()["status"]).lower() == "true":
-                logging.info("[TrackerUpload] Upload to {} was a success!".format(upload_to))
-                console.line(count=2)
-                console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
-                return True
-            else:
-                console.print('Upload to tracker failed.', style='bold red')
-                logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
-                return False
+    if not args.dry_run: # skipping tracker upload during dry runs
+        if config["technical_jargons"]["payload_type"] == "JSON":
+            response = requests.request("POST", url, json=payload, files=files, headers=headers)
         else:
-            console.print('Upload to tracker failed.', style='bold red')
-            logging.critical("[TrackerUpload] Something really went wrong when uploading to {} and we didn't even get a 'success' json key".format(upload_to))
-        return False
+            response = requests.request("POST", url, data=payload, files=files, headers=headers)
 
-    elif response.status_code == 404:
-        console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
-        console.print('Upload failed', style='bold red')
-        logging.critical(f"[TrackerUpload] 404 was returned on that upload, this is a problem with the site ({tracker})")
-        logging.error("[TrackerUpload] Upload failed")
+        logging.info(f"[TrackerUpload] POST Request: {url}")
+        logging.info(f"[TrackerUpload] Response code: {response.status_code}")
 
-    elif response.status_code == 500:
-        console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
-        console.print("The upload might have [red]failed[/], the site isn't returning the uploads status")
-        # This is to deal with the 500 internal server error responses BLU has been recently returning
-        logging.error(f"[TrackerUpload] HTTP response status code '{response.status_code}' was returned (500=Internal Server Error)")
-        logging.info("[TrackerUpload] This doesn't mean the upload failed, instead the site simply isn't returning the upload status")
+        console.print(f'\nSite response: [blue]{response.text}[/blue]')
+        logging.info(f'[TrackerUpload] {response.text}')
 
-    elif response.status_code == 400:
-        console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
-        console.print('Upload failed.', style='bold red')
-        try:
-            logging.critical(
-                f'[TrackerUpload] 400 was returned on that upload, this is a problem with the site ({tracker}). Error: Error {response.json()["error"] if "error" in response.json() else response.json()}')
-        except Exception:
-            logging.critical(f'[TrackerUpload] 400 was returned on that upload, this is a problem with the site ({tracker}).')
-        logging.error("[TrackerUpload] Upload failed")
+        if response.status_code in (200, 201):
+            logging.info(f"[TrackerUpload] Upload response for {upload_to}: {response.text.encode('utf8')}")
+            if "success" in response.json():
+                if str(response.json()["success"]).lower() == "true":
+                    logging.info(f"[TrackerUpload] Upload to {upload_to} was a success!")
+                    console.line(count=2)
+                    console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
+                    return True
+                else:
+                    console.print('Upload to tracker failed.', style='bold red')
+                    logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
+            elif "status" in response.json():
+                if str(response.json()["status"]).lower() == "true" or str(response.json()["status"]).lower() == "success":
+                    logging.info("[TrackerUpload] Upload to {} was a success!".format(upload_to))
+                    console.line(count=2)
+                    console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
+                    return True
+                else:
+                    console.print('Upload to tracker failed.', style='bold red')
+                    logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
+                    return False
+            elif "success" in str(response.json()).lower():
+                if str(response.json()["success"]).lower() == "true":
+                    logging.info("[TrackerUpload] Upload to {} was a success!".format(upload_to))
+                    console.line(count=2)
+                    console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
+                    return True
+                else:
+                    console.print('Upload to tracker failed.', style='bold red')
+                    logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
+                    return False
+            elif "status" in str(response.json()).lower():
+                if str(response.json()["status"]).lower() == "true":
+                    logging.info("[TrackerUpload] Upload to {} was a success!".format(upload_to))
+                    console.line(count=2)
+                    console.rule(f"\n :thumbsup: Successfully uploaded to {upload_to} :balloon: \n", style='bold green1', align='center')
+                    return True
+                else:
+                    console.print('Upload to tracker failed.', style='bold red')
+                    logging.critical("[TrackerUpload] Upload to {} failed".format(upload_to))
+                    return False
+            else:
+                console.print('Upload to tracker failed.', style='bold red')
+                logging.critical("[TrackerUpload] Something really went wrong when uploading to {} and we didn't even get a 'success' json key".format(upload_to))
+            return False
 
+        elif response.status_code == 404:
+            console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
+            console.print('Upload failed', style='bold red')
+            logging.critical(f"[TrackerUpload] 404 was returned on that upload, this is a problem with the site ({tracker})")
+            logging.error("[TrackerUpload] Upload failed")
+
+        elif response.status_code == 500:
+            console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
+            console.print("The upload might have [red]failed[/], the site isn't returning the uploads status")
+            # This is to deal with the 500 internal server error responses BLU has been recently returning
+            logging.error(f"[TrackerUpload] HTTP response status code '{response.status_code}' was returned (500=Internal Server Error)")
+            logging.info("[TrackerUpload] This doesn't mean the upload failed, instead the site simply isn't returning the upload status")
+
+        elif response.status_code == 400:
+            console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
+            console.print('Upload failed.', style='bold red')
+            try:
+                logging.critical(
+                    f'[TrackerUpload] 400 was returned on that upload, this is a problem with the site ({tracker}). Error: Error {response.json()["error"] if "error" in response.json() else response.json()}')
+            except Exception:
+                logging.critical(f'[TrackerUpload] 400 was returned on that upload, this is a problem with the site ({tracker}).')
+            logging.error("[TrackerUpload] Upload failed")
+
+        else:
+            console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
+            console.print("The status code isn't [green]200[/green] so something failed, upload may have failed")
+            logging.error('[TrackerUpload] Status code is not 200, upload might have failed')
     else:
-        console.print(f'[bold]HTTP response status code: [red]{response.status_code}[/red][/bold]')
-        console.print("The status code isn't [green]200[/green] so something failed, upload may have failed")
-        logging.error('[TrackerUpload] Status code is not 200, upload might have failed')
+        logging.info("[TrackerUpload] Dry-Run mode... Skipping upload to tracker")
+        console.print('[bold red] Dry Run Mode [bold red] Skipping upload to tracker')
     return False
 
 
@@ -833,6 +842,9 @@ if args.tripleup and args.doubleup:
     console.print("You can not use the arg [deep_sky_blue1]-doubleup[/deep_sky_blue1] and [deep_sky_blue1]-tripleup[/deep_sky_blue1] together. Only one can be used at a time\n", style='bright_red')
     console.print("Exiting...\n", style='bright_red bold')
     sys.exit()
+
+# Dry run mode, mainly intended to be used during development
+args.debug = args.dry_run if args.dry_run == True else args.debug
 
 if args.debug:
     logging.getLogger().setLevel(logging.DEBUG)
@@ -1227,10 +1239,14 @@ for file in upload_queue:
     console.line(count=1)
 
     torrent_info["post_processing_complete"] = False
-    for tracker in upload_to_trackers:
-        if torrent_info["post_processing_complete"] == True:
-            break  # this flag is used for watch folder post processing. we need to move only once
-        utils.perform_post_processing(torrent_info, torrent_client, working_folder, tracker, args.allow_multiple_files)
+    if args.dry_run:
+        logging.info("[Main] Dry-Run mode... Skipping post processing steps")
+        console.print('[bold red] Dry Run Mode [bold red] Skipping post processing steps')
+    else:
+        for tracker in upload_to_trackers:
+            if torrent_info["post_processing_complete"] == True:
+                break  # this flag is used for watch folder post processing. we need to move only once
+            utils.perform_post_processing(torrent_info, torrent_client, working_folder, tracker, args.allow_multiple_files)
 
     script_end_time = time.perf_counter()
     total_run_time = f'{script_end_time - script_start_time:0.4f}'

@@ -42,9 +42,13 @@ def _get_headers(technical_jargons, search_site, tracker_api):
         return {'Authorization': f'Bearer {tracker_api}'}
 
     if technical_jargons["authentication_mode"] == "HEADER":
-        if len(technical_jargons["header_key"]) > 0:
+        if len(technical_jargons["headers"]) > 0:
+            headers = {}
             logging.info(f"[DupeCheck] Using Header based authentication method for tracker {search_site}")
-            return {technical_jargons["header_key"]: tracker_api}
+            for header in technical_jargons["headers"]:
+                logging.info(f"[DupeCheck] Adding header '{header['key']}' to request")
+                headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{search_site}_{header['value']}", "")
+            return headers
         else:
             logging.fatal(f'[DupeCheck] Header based authentication cannot be done without `header_key` for tracker {search_site}.')
     elif technical_jargons["authentication_mode"] == "COOKIE":
@@ -60,11 +64,9 @@ def _prepare_post_payload(search_site, imdb, tmdb, tvmaze, tracker_api, payload,
         url_replacer = f"https://www.imdb.com/title/{imdb}"
         if upload_type == "episode":
             url_replacer = f"https://www.tvmaze.com/shows/{tvmaze}"
-        url_dupe_payload = payload.replace(
-            "<imdb>", url_replacer).replace("<title>", title)
+        url_dupe_payload = payload.replace("<imdb>", url_replacer).replace("<title>", title)
     else:
-        url_dupe_payload = payload.replace("<imdb>", str(imdb)).replace("<tvmaze>", str(tvmaze)).replace(
-            "<tmdb>", str(tmdb)).replace("<api_key>", tracker_api).replace("<title>", title)
+        url_dupe_payload = payload.replace("<imdb>", str(imdb)).replace("<tvmaze>", str(tvmaze)).replace("<tmdb>", str(tmdb)).replace("<api_key>", tracker_api).replace("<title>", title)
     # -------------------------------------------------------------------------
     return url_dupe_payload
 
@@ -73,12 +75,9 @@ def _make_request(url, method, search_site, site_name, json_data=None, multipart
     try:
         return requests.request(method, url, json=json_data, data=multipart_data, headers=headers)
     except Exception as ex:
-        console.print(
-            f"[bold red]:warning: Dupe check request to tracker [green]{site_name}[/green], failed. Hence skipping this tracker. :warning:[/bold red]\n")
-        logging.exception(
-            f"[DupeCheck] Request to  {search_site} for dupe check Failed. Error {ex}")
-        logging.info(
-            "[DupeCheck] Skipping upload to tracker since the dupe check request failed. The tracker might not be responding, hence skipping upload.")
+        console.print(f"[bold red]:warning: Dupe check request to tracker [green]{site_name}[/green], failed. Hence skipping this tracker. :warning:[/bold red]\n")
+        logging.exception(f"[DupeCheck] Request to  {search_site} for dupe check Failed. Error {ex}")
+        logging.info("[DupeCheck] Skipping upload to tracker since the dupe check request failed. The tracker might not be responding, hence skipping upload.")
         return True
 
 
@@ -86,12 +85,9 @@ def _get_response_from_wrapper(dupe_check_response_wrapper, search_site, site_na
     try:
         return dupe_check_response_wrapper.json()
     except Exception as ex:
-        logging.exception(
-            f"[DupeCheck] Error while reading response from tracker {search_site} for dupe check. Error {ex}")
-        logging.fatal(
-            f"[DupeCheck] Text data from tracker {search_site} for dupe check {pformat(dupe_check_response_wrapper)}")
-        console.print(
-            f"[bold red]:warning:  Could not parse the dupe check response from tracker [green]{site_name}[/green], hence skipping this tracker. :warning:[/bold red]\n")
+        logging.exception(f"[DupeCheck] Error while reading response from tracker {search_site} for dupe check. Error {ex}")
+        logging.fatal(f"[DupeCheck] Text data from tracker {search_site} for dupe check {pformat(dupe_check_response_wrapper)}")
+        console.print(f"[bold red]:warning:  Could not parse the dupe check response from tracker [green]{site_name}[/green], hence skipping this tracker. :warning:[/bold red]\n")
         return True
 
 
@@ -108,8 +104,7 @@ def _combine_field_for_title(fields, torrent_details):
     torrent_title = ""
     for field in fields:
         if field not in torrent_details:
-            logging.error(
-                f'[DupeCheck] Combine field `{field}` is not present in the obtained torrent details response')
+            logging.error(f'[DupeCheck] Combine field `{field}` is not present in the obtained torrent details response')
             continue
 
         if isinstance(torrent_details[field], list):
@@ -212,10 +207,8 @@ def _fuzzy_similarity(our_title, check_against_title, release_title, release_yea
     ).replace(release_screen_size, "").replace(check_against_title_year, "")
     check_against_title = " ".join(check_against_title.split())
 
-    token_set_ratio = fuzz.token_set_ratio(our_title.replace(
-        content_title, ''), check_against_title.replace(content_title, ''))
-    logging.info(
-        f"[DupeCheck] '{check_against_title_original}' was flagged with a {str(token_set_ratio)}% dupe probability")
+    token_set_ratio = fuzz.token_set_ratio(our_title.replace(content_title, ''), check_against_title.replace(content_title, ''))
+    logging.info(f"[DupeCheck] '{check_against_title_original}' was flagged with a {str(token_set_ratio)}% dupe probability")
 
     # Instead of wasting time trying to create a 'low, medium, high' risk system we just have the user enter in a percentage they are comfortable with
     # if a torrent titles vs local title similarity percentage exceeds a limit the user set we immediately quit trying to upload to that site
@@ -223,39 +216,30 @@ def _fuzzy_similarity(our_title, check_against_title, release_title, release_yea
     return token_set_ratio
 
 
-def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_api, debug, working_folder, auto_mode):
-    if debug:
-        logging.getLogger().setLevel(logging.DEBUG)
+def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info, tracker_api, working_folder, auto_mode):
 
     with open(f'{working_folder}/site_templates/{search_site}.json', "r", encoding="utf-8") as config_file:
         config = json.load(config_file)
 
     is_repack_or_proper = torrent_info["repack"]
-    logging.info(
-        f"[DupeCheck] We curently are tying to upload a repack type: '{is_repack_or_proper}'. Non '{is_repack_or_proper}' release will be ignored during dupe check")
+    logging.info(f"[DupeCheck] We curently are tying to upload a repack type: '{is_repack_or_proper}'. Non '{is_repack_or_proper}' release will be ignored during dupe check")
 
-    imdb = imdb.replace(
-        'tt', '') if config["dupes"]["strip_text"] == True else imdb
+    imdb = imdb.replace('tt', '') if config["dupes"]["strip_text"] == True else imdb
     url_dupe_payload = None  # this is here just for the log, its not technically needed
 
     # multiple authentication modes
-    headers = _get_headers(
-        config["dupes"]["technical_jargons"], search_site, tracker_api)
+    headers = _get_headers(config["dupes"]["technical_jargons"], tracker, tracker_api)
 
     if str(config["dupes"]["technical_jargons"]["request_method"]) == "POST":  # POST request (BHD)
-        url_dupe_search = str(config["torrents_search"]).format(
-            api_key=tracker_api)
-        url_dupe_payload = _prepare_post_payload(
-            search_site, imdb, tmdb, tvmaze, tracker_api, config["dupes"]["payload"], torrent_info["type"], torrent_info["title"])
+        url_dupe_search = str(config["torrents_search"]).format(api_key=tracker_api)
+        url_dupe_payload = _prepare_post_payload(search_site, imdb, tmdb, tvmaze, tracker_api, config["dupes"]["payload"], torrent_info["type"], torrent_info["title"])
 
-        logging.debug(
-            f"[DupeCheck] Formatted POST payload {url_dupe_payload} for {search_site}")
+        logging.debug(f"[DupeCheck] Formatted POST payload {url_dupe_payload} for {search_site}")
         url_dupe_payload = json.loads(url_dupe_payload)
 
         if config["dupes"]["technical_jargons"]["authentication_mode"] == "API_KEY_PAYLOAD":
             # adding Authentication api_key to payload
-            url_dupe_payload[config["dupes"]["technical_jargons"]
-                             ["auth_payload_key"]] = tracker_api
+            url_dupe_payload[config["dupes"]["technical_jargons"]["auth_payload_key"]] = tracker_api
 
         if str(config["dupes"]["technical_jargons"]["payload_type"]) == "JSON":
             dupe_check_result = _make_request(
@@ -281,8 +265,7 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
                 return True  # being pessimistic and assuming dupes exist in tracker
 
     else:  # GET request (BLU & ACM)
-        url_dupe_search = str(config["dupes"]["url_format"]).format(search_url=str(
-            config["torrents_search"]).format(api_key=tracker_api), title=torrent_info["title"], imdb=imdb, tmdb=tmdb)
+        url_dupe_search = str(config["dupes"]["url_format"]).format(search_url=str(config["torrents_search"]).format(api_key=tracker_api), title=torrent_info["title"], imdb=imdb, tmdb=tmdb)
         dupe_check_result = _make_request(
             url=url_dupe_search,
             method="GET",
@@ -293,8 +276,7 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
         if dupe_check_result == True:
             return True  # being pessimistic and assuming dupes exist in tracker
 
-    logging.info(
-        msg=f'[DupeCheck] Dupe search request | Method: {str(config["dupes"]["technical_jargons"]["request_method"])} | URL: {url_dupe_search} | Payload: {url_dupe_payload}')
+    logging.info(f'[DupeCheck] Dupe search request | Method: {str(config["dupes"]["technical_jargons"]["request_method"])} | URL: {url_dupe_search} | Payload: {url_dupe_payload}')
 
     if dupe_check_result.status_code != 200:
         logging.error(f"[DupeCheck] {search_site} returned the status code: {dupe_check_result.status_code}")
@@ -322,19 +304,16 @@ def search_for_dupes_api(search_site, imdb, tmdb, tvmaze, torrent_info, tracker_
     # as the name indicates, it decides whether or not the `dupe_check_result` returned from the tracker
     # needs any further parsing.
     logging.debug( f'[DupeCheck] DupeCheck config for tracker `{search_site}` \n {pformat(config["dupes"])}')
-    dupe_check_response = _get_response_from_wrapper(
-        dupe_check_result, search_site, str(config['name']).upper())
+    dupe_check_response = _get_response_from_wrapper(dupe_check_result, search_site, str(config['name']).upper())
     if dupe_check_response == True:
         return True
 
-    torrent_items = _get_torrent_item(
-        dupe_check_response, config["dupes"]["parse_json"])
+    torrent_items = _get_torrent_item(dupe_check_response, config["dupes"]["parse_json"])
 
     for item in torrent_items:
         if "torrent_details" in config["dupes"]["parse_json"]:
             # BLU & ACM have us go 2 "levels" down to get torrent info -->  [data][attributes][name] = torrent title
-            torrent_details = item[str(
-                config["dupes"]["parse_json"]["torrent_details"])]
+            torrent_details = item[str(config["dupes"]["parse_json"]["torrent_details"])]
         else:
             # BHD only has us go down 1 "level" to get torrent info --> [data][name] = torrent title
             torrent_details = item

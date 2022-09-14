@@ -355,7 +355,12 @@
 
         "technical_jargons": {
             "authentication_mode": "HEADER",
-            "header_key":"X-API-KEY",
+            "headers": [
+                {
+                    "key": "X-API-KEY",
+                    "value": "API_KEY"
+                }
+            ],
             "payload_type": "JSON",
             "request_method": "POST"
         },

@@ -1,28 +1,38 @@
 {
-    "name": "Imaginary Tracker",
-    "url": "http://localhost:5000",
-    "upload_form": "http://localhost:5000/api/torrents/upload?api_token={api_key}",
-    "torrents_search": "http://localhost:5000/api/torrents/filter/header",
-    "source": "IMG",
-    "platform": "GG-BOT",
+    "doubts":[
+        "piece size 32mb support"
+    ],
+    "name": "PassThePopcorn",
+    "url": "https://passthepopcorn.me/",
+    "upload_form": "https://passthepopcorn.me/upload.php",
+    "torrents_search": "https://passthepopcorn.me/torrents.php",
+    "source": "PTP",
+    "platform": "Gazelle",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
 
     "description_components":{
         "code_code": "[code][/code]",
-        "spoiler_code":"[spoiler=TITLE_PLACEHOLDER][/spoiler]",
-        "notes_code":"[note][/note]",
-        "quote_code":"[quote][/quote]",
-        "alert_code":"[alert][/alert]"
+        "spoiler_code":"[hide=TITLE_PLACEHOLDER][/hide]",
+        "quote_code":"[quote][/quote]"
     },
 
     "technical_jargons": {
-        "authentication_mode": "API_KEY",
+        "authentication_mode": "HEADER",
+        "headers" : [
+            {
+                "key": "ApiUser",
+                "value": "API_USER"
+            },
+            {
+                "key": "ApiKey",
+                "value": "API_KEY"
+            }
+        ],
         "payload_type": "MULTI-PART"
     },
 
-    "hybrid_type": {
-        "required": false
+    "hybrid_mappings": {
     },
 
     "translation": {
@@ -145,15 +155,21 @@
         "mediainfo": "string"
     },
 
-    "Default":{},
+    "Default":{
+        "submit" : "true"
+    },
 
     "dupes": {
 
         "technical_jargons": {
             "authentication_mode": "HEADER",
-            "headers": [
+            "headers" : [
                 {
-                    "key": "X-API-KEY",
+                    "key": "ApiUser",
+                    "value": "API_USER"
+                },
+                {
+                    "key": "ApiKey",
                     "value": "API_KEY"
                 }
             ],
@@ -161,13 +177,13 @@
             "request_method": "GET"
         },
 
-        "url_format": "{search_url}?imdbId={imdb}",
-        "strip_text": true,
+        "url_format": "{search_url}?imdb={imdb}",
+        "strip_text": false,
 
         "parse_json": {
             "is_needed": true,
-            "top_lvl": "data",
-            "torrent_details": "attributes"
+            "top_lvl": "Torrents",
+            "torrent_name": "ReleaseName"
         },
 
         "different_cuts": "1",
@@ -200,34 +216,33 @@
     },
 
     "banned_groups": [
-        "AROMA",
+        "EVO",
         "aXXo",
         "BRrip",
         "CM8",
         "CrEwSaDe",
-        "d3g",
+        "CTFOH",
         "DNL",
-        "FGT",
         "FaNGDiNG0",
-        "FRDS",
         "HD2DVD",
         "HDTime",
+        "ION10",
         "iPlanet",
         "KiNGDOM",
-        "Leffe",
-        "MeGusta",
         "mHD",
         "mSD",
         "nHD",
         "nikt0",
         "nSD",
         "NhaNc3",
+        "OFT",
         "PRODJi",
-        "RDN",
         "SANTi",
         "STUTTERSHIT",
         "ViSION",
+        "VXT",
         "WAF",
+        "d3g",
         "x0r",
         "YIFY"
     ]

@@ -148,13 +148,17 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong><a href="https://www.bit-hdtv.com">BIT-HDTV</a></strong></td>
         </tr>
         <tr style="text-align: center">
-            <td rowspan="2"><strong>Gazelle</strong></td>
+            <td rowspan="3"><strong>Gazelle</strong></td>
             <td><strong>NBL</strong></td>
             <td><strong><a href="https://nebulance.io">Nebulance</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td><strong>ANT</strong></td>
             <td><strong><a href="https://anthelion.me">Anthelion</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>PTP</strong></td>
+            <td><strong><a href="https://passthepopcorn.me">PassThePopcorn</a></strong></td>
         </tr>
     </tbody>
 </table>
@@ -256,9 +260,12 @@ docker run --rm -it \
 # Roadmap
 
 ### v3.0.4
-- [ ] New Tracker: PTP
+- [ ] New Tracker: PTP (Only for Upload Assistant)
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for detecting and identifying subtitle information.
+- [X] New dry run mode to test uploader without uploading payload to trackers
+
+### v3.0.5
 - [ ] Support for Dual Audio Detection
 
 ### Backlogs
@@ -289,7 +296,7 @@ docker run --rm -it \
 ## **3.0.3**
     New Image Hosts
         * Pixhost
-    
+
     New Features
         * Support for IMDB api
         * Improved TMDB metadata search Phase 2

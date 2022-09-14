@@ -191,13 +191,13 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
     # Call the function that will search each site for dupes and return a similarity percentage, if it exceeds what the user sets in config.env we skip the upload
     try:
         return search_for_dupes_api(
-            acronym_to_tracker[str(tracker).lower()],
+            tracker=tracker,
+            search_site=acronym_to_tracker[str(tracker).lower()],
             imdb=torrent_info["imdb"],
             tmdb=torrent_info["tmdb"],
             tvmaze=torrent_info["tvmaze"],
             torrent_info=torrent_info,
             tracker_api=temp_tracker_api_key,
-            debug=args.debug,
             working_folder=working_folder,
             auto_mode=auto_mode
         )
@@ -232,11 +232,15 @@ def upload_to_site(upload_to, tracker_api_key, config, tracker_settings):
         headers = {'Authorization': f'Bearer {tracker_api_key}'}
         logging.info(f"[TrackerUpload] Using Bearer Token authentication method for tracker {upload_to}")
     elif config["technical_jargons"]["authentication_mode"] == "HEADER":
-        if len(config["technical_jargons"]["header_key"]) > 0:
-            headers = {config["technical_jargons"]["header_key"]: tracker_api_key}
-            logging.info(f"[DupeCheck] Using Header based authentication method for tracker {upload_to}")
+        if len(config["technical_jargons"]["headers"]) > 0:
+            headers = {}
+            logging.info(f"[TrackerUpload] Using Header based authentication method for tracker {upload_to}")
+            for header in config["technical_jargons"]["headers"]:
+                logging.info(f"[TrackerUpload] Adding header '{header['key']}' to request")
+                headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{upload_to}_{header['value']}", "")
+            return headers
         else:
-            logging.fatal(f'[DupeCheck] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
+            logging.fatal(f'[TrackerUpload] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
     # TODO add support for cookie based authentication
     elif config["technical_jargons"]["authentication_mode"] == "COOKIE":
         logging.fatal('[TrackerUpload] Cookie based authentication is not supported as for now.')
