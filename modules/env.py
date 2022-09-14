@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 from distutils import util
 
@@ -42,6 +58,9 @@ def get_bdinfo_script_location(default=None):
 
 def get_tmdb_api_key(default=None):
     return os.getenv('TMDB_API_KEY', default)
+
+def get_imdb_api_key(default=None):
+    return os.getenv("IMDB_API_KEY", default)
 
 def get_tmdb_result_auto_select_threshold(default=None):
     return os.getenv("tmdb_result_auto_select_threshold", default)
@@ -161,3 +180,15 @@ def get_cache_port():
 def get_cache_database():
     return os.getenv('cache_database')
 # Cache properties
+
+
+# GGBOT Metadata Aggregator
+def is_aggregator_enabled():
+    return False
+
+def gg_bot_metadata_aggregator():
+    return None
+
+def can_share_with_community():
+    return False
+# GGBOT Metadata Aggregator

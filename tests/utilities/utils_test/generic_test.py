@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import pytest
 from pathlib import Path
 from pytest_mock import mocker
@@ -185,6 +201,11 @@ def test_create_temp_upload_itself():
             { "release_group" : "DV", "upload_media" : "/data/Movies/Name of the Movie 2022 STREAM WEB-DL DD+ 5.1 Atmos DV HDR HEVC.mkv" },
             "NOGROUP",
             id="group_from_guessit_when_no_group"
+        ),
+        pytest.param(
+            { "release_group" : "RELEASE_GROUP", "upload_media" : "/data/Movies/Miss Sadie Thompson 1953 1080p Blu-ray Remux AVC FLAC 2.0 - RELEASE_GROUP.mkv" },
+            "RELEASE_GROUP",
+            id="group_from_guessit_with_space_in_title"
         ),
     ]
 )

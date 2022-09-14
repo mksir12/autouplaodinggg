@@ -1,0 +1,57 @@
+{
+    "id": 43517,
+    "url": "https://www.tvmaze.com/shows/43517/she-hulk-attorney-at-law",
+    "name": "She-Hulk: Attorney at Law",
+    "type": "Scripted",
+    "language": "English",
+    "genres": [
+        "Comedy",
+        "Science-Fiction"
+    ],
+    "status": "Running",
+    "runtime": null,
+    "averageRuntime": 34,
+    "premiered": "2022-08-18",
+    "ended": null,
+    "officialSite": "https://disneyplus.com/series/she-hulk-attorney-at-law/gPwaYusKqRQh",
+    "schedule": {
+        "time": "",
+        "days": [
+            "Thursday"
+        ]
+    },
+    "rating": {
+        "average": 6.9
+    },
+    "weight": 100,
+    "network": null,
+    "webChannel": {
+        "id": 287,
+        "name": "Disney+",
+        "country": null,
+        "officialSite": "https://www.disneyplus.com/"
+    },
+    "dvdCountry": null,
+    "externals": {
+        "tvrage": null,
+        "thetvdb": 368613,
+        "imdb": "tt10857160"
+    },
+    "image": {
+        "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/416/1042145.jpg",
+        "original": "https://static.tvmaze.com/uploads/images/original_untouched/416/1042145.jpg"
+    },
+    "summary": "<p><b>She-Hulk</b> follows Jennifer, a lawyer who specializes in superhuman-oriented legal cases. <i>She-Hulk</i> will welcome a host of Marvel characters to the series, including the Hulk, played by Mark Ruffalo, and the Abomination, played by Tim Roth.</p>",
+    "updated": 1662884527,
+    "_links": {
+        "self": {
+            "href": "https://api.tvmaze.com/shows/43517"
+        },
+        "previousepisode": {
+            "href": "https://api.tvmaze.com/episodes/2354141"
+        },
+        "nextepisode": {
+            "href": "https://api.tvmaze.com/episodes/2354145"
+        }
+    }
+}

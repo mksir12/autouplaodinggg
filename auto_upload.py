@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # default included packages
 import os
 import re
@@ -91,6 +107,7 @@ common_args.add_argument('-a', '--all_trackers', action='store_true',help="Selec
 common_args.add_argument('-tmdb', nargs=1, help="Use this to manually provide the TMDB ID")
 common_args.add_argument('-imdb', nargs=1, help="Use this to manually provide the IMDB ID")
 common_args.add_argument('-tvmaze', nargs=1, help="Use this to manually provide the TVmaze ID")
+common_args.add_argument('-tvdb', nargs=1, help="Use this to manually provide the TVDB ID")
 common_args.add_argument('-mal', nargs=1, help="Use this to manually provide the MAL ID. If uploader detects any MAL id during search, this will be ignored.")
 common_args.add_argument('-anon', action='store_true',help="Tf you want your upload to be anonymous (no other info needed, just input '-anon'")
 
@@ -340,7 +357,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
         if tmdb != "0":
             # we will get movie/12345 or tv/12345 => we only need 12345 part.
             tmdb = tmdb[tmdb.find("/") + 1:] if tmdb.find("/") >= 0 else tmdb
-            args.tmdb = [tmdb]
+            args.tmdb = [tmdb] # saving this to args, so that this value will be used in the `fill_database_ids` method
             logging.info(f"[Main] Obtained TMDB Id from mediainfo summary. Proceeding with {args.tmdb}")
         if imdb != "0":
             args.imdb = [imdb]
@@ -508,7 +525,7 @@ def identify_miscellaneous_details(guess_it_result):
 
     for word in hdr_hybrid_remux_keyword_search:
         word = str(word)
-        if word in key_words.keys():
+        if word in key_words:
             logging.info(f"extracted the key_word: {word} from the filename")
             # special case. TODO find a way to generalize and handle this
             if word == 'ddpa':
@@ -991,7 +1008,7 @@ for file in upload_queue:
     identify_miscellaneous_details(guess_it_result)
 
     # tmdb, imdb and tvmaze in torrent_info will be filled by this method
-    metadata_utilities.fill_database_ids(torrent_info, args.tmdb, args.imdb, args.tvmaze, auto_mode)
+    metadata_utilities.fill_database_ids(torrent_info, args.tmdb, args.imdb, args.tvmaze, auto_mode, args.tvdb)
 
     # -------- Use official info from TMDB --------
     title, year, tvdb, mal = metadata_utilities.metadata_compare_tmdb_data_local(torrent_info)

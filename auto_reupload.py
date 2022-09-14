@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # default included packages
 import os
 import re
@@ -737,7 +753,7 @@ def identify_miscellaneous_details(guess_it_result):
 
     for word in hdr_hybrid_remux_keyword_search:
         word = str(word)
-        if word in key_words.keys():
+        if word in key_words:
             logging.info(f"extracted the key_word: {word} from the filename")
             # special case. TODO find a way to generalize and handle this
             if word == 'ddpa':
@@ -879,9 +895,12 @@ def reupload_job():
         if torrent_info["tmdb"] == "0" and torrent_info["imdb"] == "0" and torrent_info["tvmaze"] == "0":
             # here we couldn't select a tmdb id automatically / no results from tmdb. Hence we mark this as a special case and stop the upload of the torrent
             # updating the voerall status of the torrent
+            logging.error("[Main] Marking upload as TMDB Identification failed.")
             reupload_utilities.update_field(torrent["hash"], "status", reupload_utilities.TorrentStatus.TMDB_IDENTIFICATION_FAILED, False, cache)
             reupload_utilities.update_field(torrent["hash"], "possible_matches", possible_matches, True, cache)
             continue
+        else:
+            logging.info("[Main] Obtained metadata database ids. Proceeding with upload process")
 
         original_title = torrent_info["title"]
         original_year = torrent_info["year"] if "year" in torrent_info else ""

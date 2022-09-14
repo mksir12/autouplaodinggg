@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import re
 import os
 import sys
@@ -86,8 +102,7 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
 
         Return value (dv, hdr, video_codec)
     """
-    logging.debug(
-        f"[BasicUtils] Dumping torrent_info before video_codec identification. {pformat(torrent_info)}")
+    logging.debug(f"[BasicUtils] Dumping torrent_info before video_codec identification. {pformat(torrent_info)}")
     if is_disc and torrent_info["bdinfo"] is not None:
         return bdinfo_utilities.bdinfo_get_video_codec_from_bdinfo(torrent_info["bdinfo"])
 
@@ -102,13 +117,12 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
                                            r'(?P<VC1>VC(-1|1))', torrent_info["raw_file_name"], re.IGNORECASE)
     regex_video_codec = None
     if filename_video_codec_regex is not None:
-        rename_codec = {'VC1': 'VC-1', 'MPEG2': 'MPEG-2',
-                        'H264': 'H.264', 'H265': 'H.265'}
+        rename_codec = {'VC1': 'VC-1', 'MPEG2': 'MPEG-2', 'H264': 'H.264', 'H265': 'H.265'}
 
         for video_codec in ["HEVC", "AVC", "H265", "H264", "x265", "x264", "MPEG2", "VC1"]:
             if filename_video_codec_regex.group(video_codec) is not None:
                 # Now check to see if the 'codec' is in the rename_codec dict we created earlier
-                if video_codec in rename_codec.keys():
+                if video_codec in rename_codec:
                     regex_video_codec = rename_codec[video_codec]
                 else:
                     # if this executes its AVC/HEVC or x265/x264

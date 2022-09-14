@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import json
 import glob
@@ -535,6 +551,8 @@ def sanitize_release_group_from_guessit(torrent_info):
         # provided by guessit is correct.
         # removing the trailing / if present
         upload_media = torrent_info["upload_media"][:-1] if torrent_info["upload_media"].endswith("/") else torrent_info["upload_media"]
+        # if title has spaces in it, then we remove them. [...H.264 - RELEASE_GROUP  ==> ...H.264-RELEASE_GROUP]
+        upload_media = upload_media.replace(" ", "")
         if upload_media.replace(".mkv", "").replace(".mp4", "").endswith(f"-{torrent_info['release_group']}"):
             # well the release group identified by guessit seems correct.
             logging.debug(f"[Utils] Release group identified by guessit: '{torrent_info['release_group']}' passed validation successfully")

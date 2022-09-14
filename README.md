@@ -70,7 +70,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>Site Name</strong></td>
         </th>
         <tr style="text-align: center">
-            <td rowspan="12"><strong>UNIT3D</strong></td>
+            <td rowspan="13"><strong>UNIT3D</strong></td>
             <td><strong>ACM</strong></td>
             <td><strong><a href="https://asiancinema.me">AsianCinema</a></strong></td>
         </tr>
@@ -117,6 +117,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
         <tr style="text-align: center">
             <td><strong>3EVILS</strong></td>
             <td><strong><a href="https://3evils.net">3Evils</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>TELLY</strong></td>
+            <td><strong><a href="https://telly.wtf">Telly</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td rowspan="1"><strong>XBTIT</strong></td>
@@ -251,18 +255,20 @@ docker run --rm -it \
 
 # Roadmap
 
-### v3.0.3
-- [ ] Improved TMDB metadata search Phase 2
-- [ ] Better MAL id detection
+### v3.0.4
+- [ ] New Tracker: PTP
+- [ ] Improved TMDB metadata search Phase 3
+- [ ] Support for detecting and identifying subtitle information.
 - [ ] Support for Dual Audio Detection
 
-### v3.0.4
-- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
-- [ ] Ability to reuse already existing torrents.
-
 ### Backlogs
+- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
+- [ ] EPIC: GGBOT Metadata Aggregator
+- [ ] EPIC: GGBOT P2P Network Relay
 - [ ] EPIC: Migrate GG-BOT Runtime to work with GG-BOT Auto ReUploader
 - [ ] EPIC: Refactor GG-BOT Admin to handle GG-BOT Auto ReUploader
+- [ ] Better MAL id detection
+- [ ] Ability to reuse already existing torrents.
 - [ ] Improved Full Disk Support
     - [ ] Support for Bluray Distributors
     - [ ] Detect Bluray disk region automatically
@@ -280,11 +286,25 @@ docker run --rm -it \
 
 # Change Log
 
+## **3.0.3**
+    New Image Hosts
+        * Pixhost
+    
+    New Features
+        * Support for IMDB api
+        * Improved TMDB metadata search Phase 2
+        * Accept TVDB id from runtime argument
+        * Updated source for lst
+        * Restored tracker: Telly
+
+<br>
+
 ## **3.0.2**
     Bug Fixes
         * Issue#70: Support SDTV uploads to TDB
         * Issue#71: Unable to upload to PTPImg
 
+<br>
 
 ## **3.0.1**
     New Trackers
@@ -299,6 +319,7 @@ docker run --rm -it \
         * Issue#52: ANT upload does not detect/set Atmos or other parameters
         * Issue#69: Release group not identified when uploading movie folders
 
+<br>
 
 ## **3.0**
     New Trackers
