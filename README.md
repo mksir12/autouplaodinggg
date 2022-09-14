@@ -255,18 +255,10 @@ docker run --rm -it \
 
 # Roadmap
 
-### v3.0.3
-- [X] Improved TMDB metadata search Phase 2
-- [X] Accept TVDB id from runtime argument
-- [X] Updated source for lst
-- [X] Issue#71: Unable to upload to PTPImg
-- [X] New Image Host: Pixhost
-- [X] Restored tracker: Telly
-- [X] Support for IMDB api
-- [ ] Support for detecting and identifying subtitle information.
-
 ### v3.0.4
 - [ ] New Tracker: PTP
+- [ ] Improved TMDB metadata search Phase 3
+- [ ] Support for detecting and identifying subtitle information.
 - [ ] Support for Dual Audio Detection
 
 ### Backlogs
@@ -293,6 +285,19 @@ docker run --rm -it \
 <br>
 
 # Change Log
+
+## **3.0.3**
+    New Image Hosts
+        * Pixhost
+    
+    New Features
+        * Support for IMDB api
+        * Improved TMDB metadata search Phase 2
+        * Accept TVDB id from runtime argument
+        * Updated source for lst
+        * Restored tracker: Telly
+
+<br>
 
 ## **3.0.2**
     Bug Fixes
