@@ -216,7 +216,8 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     # to try and extract it ourselves, should that fail we can prompt the user
     # (only if auto_mode=false otherwise we just guess and upload what we have)
     keys_we_want_torrent_info = ['release_group', 'episode_title']
-    keys_we_need_torrent_info = ['screen_size', 'source', 'audio_channels']
+    # keys_we_need_torrent_info = ['screen_size', 'source', 'audio_channels']
+    keys_we_need_torrent_info = ['screen_size', 'source']
 
     if utils.has_user_provided_type(args.type):
         torrent_info["type"] = torrent_info["type"] = 'episode' if args.type[0] == 'tv' else 'movie'
@@ -306,7 +307,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
 
     #---------------------------------Full Disk BDInfo Parsing--------------------------------------#
     # if the upload is for a full disk, we parse the bdinfo to indentify more information before moving on to the existing logic.
-    keys_we_need_but_missing_torrent_info_list = ['video_codec', 'audio_codec']  # for disc we don't need mediainfo
+    keys_we_need_but_missing_torrent_info_list = ['video_codec', 'audio_codec', 'audio_channels']  # for disc we don't need mediainfo
     if args.disc:
         bdinfo_start_time = time.perf_counter()
         logging.debug(f"Generating and parsing the BDInfo for playlist {torrent_info['largest_playlist']}")
@@ -483,7 +484,7 @@ def analyze_video_file(missing_value, media_info):
         return video_codec
 
 
-def identify_miscellaneous_details(guess_it_result):
+def identify_miscellaneous_details(guess_it_result, file_to_parse):
     """
         This function is dedicated to analyzing the filename and extracting snippets such as "repack, "DV", "AMZN", etc
         Depending on what the "source" is we might need to search for a "web source" (amzn, nf, hulu, etc)
@@ -568,6 +569,15 @@ def identify_miscellaneous_details(guess_it_result):
     res = re.sub("[^0-9]", "", torrent_info["screen_size"])
     if int(res) < 720:
         torrent_info["sd"] = 1
+
+    # --------- Dual Audio / Multi / Commentary --------- #
+    media_info_result = basic_utilities.basic_get_mediainfo(file_to_parse)
+    dual, multi, commentary = miscellaneous_utilities.fill_dual_multi_and_commentary(torrent_info["original_language"], media_info_result.audio_tracks)
+    torrent_info["dualaudio"] = dual
+    torrent_info["multiaudio"] = multi
+    torrent_info["commentary"] = commentary
+    # --------- Dual Audio / Dubbed / Multi / Commentary --------- #
+# -------------- END of identify_miscellaneous_details --------------
 
 
 # ---------------------------------------------------------------------- #
@@ -1015,10 +1025,6 @@ for file in upload_queue:
         if nfo and len(nfo) > 0:
             torrent_info["nfo_file"] = nfo[0]
 
-    # -------- Fix/update values --------
-    # set the correct video & audio codecs (Dolby Digital --> DDP, use x264 if encode vs remux etc)
-    identify_miscellaneous_details(guess_it_result)
-
     # tmdb, imdb and tvmaze in torrent_info will be filled by this method
     metadata_utilities.fill_database_ids(torrent_info, args.tmdb, args.imdb, args.tvmaze, auto_mode, args.tvdb)
 
@@ -1039,6 +1045,10 @@ for file in upload_queue:
     # TODO try to move the tvdb and mal identification along with `metadata_get_external_id`
     torrent_info["tvdb"] = tvdb
     torrent_info["mal"] = mal
+
+    # -------- Fix/update values --------
+    # set the correct video & audio codecs (Dolby Digital --> DDP, use x264 if encode vs remux etc)
+    identify_miscellaneous_details(guess_it_result, torrent_info["raw_video_file"] if "raw_video_file" in torrent_info else torrent_info["upload_media"])
 
     # -------- User input edition --------
     # Support for user adding in custom edition if its not obvious from filename

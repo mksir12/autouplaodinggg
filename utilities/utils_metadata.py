@@ -398,6 +398,9 @@ def metadata_compare_tmdb_data_local(torrent_info):
             if genre["name"] == 'Animation':
                 tvdb, mal = search_for_mal_id(content_type=content_type, tmdb_id=torrent_info["tmdb"], torrent_info=torrent_info)
 
+    # saving the original language. This will be used to detect dual / multi and dubbed releases
+    torrent_info["original_language"] = get_media_info["original_language"] if "original_language" in get_media_info else ""
+
     # Acquire and set the title we get from TMDB here
     if content_title in get_media_info:
         title = get_media_info[content_title]

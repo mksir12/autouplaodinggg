@@ -714,7 +714,7 @@ def analyze_video_file(missing_value, media_info):
 # ---------------------------------------------------------------------- #
 #                      Analysing miscellaneous details!                  #
 # ---------------------------------------------------------------------- #
-def identify_miscellaneous_details(guess_it_result):
+def identify_miscellaneous_details(guess_it_result, file_to_parse):
     """
         This function is dedicated to analyzing the filename and extracting snippets such as "repack, "DV", "AMZN", etc
         Depending on what the "source" is we might need to search for a "web source" (amzn, nf, hulu, etc)
@@ -800,6 +800,15 @@ def identify_miscellaneous_details(guess_it_result):
     res = re.sub("[^0-9]", "", torrent_info["screen_size"])
     if int(res) < 720:
         torrent_info["sd"] = 1
+
+    # --------- Dual Audio / Multi / Commentary --------- #
+    media_info_result = basic_utilities.basic_get_mediainfo(file_to_parse)
+    dual, multi, commentary = miscellaneous_utilities.fill_dual_multi_and_commentary(torrent_info["original_language"], media_info_result.audio_tracks)
+    torrent_info["dualaudio"] = dual
+    torrent_info["multiaudio"] = multi
+    torrent_info["commentary"] = commentary
+    # --------- Dual Audio / Dubbed / Multi / Commentary --------- #
+
 # -------------- END of identify_miscellaneous_details --------------
 
 
@@ -882,10 +891,6 @@ def reupload_job():
             logging.debug(f"[Main] Skipping {torrent_info['upload_media']} because type and basic information cannot be identified.")
             continue
 
-        # -------- Fix/update values --------
-        # set the correct video & audio codecs (Dolby Digital --> DDP, use x264 if encode vs remux etc)
-        identify_miscellaneous_details(guess_it_result)
-
         # the metadata items will be first obtained from cached_data. if its not available then we'll go ahead with mediainfo_summary data and tmdb search
         movie_db = reupload_utilities.reupload_get_movie_db_from_cache(cache, cached_data, torrent_info["title"], torrent_info["year"] if "year" in torrent_info else "", torrent_info["type"])
 
@@ -920,6 +925,10 @@ def reupload_job():
 
         # saving the updates to moviedb in cache
         reupload_utilities.reupload_persist_updated_moviedb_to_cache(cache, movie_db, torrent_info, torrent["hash"], original_title, original_year)
+
+        # -------- Fix/update values --------
+        # set the correct video & audio codecs (Dolby Digital --> DDP, use x264 if encode vs remux etc)
+        identify_miscellaneous_details(guess_it_result, torrent_info["raw_video_file"] if "raw_video_file" in torrent_info else torrent_info["upload_media"])
 
         # Fix some default naming styles
         translation_utilities.fix_default_naming_styles(torrent_info)

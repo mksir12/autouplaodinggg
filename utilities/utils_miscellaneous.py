@@ -163,3 +163,43 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
         sys.exit()
     logging.debug(f'[MiscellaneousUtils] Source type identified as {return_source_type}')
     return return_source_type
+
+
+def fill_dual_multi_and_commentary(original_language, audio_tracks):
+    commentary = False
+    dualaudio, multiaudio = "", ""
+
+    english, original, multi = False, False, False
+    for audio_track in audio_tracks:
+        audio_language = audio_track.language
+
+        # checking for commentary tracks
+        if "commentary" in (audio_track.title.lower() if audio_track.title is not None else ""):
+            commentary = True
+
+        if original_language != "en" and original_language != "":
+            # check for english
+            if audio_language == "en" and "commentary" not in (audio_track.title.lower() if audio_track.title is not None else ""):
+                english = True
+
+            # check for original
+            if audio_language == original_language and "commentary" not in (audio_track.title.lower() if audio_track.title is not None else ""):
+                original = True
+
+            # catching chinese and norwegian variants
+            variants = ['zh', 'cn', 'cmn', 'no', 'nb']
+            if audio_language in variants and original_language in variants:
+                original = True
+
+            # checking for additional tracks. This will add multi to upload
+            if audio_language != original_language and audio_language != "en":
+                if original_language not in variants and audio_language not in variants:
+                    multi = True
+
+    if multi == True:
+        multiaudio = "Multi"
+
+    if english and original == True:
+        dualaudio = "Dual-Audio"
+
+    return dualaudio, multiaudio, commentary

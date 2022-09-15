@@ -1,4 +1,14 @@
 ## **3.0.3**
+    New Image Hosts
+        * Pixhost
+
+    New Features
+        * Support for IMDB api
+        * Improved TMDB metadata search Phase 2
+        * Accept TVDB id from runtime argument
+        * Updated source for lst
+        * Restored tracker: Telly
+
     Bug Fixes
         * Issue#77: NOGROUP identified as group when title has spaces instead of dot
 

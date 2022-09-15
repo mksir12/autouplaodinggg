@@ -49,8 +49,9 @@
     },
 
     "audio": {
-        "commentary": ["Commentary"],
-        "dual_audio": ["DualAudio"],
+        "commentary": ["Commentary", "Commentary Track"],
+        "dualaudio": ["DualAudio", "DUAL", "Dual-Audio"],
+        "multiaudio": ["MultiAudio", "Multi", "Multi-Audio"],
         "atmos": ["Atmos", " Dolby Atmos"]
     },
 

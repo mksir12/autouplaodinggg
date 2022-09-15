@@ -198,6 +198,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td>7</td>
             <td>snappie</td>
         </tr>
+        <tr>
+            <td>8</td>
+            <td>pixhost</td>
+        </tr>
     </tbody>
 </table>
 
@@ -261,12 +265,13 @@ docker run --rm -it \
 
 ### v3.0.4
 - [ ] New Tracker: PTP (Only for Upload Assistant)
-- [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
+- [X] Support for Dual Audio Detection
+- [X] Support for tagging `Multi` audio releases for DT
 
 ### v3.0.5
-- [ ] Support for Dual Audio Detection
+- [ ] Improved TMDB metadata search Phase 3
 
 ### Backlogs
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
@@ -303,6 +308,9 @@ docker run --rm -it \
         * Accept TVDB id from runtime argument
         * Updated source for lst
         * Restored tracker: Telly
+
+    Bug Fixes
+        * Issue#77: NOGROUP identified as group when title has spaces instead of dot
 
 <br>
 

@@ -314,25 +314,43 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
     if is_disc and torrent_info["bdinfo"] is not None:
         return bdinfo_utilities.bdinfo_get_audio_channels_from_bdinfo(torrent_info["bdinfo"])
 
+    # suppressing regex based audio channel identification
     # First try detecting the 'audio_channels' using regex
-    if "raw_file_name" in torrent_info:
-        # First split the filename by '-' & '.'
-        file_name_split = re.sub(r'[-.]', ' ', str(torrent_info["raw_file_name"]))
-        # Now search for the audio channels
-        re_extract_channels = re.search(r'\s[0-9]\s[0-9]\s', file_name_split)
-        if re_extract_channels is not None:
-            # Because this isn't something I've tested extensively I'll only consider it a valid match if its a super common channel layout (e.g.  7.1  |  5.1  |  2.0  etc)
-            re_extract_channels = re_extract_channels.group().split()
-            mid_pos = len(re_extract_channels) // 2
-            # joining and construction using single line
-            possible_audio_channels = str(' '.join(re_extract_channels[:mid_pos] + ["."] + re_extract_channels[mid_pos:]).replace(" ", ""))
-            # Now check if the regex match is in a list of common channel layouts
-            if possible_audio_channels in ['1.0', '2.0', '5.1', '7.1']:
-                # It is! So return the regex match and skip over the ffprobe process below
-                logging.info(f"[BasicUtils] Used regex to identify audio channels: {possible_audio_channels}")
-                return possible_audio_channels
+    # if "raw_file_name" in torrent_info:
+    #     # First split the filename by '-' & '.'
+    #     file_name_split = re.sub(r'[-.]', ' ', str(torrent_info["raw_file_name"]))
+    #     # Now search for the audio channels
+    #     re_extract_channels = re.search(r'\s[0-9]\s[0-9]\s', file_name_split)
+    #     if re_extract_channels is not None:
+    #         # Because this isn't something I've tested extensively I'll only consider it a valid match if its a super common channel layout (e.g.  7.1  |  5.1  |  2.0  etc)
+    #         re_extract_channels = re_extract_channels.group().split()
+    #         mid_pos = len(re_extract_channels) // 2
+    #         # joining and construction using single line
+    #         possible_audio_channels = str(' '.join(re_extract_channels[:mid_pos] + ["."] + re_extract_channels[mid_pos:]).replace(" ", ""))
+    #         # Now check if the regex match is in a list of common channel layouts
+    #         if possible_audio_channels in ['1.0', '2.0', '5.1', '7.1']:
+    #             # It is! So return the regex match and skip over the ffprobe process below
+    #             logging.info(f"[BasicUtils] Used regex to identify audio channels: {possible_audio_channels}")
+    #             return possible_audio_channels
 
-    # If the regex failed ^^ (Likely) then we use ffprobe to try and auto detect the channels
+    # Another thing we can try is pymediainfo and count the 'Channel layout' then subtract 1 depending on if 'LFE' is one of them
+    if media_info_audio_track.channel_layout is not None:
+        channel_layout = str(media_info_audio_track.channel_layout)
+        channel_total = str(media_info_audio_track.channel_layout).split(" ")
+        if 'LFE' in channel_total:
+            audio_channels_pymedia = f'{int(len(channel_total)) - 1}.1'
+        elif channel_layout == "":
+            if int(channels) <= 2:
+                audio_channels_pymedia = f"{int(len(channel_total))}.0"
+            else:
+                audio_channels_pymedia = f"{int(len(channel_total)) - 1}.1"
+        else:
+            audio_channels_pymedia = f'{int(len(channel_total))}.0'
+
+        logging.info(f"[BasicUtils] Used pymediainfo to identify audio channels: {audio_channels_pymedia}")
+        return audio_channels_pymedia
+
+    # If the mediainfo failed then we use ffprobe to try and auto detect the channels
     audio_info_probe = FFprobe(
         inputs={parse_me: None},
         global_options=['-v', 'quiet', '-print_format', 'json', '-select_streams a:0', '-show_format', '-show_streams']
@@ -354,17 +372,6 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
                 audio_channels_ff = str(audio_channel_layout.group())
                 logging.info(f"[BasicUtils] Used ffmpy.ffprobe to identify audio channels: {audio_channels_ff}")
                 return audio_channels_ff
-
-    # Another thing we can try is pymediainfo and count the 'Channel layout' then subtract 1 depending on if 'LFE' is one of them
-    if media_info_audio_track.channel_layout is not None:
-        channel_total = str(media_info_audio_track.channel_layout).split(" ")
-        if 'LFE' in channel_total:
-            audio_channels_pymedia = f'{int(len(channel_total)) - 1}.1'
-        else:
-            audio_channels_pymedia = f'{int(len(channel_total))}.0'
-
-        logging.info(f"[BasicUtils] Used pymediainfo to identify audio channels: {audio_channels_pymedia}")
-        return audio_channels_pymedia
 
     # If no audio_channels have been extracted yet then we try user_input next
     if not auto_mode:

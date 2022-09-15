@@ -17,9 +17,24 @@
 import pytest
 
 from pathlib import Path
+from pymediainfo import MediaInfo
 from utilities.utils_miscellaneous import *
 
+
 working_folder = Path(__file__).resolve().parent.parent.parent
+mediainfo_xml = "/tests/resources/mediainfo/xml/"
+
+
+def _get_file_contents(raw_file_name):
+    return open(raw_file_name, encoding="utf-8").read()
+
+
+def _get_media_info(raw_file_name):
+    return MediaInfo(_get_file_contents(raw_file_name))
+
+
+def _get_media_info_audio_tracks(raw_file_name):
+    return _get_media_info(raw_file_name).audio_tracks
 
 
 @pytest.mark.parametrize(
@@ -229,3 +244,34 @@ def test_miscellaneous_identify_web_streaming_source(raw_file_name, guess_it_res
 def test_miscellaneous_identify_source_type(raw_file_name, expected):
     assert miscellaneous_identify_source_type(
         raw_file_name, True, None) == expected
+
+
+@pytest.mark.parametrize(
+    ("original_language", "audio_tracks", "expected"),
+    [
+        pytest.param(
+            "ko",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}Squid.Game.S01E01.Red.Light.Green.Light.2160p.NF.WEB-DL.DV.HDR.DDP5.1.Atmos.H.265-RG.xml"),
+            { "dual" : "Dual-Audio", "multi" : "", "commentary" : False },
+            id="dual_audio_only"
+        ),
+        pytest.param(
+            "te",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}Sita.Ramam.2022.1080p.AMZN.WEB-DL.Multi.DDP5.1.H.264-RG.xml"),
+            { "dual" : "", "multi" : "Multi", "commentary" : False },
+            id="multi_audio_only"
+        ),
+        pytest.param(
+            "en",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}2001.A.Space.Odyssey.1968.Hybrid.2160p.UHD.BluRay.REMUX.DV.HDR10Plus.HEVC.DTS-HD.MA.5.1-RG.xml"),
+            { "dual" : "", "multi" : "", "commentary" : True },
+            id="commentary_only"
+        )
+    ]
+)
+def test_fill_dual_multi_and_commentary(original_language, audio_tracks, expected):
+    dual, multi, commentary = fill_dual_multi_and_commentary(original_language, audio_tracks)
+
+    assert dual == expected["dual"]
+    assert multi == expected["multi"]
+    assert commentary == expected["commentary"]

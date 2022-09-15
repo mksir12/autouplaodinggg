@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mediainfo version="22.03">
+<File>
+<track type="General">
+<Unique_ID>190579593709643023802953532533863226550 (0x8F604B6CF791A80475828F092D5A1CB6)</Unique_ID>
+<Complete_name>Sita.Ramam.2022.1080p.AMZN.WEB-DL.Multi.DDP5.1.H.264-RG.mkv</Complete_name>
+<Format>Matroska</Format>
+<Format_version>Version 4</Format_version>
+<File_size>11.9 GiB</File_size>
+<Duration>2 h 38 min</Duration>
+<Overall_bit_rate>10.8 Mb/s</Overall_bit_rate>
+<Movie_name>Sita Ramam / Sita Ramam</Movie_name>
+<Encoded_by>DTR</Encoded_by>
+<ContentType>Movie</ContentType>
+<Description>A love story written with war</Description>
+<Released_date>2022-08-05</Released_date>
+<Writing_application>mkvmerge v68.0.0 (&apos;The Curtain&apos;) 64-bit</Writing_application>
+<Writing_library>libebml v1.4.2 + libmatroska v1.6.4</Writing_library>
+<Copyright>DTR</Copyright>
+<Cover>Yes</Cover>
+<Comment>DTR</Comment>
+<Attachments>cover.jpg / kodi-metadata</Attachments>
+<ACTOR>Dulquer Salmaan, Mrunal Thakur, Rashmika Mandanna, Sumanth, Gautham Vasudev Menon, Prakash Raj, Tharun Bhascker Dhaassyam, Vennela Kishore, Bhumika Chawla, Jisshu Sengupta, Sachin Khedekar, Murali Sharma, Rahul Ravindran, Shatru</ACTOR>
+<ARTIST>Dulquer Salmaan, Mrunal Thakur, Rashmika Mandanna, Sumanth, Gautham Vasudev Menon, Prakash Raj, Tharun Bhascker Dhaassyam, Vennela Kishore, Bhumika Chawla, Jisshu Sengupta, Sachin Khedekar, Murali Sharma, Rahul Ravindran, Shatru</ARTIST>
+<DATE_RECORDED>2022-08-05</DATE_RECORDED>
+<DIRECTOR>Hanu Raghavapudi</DIRECTOR>
+<GENRE>Romance, Drama</GENRE>
+<IMDB>tt20850406</IMDB>
+<PRODUCER>C. Ashwini Dutt, Priyanka Dutt</PRODUCER>
+<PRODUCTION_STUDIO>Swapna Cinema</PRODUCTION_STUDIO>
+<SCREENPLAY_BY>Hanu Raghavapudi, Raj Kumar Kandamudi</SCREENPLAY_BY>
+<SUMMARY>A love story written with war</SUMMARY>
+<SYNOPSIS>A long-lost letter must find its way to the recipient twenty years later. A rabble-rouser learns a lesson in humility and love along the way.</SYNOPSIS>
+<WRITTEN_BY>Hanu Raghavapudi, Raj Kumar Kandamudi</WRITTEN_BY>
+</track>
+<track type="Video">
+<ID>1</ID>
+<Format>AVC</Format>
+<Format_Info>Advanced Video Codec</Format_Info>
+<Format_profile>High@L4</Format_profile>
+<Format_settings>CABAC / 4 Ref Frames</Format_settings>
+<Format_settings__CABAC>Yes</Format_settings__CABAC>
+<Format_settings__Reference_frames>4 frames</Format_settings__Reference_frames>
+<Format_settings__GOP>M=4, N=48</Format_settings__GOP>
+<Codec_ID>V_MPEG4/ISO/AVC</Codec_ID>
+<Duration>2 h 38 min</Duration>
+<Bit_rate_mode>Constant</Bit_rate_mode>
+<Bit_rate>8 866 kb/s</Bit_rate>
+<Nominal_bit_rate>10 000 kb/s</Nominal_bit_rate>
+<Width>1 920 pixels</Width>
+<Height>1 080 pixels</Height>
+<Display_aspect_ratio>16:9</Display_aspect_ratio>
+<Frame_rate_mode>Constant</Frame_rate_mode>
+<Frame_rate>24.000 FPS</Frame_rate>
+<Color_space>YUV</Color_space>
+<Chroma_subsampling>4:2:0</Chroma_subsampling>
+<Bit_depth>8 bits</Bit_depth>
+<Scan_type>Progressive</Scan_type>
+<Bits__Pixel_Frame_>0.178</Bits__Pixel_Frame_>
+<Stream_size>9.81 GiB (82%)</Stream_size>
+<Title>DTR</Title>
+<Language>te</Language>
+<Default>Yes</Default>
+<Forced>No</Forced>
+<Color_range>Limited</Color_range>
+<Color_primaries>BT.709</Color_primaries>
+<Transfer_characteristics>BT.709</Transfer_characteristics>
+<Matrix_coefficients>BT.709</Matrix_coefficients>
+</track>
+<track type="Audio" typeorder="1">
+<ID>2</ID>
+<Format>E-AC-3</Format>
+<Format_Info>Enhanced AC-3</Format_Info>
+<Commercial_name>Dolby Digital Plus</Commercial_name>
+<Codec_ID>A_EAC3</Codec_ID>
+<Duration>2 h 38 min</Duration>
+<Bit_rate_mode>Constant</Bit_rate_mode>
+<Bit_rate>640 kb/s</Bit_rate>
+<Channel_s_>6 channels</Channel_s_>
+<Channel_layout>L R C LFE Ls Rs</Channel_layout>
+<Sampling_rate>48.0 kHz</Sampling_rate>
+<Frame_rate>31.250 FPS (1536 SPF)</Frame_rate>
+<Compression_mode>Lossy</Compression_mode>
+<Stream_size>725 MiB (6%)</Stream_size>
+<Title>DTR</Title>
+<Language>te</Language>
+<Service_kind>Complete Main</Service_kind>
+<Default>Yes</Default>
+<Forced>No</Forced>
+</track>
+<track type="Audio" typeorder="2">
+<ID>3</ID>
+<Format>E-AC-3</Format>
+<Format_Info>Enhanced AC-3</Format_Info>
+<Commercial_name>Dolby Digital Plus</Commercial_name>
+<Codec_ID>A_EAC3</Codec_ID>
+<Duration>2 h 38 min</Duration>
+<Bit_rate_mode>Constant</Bit_rate_mode>
+<Bit_rate>640 kb/s</Bit_rate>
+<Channel_s_>6 channels</Channel_s_>
+<Channel_layout>L R C LFE Ls Rs</Channel_layout>
+<Sampling_rate>48.0 kHz</Sampling_rate>
+<Frame_rate>31.250 FPS (1536 SPF)</Frame_rate>
+<Compression_mode>Lossy</Compression_mode>
+<Stream_size>725 MiB (6%)</Stream_size>
+<Title>DTR</Title>
+<Language>ta</Language>
+<Service_kind>Complete Main</Service_kind>
+<Default>No</Default>
+<Forced>No</Forced>
+</track>
+<track type="Audio" typeorder="3">
+<ID>4</ID>
+<Format>E-AC-3</Format>
+<Format_Info>Enhanced AC-3</Format_Info>
+<Commercial_name>Dolby Digital Plus</Commercial_name>
+<Codec_ID>A_EAC3</Codec_ID>
+<Duration>2 h 38 min</Duration>
+<Bit_rate_mode>Constant</Bit_rate_mode>
+<Bit_rate>640 kb/s</Bit_rate>
+<Channel_s_>6 channels</Channel_s_>
+<Channel_layout>L R C LFE Ls Rs</Channel_layout>
+<Sampling_rate>48.0 kHz</Sampling_rate>
+<Frame_rate>31.250 FPS (1536 SPF)</Frame_rate>
+<Compression_mode>Lossy</Compression_mode>
+<Stream_size>725 MiB (6%)</Stream_size>
+<Title>DTR</Title>
+<Language>ml</Language>
+<Service_kind>Complete Main</Service_kind>
+<Default>No</Default>
+<Forced>No</Forced>
+</track>
+<track type="Text">
+<ID>5</ID>
+<Format>UTF-8</Format>
+<Codec_ID>S_TEXT/UTF8</Codec_ID>
+<Codec_ID_Info>UTF-8 Plain Text</Codec_ID_Info>
+<Duration>2 h 34 min</Duration>
+<Bit_rate>69 b/s</Bit_rate>
+<Count_of_elements>2683</Count_of_elements>
+<Stream_size>78.4 KiB (0%)</Stream_size>
+<Title>DTR</Title>
+<Language>en</Language>
+<Default>No</Default>
+<Forced>No</Forced>
+</track>
+</File>
+</Mediainfo>
