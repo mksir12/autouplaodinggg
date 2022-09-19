@@ -75,7 +75,7 @@ def test_scene_group_capitalization_for_p2p_group_folder(monkeypatch):
     pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt", "r").read())
     srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db.json", "r")))
     scene_api_responses = iter([pre_corrupt_db, srr_db])
-    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
 
     assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
 
@@ -90,7 +90,7 @@ def test_scene_group_capitalization_for_p2p_group_file(monkeypatch):
     pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt", "r").read())
     srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db.json", "r")))
     scene_api_responses = iter([pre_corrupt_db, srr_db])
-    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
 
     assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
 
@@ -104,7 +104,7 @@ def test_scene_group_capitalization_pre_corrupt_db_match(monkeypatch):
 
     pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_success.txt", "r").read())
     scene_api_responses = iter([pre_corrupt_db])
-    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
 
     assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/tests/resources/scene_db/empty.json', torrent_info) == expected
 
@@ -119,7 +119,7 @@ def test_scene_group_capitalization_srr_db_match(monkeypatch):
     pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_sparks.txt", "r").read())
     srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db_success.json", "r")))
     scene_api_responses = iter([pre_corrupt_db, srr_db])
-    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
 
     assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/tests/resources/scene_db/empty.json', torrent_info) == expected
 

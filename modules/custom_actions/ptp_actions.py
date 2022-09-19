@@ -164,7 +164,7 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
 
 
 def get_ptp_type(torrent_info, tracker_settings, tracker_config):
-    if "?groupid=" in tracker_config["upload_form"]:
+    if "?groupid=" in tracker_config["upload_form"]: # if release already existst then we'll get a group id from cusotm action `check_for_existing_group`
         logging.info("[CustomActions][PTP] GroupID already exists in PTP. No need to send type info")
         return
 
@@ -302,3 +302,10 @@ def mark_scene_release_if_applicable(torrent_info, tracker_settings, tracker_con
     else:
         logging.info("[CustomActions][PTP] Upload is not a scene release. Removing scene info from tacker payload.")
         tracker_settings.pop('scene', None)
+
+
+def fix_other_resolution(torrent_info, tracker_settings, tracker_config):
+    if tracker_settings["resolution"] == "Other":
+        logging.info("[CustomActions][PTP] Uploader identified resolution as 'Other'. Going to apply custom action")
+    else:
+        logging.info("[CustomActions][PTP] Resolution is not 'Other'. No actions needed")

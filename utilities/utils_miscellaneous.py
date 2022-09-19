@@ -17,6 +17,7 @@
 import re
 import sys
 import json
+import urllib3
 import logging
 import requests
 
@@ -29,6 +30,9 @@ console = Console()
 
 
 def miscellaneous_perform_scene_group_capitalization(scene_groups_path, torrent_info):
+    # suppressing https verfiy false error
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     # Scene releases after they unrared are all lowercase (usually) so we fix the torrent title here (Never rename the actual file)
     # new groups can be added in the `scene_groups.json`
     scene_group_capitalization = json.load(open(scene_groups_path))
@@ -49,7 +53,7 @@ def miscellaneous_perform_scene_group_capitalization(scene_groups_path, torrent_
 
     # searching in pre.corrupt-net.org to check whether its a scene release or not.
     logging.info("[MiscellaneousUtils] Checking for scene release in 'pre.corrupt-net'")
-    precorrupt_response = requests.get(f"https://pre.corrupt-net.org/search.php?search={raw_file_name}", headers={"Accept-Language": "en-US,en;q=0.8"}).text
+    precorrupt_response = requests.get(f"https://pre.corrupt-net.org/search.php?search={raw_file_name}", headers={"Accept-Language": "en-US,en;q=0.8"}, verify=False).text
     if f"Nothing found for: {raw_file_name}" in precorrupt_response:
         # no results found in pre.corrupt-net.org. We can check srrdb api also just to be sure.
         logging.info("[MiscellaneousUtils] Could not match upload to a scene release in 'pre.corroupt-net'")
