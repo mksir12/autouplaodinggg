@@ -21,7 +21,6 @@ import logging
 import requests
 import ptpimg_uploader
 
-from pprint import pformat
 from imdb import Cinemagoer
 from rich.prompt import Prompt
 from rich.console import Console
@@ -44,7 +43,7 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
             # if no group is present in ptp then we'll need to send more details to the tracker.
             # these details are fetched here and added to `tracker_settings`
             logging.info(f"[CustomActions][PTP] Failed to match IMDb id {torrent_info['imdb_with_tt']} to any groups.")
-            logging.info(f"[CustomActions][PTP] Filling details required for a new group upload.")
+            logging.info("[CustomActions][PTP] Filling details required for a new group upload.")
 
             poster = ""
             if len(torrent_info["tmdb_metadata"]["poster"]) > 0:
@@ -174,7 +173,7 @@ def get_ptp_type(torrent_info, tracker_settings, tracker_config):
     logging.info("[CustomActions][PTP] Attempting to identify the type applicable to PTP")
     try:
         movie_details = Cinemagoer().get_movie(torrent_info["imdb"])
-    except:
+    except Exception:
         movie_details = None
 
     # Interesting data in movie_details are
@@ -217,7 +216,7 @@ def get_ptp_type(torrent_info, tracker_settings, tracker_config):
             elif "concert" in keywords:
                 tracker_settings["type"] = "Concert"
 
-    if tracker_settings["type"] == None:
+    if tracker_settings["type"] is None:
         console.print("[red]We couldn't detect the type for PTP[/red]")
         tracker_settings["type"] = Prompt.ask("Please provide the type manually: ", choices=["Feature Film", "Short Film", "Miniseries", "Stand-up Comedy", "Concert", "Movie Collection"])
 
@@ -282,7 +281,7 @@ def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
                 subtitle["language_code"] = "en (Intertitles)"
 
         for lang, subtitleId in subtitle_mapping.items():
-            if subtitle["language_code"] in lang or subtitle["title"] in lang and subID not in available_subtitles:
+            if subtitle["language_code"] in lang or subtitle["title"] in lang and subtitleId not in available_subtitles:
                 available_subtitles.append(subtitleId)
 
     if len(torrent_info["subtitles"]) < 1:
