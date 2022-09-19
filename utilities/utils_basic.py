@@ -465,16 +465,14 @@ def basic_get_missing_source(torrent_info, is_disc, auto_mode, missing_value):
             'sdtv': 'sdtv'
         }
         # First get a basic source into the torrent_info dict, we'll prompt the user for a more specific source next (if needed, e.g. 'bluray' could mean 'remux', 'disc', or 'encode')
-        source = Prompt.ask("Input one of the following: ", choices=[
-                            "bluray", "web", "hdtv", "dvd", "pdtv", "sdtv"])
+        source = Prompt.ask("Input one of the following: ", choices=["bluray", "web", "hdtv", "dvd", "pdtv", "sdtv"])
         # Since the parent source isn't the filename we know that the 'final form' definitely won't be so we don't return the 'parent source' yet
         # We instead prompt the user again to figure out if its a remux, encode, webdl, rip, etc etc
         # Once we figure all that out we can return the 'parent source'
 
         # Now that we have the basic source we can prompt for a more specific source
         if isinstance(basic_source_to_source_type_dict[source], list):
-            specific_source_type = Prompt.ask(f"\nNow select one of the following 'formats' for [green]'{source}'[/green]: ",
-                                              choices=basic_source_to_source_type_dict[source])
+            specific_source_type = Prompt.ask(f"\nNow select one of the following 'formats' for [green]'{source}'[/green]: ", choices=basic_source_to_source_type_dict[source])
             # The user is given a list of options that are specific to the parent source they choose earlier (e.g.  bluray --> disc, remux, encode )
             source_type = f'{source}_{specific_source_type}'
         else:
@@ -484,8 +482,7 @@ def basic_get_missing_source(torrent_info, is_disc, auto_mode, missing_value):
         # Now that we've got all the source related info, we can return the 'parent source' and move on
         return source, source_type
     else:  # shit
-        quit_log_reason(
-            reason="auto_mode is enabled & we can't auto detect the source (e.g. bluray, webdl, dvd, etc). Upload form requires the Source", missing_value=missing_value)
+        quit_log_reason(reason="auto_mode is enabled & we can't auto detect the source (e.g. bluray, webdl, dvd, etc). Upload form requires the Source", missing_value=missing_value)
 
 
 def basic_get_missing_mediainfo(torrent_info, parse_me, working_folder):
@@ -528,16 +525,13 @@ def basic_get_raw_video_file(upload_media):
     raw_video_file = None
     for individual_file in sorted(glob.glob(f"{upload_media}/*")):
         found = False  # this is used to break out of the double nested loop
-        logging.info(
-            f"[BasicUtils] Checking to see if {individual_file} is a video file")
+        logging.info(f"[BasicUtils] Checking to see if {individual_file} is a video file")
         if os.path.isfile(individual_file):
-            logging.info(
-                f"[BasicUtils] Using {individual_file} for mediainfo tests")
+            logging.info(f"[BasicUtils] Using {individual_file} for mediainfo tests")
             file_info = MediaInfo.parse(individual_file)
             for track in file_info.tracks:
                 if track.track_type == "Video":
-                    logging.info(
-                        f"[BasicUtils] Identified a video track in {individual_file}")
+                    logging.info(f"[BasicUtils] Identified a video track in {individual_file}")
                     raw_video_file = individual_file
                     found = True
                     break
@@ -599,87 +593,76 @@ def prepare_mediainfo_summary(media_info_result):
     mediainfo_summary["Video"] = []
     mediainfo_summary["Audio"] = []
     mediainfo_summary["Text"] = []
+    subtitle_language_codes = []
 
     for track in media_info_result["tracks"]:
         if track["track_type"] == "General":
             general = dict()
-            general["Container"] = get(
-                _this="other_format", _or="format", _from=track)
-            general["Size"] = get(_this="other_file_size",
-                                  _or="file_size", _from=track)
-            general["Duration"] = get(
-                _this="other_duration", _or="duration", _from=track)
-            general["Bit Rate"] = get(
-                _this="other_overall_bit_rate", _or="overall_bit_rate", _from=track)
-            general["Frame Rate"] = get(
-                _this="other_frame_rate", _or="frame_rate", _from=track)
-            general["tmdb"] = get(_this=None, _or="tmdb",
-                                  _from=track, _default="0")
-            general["imdb"] = get(_this=None, _or="imdb",
-                                  _from=track, _default="0")
-            general["tvdb"] = get(_this=None, _or="tvdb",
-                                  _from=track, _default="0")
+            general["Container"] = get(_this="other_format", _or="format", _from=track)
+            general["Size"] = get(_this="other_file_size",_or="file_size", _from=track)
+            general["Duration"] = get(_this="other_duration", _or="duration", _from=track)
+            general["Bit Rate"] = get(_this="other_overall_bit_rate", _or="overall_bit_rate", _from=track)
+            general["Frame Rate"] = get(_this="other_frame_rate", _or="frame_rate", _from=track)
+            general["tmdb"] = get(_this=None, _or="tmdb",_from=track, _default="0")
+            general["imdb"] = get(_this=None, _or="imdb",_from=track, _default="0")
+            general["tvdb"] = get(_this=None, _or="tvdb",_from=track, _default="0")
             mediainfo_summary["General"] = general
         elif track["track_type"] == "Video":
             video = dict()
-            video["Codec"] = get(_this="other_format",
-                                 _or="format", _from=track)
-            video["Bit Rate"] = get(
-                _this="other_bit_rate", _or="bit_rate", _from=track)
-            video["Frame Rate"] = get(
-                _this="other_frame_rate", _or="frame_rate", _from=track)
-            video["Bit Depth"] = get(
-                _this="other_bit_depth", _or="bit_depth", _from=track)
-            video["Language"] = get(
-                _this="other_language", _or="language", _from=track)
-            video["Aspect Ratio"] = get(
-                _this="other_display_aspect_ratio", _or="display_aspect_ratio", _from=track)
+            video["Codec"] = get(_this="other_format",_or="format", _from=track)
+            video["Bit Rate"] = get(_this="other_bit_rate", _or="bit_rate", _from=track)
+            video["Frame Rate"] = get(_this="other_frame_rate", _or="frame_rate", _from=track)
+            video["Bit Depth"] = get(_this="other_bit_depth", _or="bit_depth", _from=track)
+            video["Language"] = get(_this="other_language", _or="language", _from=track)
+            video["Aspect Ratio"] = get(_this="other_display_aspect_ratio", _or="display_aspect_ratio", _from=track)
             video["Resolution"] = f'{get(_this="sampled_width", _or="width", _from=track)}x{get(_this="sampled_height", _or="height", _from=track)}'
             mediainfo_summary["Video"].append(video)
         elif track["track_type"] == "Audio":
             audio = dict()
-            audio["Format"] = get(
-                _this="other_commercial_name", _or="commercial_name", _from=track)
-            audio["Channels"] = get(
-                _this="other_channel_s", _or="channel_s", _from=track)
-            audio["Sampling Rate"] = get(
-                _this="other_sampling_rate", _or="sampling_rate", _from=track)
-            audio["Compression"] = get(
-                _this="other_compression_mode", _or="compression_mode", _from=track)
-            audio["Language"] = get(
-                _this="other_language", _or="title", _from=track)
-            audio["Bit Rate"] = get(
-                _this="other_bit_rate", _or="bit_rate", _from=track)
-            audio["Bit Rate Mode"] = get(
-                _this="other_bit_rate_mode", _or="bit_rate_mode", _from=track)
+            audio["Format"] = get(_this="other_commercial_name", _or="commercial_name", _from=track)
+            audio["Channels"] = get(_this="other_channel_s", _or="channel_s", _from=track)
+            audio["Sampling Rate"] = get(_this="other_sampling_rate", _or="sampling_rate", _from=track)
+            audio["Compression"] = get(_this="other_compression_mode", _or="compression_mode", _from=track)
+            audio["Language"] = get(_this="other_language", _or="title", _from=track)
+            audio["Bit Rate"] = get(_this="other_bit_rate", _or="bit_rate", _from=track)
+            audio["Bit Rate Mode"] = get(_this="other_bit_rate_mode", _or="bit_rate_mode", _from=track)
             mediainfo_summary["Audio"].append(audio)
         elif track["track_type"] == "Text":
             text = dict()
-            text["Language"] = get(
-                _this="other_language", _or="title", _from=track)
-            text["Format"] = get(_this="other_format",
-                                 _or="format", _from=track)
+            # This will give the human readable name of the subtitle
+            text["Language"] = get(_this="other_language", _or="title", _from=track)
+            text["Title"] = track["title"] if "title" in track else ""
+            text["Forced"] = track["Forced"] if "Forced" in track else ""
+            # we need the ISO 3 or 2 letter code for the language. We can get it from `language` or find it from `other_language`
+            if "language" in track:
+                text["language_code"] = track["language"]
+            elif "other_language" in track:
+                text["language_code"] = [ lang_code for lang_code in track["other_language"] if len(lang_code) == 2 or len(lang_code) == 3 ]
+                if len(text["language_code"]) > 0:
+                    text["language_code"] = text["language_code"][0]
+                else:
+                    text["language_code"] = None
+            else:
+                text["language_code"] = None
+            text["Format"] = get(_this="other_format",_or="format", _from=track)
             mediainfo_summary["Text"].append(text)
         elif track["track_type"] == "Menu":
             pass
 
     summary = "---(GENERAL)----" + "\n"
-    summary += '\n'.join(f'{key.ljust(15, ".")}: {value}' for key,
-                         value in mediainfo_summary["General"].items())
+    summary += '\n'.join(f'{key.ljust(15, ".")}: {value}' for key,value in mediainfo_summary["General"].items())
 
     if len(mediainfo_summary["Video"]) > 0:
         for video_track in mediainfo_summary["Video"]:
             summary += "\n\n"
             summary += "----(VIDEO)-----" + "\n"
-            summary += '\n'.join(f'{key.ljust(15, ".")}: {value}' for key,
-                                 value in video_track.items())
+            summary += '\n'.join(f'{key.ljust(15, ".")}: {value}' for key,value in video_track.items())
 
     if len(mediainfo_summary["Audio"]) > 0:
         for audio_track in mediainfo_summary["Audio"]:
             summary += "\n\n"
             summary += "----(AUDIO)-----" + "\n"
-            summary += '\n'.join(f'{key.ljust(15, ".")}: {value}' for key,
-                                 value in audio_track.items())
+            summary += '\n'.join(f'{key.ljust(15, ".")}: {value}' for key,value in audio_track.items())
 
     if len(mediainfo_summary["Text"]) > 0:
         summary += "\n\n"
@@ -687,20 +670,21 @@ def prepare_mediainfo_summary(media_info_result):
         summary += f'{"Format".ljust(15, ".")}: {mediainfo_summary["Text"][0]["Format"]}' + "\n"
         summary += f'{"Language".ljust(15, ".")}: '
         for text_track in mediainfo_summary["Text"]:
-            text_track = {k: v for k, v in text_track.items()
-                          if k.startswith('Language')}
+            text_track = {k: v for k, v in text_track.items() if k.startswith('Language')}
             summary += ''.join(f'{value}, ' for value in text_track.values())
+        # here we prepare a list of subtitle language codes
 
-    return summary, general["tmdb"], general["imdb"], general["tvdb"]
+    return summary, general["tmdb"], general["imdb"], general["tvdb"], mediainfo_summary["Text"]
 
 
 def basic_get_mediainfo_summary(media_info_result):
     meddiainfo_start_time = time.perf_counter()
-    mediainfo_summary, tmdb, imdb, tvdb = prepare_mediainfo_summary(
-        media_info_result)
+    mediainfo_summary, tmdb, imdb, tvdb, subtitle_language_codes = prepare_mediainfo_summary(media_info_result)
     meddiainfo_end_time = time.perf_counter()
-    logging.debug(
-        f"[BasicUtils] Time taken for mediainfo summary generation :: {(meddiainfo_end_time - meddiainfo_start_time)}")
-    logging.debug(
-        f'[BasicUtils] Generated MediaInfo summary :: \n {pformat(mediainfo_summary)}')
-    return mediainfo_summary, tmdb, imdb, tvdb
+    logging.debug(f"[BasicUtils] Time taken for mediainfo summary generation :: {(meddiainfo_end_time - meddiainfo_start_time)}")
+    logging.debug(f'[BasicUtils] Generated MediaInfo summary :: \n {pformat(mediainfo_summary)}')
+    logging.info(f"[BasicUtils] TMDb Identified from mediainfo: {tmdb}")
+    logging.info(f"[BasicUtils] IMDb Identified from mediainfo: {imdb}")
+    logging.info(f"[BasicUtils] TVDb Identified from mediainfo: {tvdb}")
+    logging.info(f"[BasicUtils] Subtitle language codes: {subtitle_language_codes}")
+    return mediainfo_summary, tmdb, imdb, tvdb, subtitle_language_codes

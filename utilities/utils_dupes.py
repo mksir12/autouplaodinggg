@@ -28,33 +28,10 @@ from rich.prompt import Confirm
 from rich.console import Console
 
 from utilities.utils_miscellaneous import miscellaneous_identify_repacks
+from utilities.utils import prepare_headers_for_tracker
 import modules.env as Environment
 
 console = Console()
-
-
-def _get_headers(technical_jargons, search_site, tracker_api):
-    if technical_jargons["authentication_mode"] == "API_KEY":
-        return None
-
-    if technical_jargons["authentication_mode"] == "BEARER":
-        logging.info(f"[DupeCheck] Using Bearer Token authentication method for tracker {search_site}")
-        return {'Authorization': f'Bearer {tracker_api}'}
-
-    if technical_jargons["authentication_mode"] == "HEADER":
-        if len(technical_jargons["headers"]) > 0:
-            headers = {}
-            logging.info(f"[DupeCheck] Using Header based authentication method for tracker {search_site}")
-            for header in technical_jargons["headers"]:
-                logging.info(f"[DupeCheck] Adding header '{header['key']}' to request")
-                headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{search_site}_{header['value']}", "")
-            return headers
-        else:
-            logging.fatal(f'[DupeCheck] Header based authentication cannot be done without `header_key` for tracker {search_site}.')
-    elif technical_jargons["authentication_mode"] == "COOKIE":
-        logging.fatal('[DupeCheck] Cookie based authentication is not supported yet.')
-
-    return None
 
 
 def _prepare_post_payload(search_site, imdb, tmdb, tvmaze, tracker_api, payload, upload_type, title):
@@ -94,9 +71,16 @@ def _get_response_from_wrapper(dupe_check_response_wrapper, search_site, site_na
 def _get_torrent_item(dupe_check_response, parse_json):
     torrent_items = dupe_check_response
     if parse_json["is_needed"]:
-        torrent_items = dupe_check_response[str(parse_json["top_lvl"])]
-        if "second_level" in parse_json:
-            torrent_items = torrent_items[parse_json["second_level"]]
+        if parse_json["top_lvl"] not in dupe_check_response:
+            logging.error(f"[DupeCheck] Unexpected response obtained from tracker. top_lvl item {parse_json['top_lvl']} is not present in dupe check response")
+            logging.debug(f"[DupeCheck] Dumping dupe check response:::::::::::::::::::::::::\n")
+            logging.debug(pformat(dupe_check_response))
+            logging.info("[DupeCheck] Proceeding with the 'EXPECTATION' that 'NO DUPES' are present in tracker")
+            return []
+        else:
+            torrent_items = dupe_check_response[parse_json["top_lvl"]]
+            if "second_level" in parse_json:
+                torrent_items = torrent_items[parse_json["second_level"]]
     return torrent_items
 
 
@@ -128,13 +112,21 @@ def _fill_existing_release_types_with_source_data(existing_release_types, torren
         existing_release_types[torrent_title] = 'bluray_remux'
 
     # WEB-DL
-    if (any(x in torrent_title_upper_split for x in ['WEB']) or all(x in torrent_title_split for x in ['web', 'dl'])) and (any(x in torrent_title_split for x in ['h.264', 'h264', 'h 264', 'h.265', 'h265', 'h 265', 'hevc', 'x264', 'x265', 'x.264', 'x.265', 'x 264', 'x 265'])
-                                                                                                                           or all(x in torrent_title_split for x in ['h', '265']) or all(x in torrent_title_split for x in ['h', '264'])):
+    if (
+        any(x in torrent_title_upper_split for x in ['WEB']) or
+        all(x in torrent_title_split for x in ['web', 'dl'])
+    ) and (
+        any(x in torrent_title_split for x in ['h.264', 'h264', 'h 264', 'h.265', 'h265', 'h 265', 'hevc', 'x264', 'x265', 'x.264', 'x.265', 'x 264', 'x 265']) or
+        all(x in torrent_title_split for x in ['h', '265']) or all(x in torrent_title_split for x in ['h', '264'])
+    ):
         existing_release_types[torrent_title] = "webdl"
 
     # WEBRip
-    if all(x in torrent_title_split for x in ['webrip']) and (any(x in torrent_title_split for x in ['h.264', 'h264', 'h 264', 'h.265', 'h265', 'h 265', 'hevc', 'x264', 'x265', 'x.264', 'x.265', 'x 264', 'x 265'])
-                                                              or all(x in torrent_title_split for x in ['h', '265']) or all(x in torrent_title_split for x in ['h', '264'])):
+    if all(x in torrent_title_split for x in ['webrip']) and (
+        any(x in torrent_title_split for x in ['h.264', 'h264', 'h 264', 'h.265', 'h265', 'h 265', 'hevc', 'x264', 'x265', 'x.264', 'x.265', 'x 264', 'x 265']) or
+        all(x in torrent_title_split for x in ['h', '265']) or
+        all(x in torrent_title_split for x in ['h', '264'])
+    ):
         existing_release_types[torrent_title] = "webrip"
 
     # HDTV
@@ -182,8 +174,7 @@ def _fuzzy_similarity(our_title, check_against_title, release_title, release_yea
 
     # replace DD+ with DDP from both our title and tracker results title to make the dupe check a bit more accurate since some sites like to use DD+ and others DDP but they refer to the same thing
     our_title = re.sub(r'dd\+', 'ddp', str(our_title).lower())
-    check_against_title = re.sub(
-        r'dd\+', 'ddp', str(check_against_title).lower())
+    check_against_title = re.sub(r'dd\+', 'ddp', str(check_against_title).lower())
 
     content_title = re.sub('[^0-9a-zA-Z]+', ' ', str(release_title).lower())
 
@@ -199,12 +190,10 @@ def _fuzzy_similarity(our_title, check_against_title, release_title, release_yea
     else:
         check_against_title_year = ""
 
-    our_title = re.sub(r'[^A-Za-z0-9 ]+', ' ', str(our_title)).lower().replace(
-        release_screen_size, "").replace(check_against_title_year, "")
+    our_title = re.sub(r'[^A-Za-z0-9 ]+', ' ', str(our_title)).lower().replace(release_screen_size, "").replace(check_against_title_year, "")
     our_title = " ".join(our_title.split())
 
-    check_against_title = re.sub(r'[^A-Za-z0-9 ]+', ' ', str(check_against_title)).lower(
-    ).replace(release_screen_size, "").replace(check_against_title_year, "")
+    check_against_title = re.sub(r'[^A-Za-z0-9 ]+', ' ', str(check_against_title)).lower().replace(release_screen_size, "").replace(check_against_title_year, "")
     check_against_title = " ".join(check_against_title.split())
 
     token_set_ratio = fuzz.token_set_ratio(our_title.replace(content_title, ''), check_against_title.replace(content_title, ''))
@@ -228,7 +217,7 @@ def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info,
     url_dupe_payload = None  # this is here just for the log, its not technically needed
 
     # multiple authentication modes
-    headers = _get_headers(config["dupes"]["technical_jargons"], tracker, tracker_api)
+    headers = prepare_headers_for_tracker(config["dupes"]["technical_jargons"], tracker, tracker_api)
 
     if str(config["dupes"]["technical_jargons"]["request_method"]) == "POST":  # POST request (BHD)
         url_dupe_search = str(config["torrents_search"]).format(api_key=tracker_api)
@@ -595,7 +584,7 @@ def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info,
         mark_as_dupe_percentage_difference = f'{"+" if mark_as_dupe_percentage_difference_raw_num >= 0 else "-"}{abs(mark_as_dupe_percentage_difference_raw_num)}%'
 
         possible_dupes_table.add_row(f'[{mark_as_dupe_color}]{mark_as_dupe}[/{mark_as_dupe_color}] ({mark_as_dupe_percentage_difference})',
-                                     possible_dupe, f'{str(possible_dupe_with_percentage_dict[possible_dupe])}%', cent_percent_dupes[possible_dupe] if possible_dupe in cent_percent_dupes else "---")
+            possible_dupe, f'{str(possible_dupe_with_percentage_dict[possible_dupe])}%', cent_percent_dupes[possible_dupe] if possible_dupe in cent_percent_dupes else "---")
 
         # because we want to show the user every possible dupe (not just the ones that exceed the max percentage)
         # we just mark an outside var True & finish the for loop that adds the table rows
@@ -619,8 +608,7 @@ def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info,
                 f"You're trying to upload an [bold red]Individual Episode[/bold red] [bold green]({torrent_info['title']} {torrent_info['s00e00']})[/bold green] to [bold]{search_site}[/bold]",  highlight=False)
             console.print(f"[bold red]Season Packs[/bold red] are already available: [bold green]({existing_release_types_key})[/bold green]", highlight=False)
             console.print("Most sites [bold red]don't allow[/bold red] individual episode uploads when the season pack is available")
-            console.print(
-                '---------------------------------------------------------')
+            console.print('---------------------------------------------------------')
             # If auto_mode is enabled then return true in all cases
             # If user chooses Yes / y => then we return False indicating that there are no dupes and processing can continue
             # If user chooses no / n => then we return True indicating that there are possible duplicates and stop the upload for the tracker
@@ -632,14 +620,12 @@ def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info,
             return True if auto_mode else not bool(Confirm.ask("\nContinue upload even with possible dupe?"))
     else:
         if is_dupes_present:
-            console.print(
-                "\n\n    [bold red] :warning:  Possible dupes ignored since threshold not exceeded! :warning: [/bold red]")
+            console.print("\n\n    [bold red] :warning:  Possible dupes ignored since threshold not exceeded! :warning: [/bold red]")
             console.print(possible_dupes_table)
             console.line(count=2)
             console.print(
                 f":heavy_check_mark: Yay! No dupes identified on [bold]{str(config['name']).upper()}[/bold] that exceeds the configured threshold, continuing the upload process now\n")
         else:
-            console.print(
-                f":heavy_check_mark: Yay! No dupes identified on [bold]{str(config['name']).upper()}[/bold], continuing the upload process now\n")
+            console.print(f":heavy_check_mark: Yay! No dupes identified on [bold]{str(config['name']).upper()}[/bold], continuing the upload process now\n")
 
         return False  # no dupes proceed with processing

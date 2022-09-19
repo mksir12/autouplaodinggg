@@ -378,15 +378,7 @@
         "parse_json": {
             "top_lvl": "data",
             "is_needed": true
-        },
-
-        "different_cuts": "1",
-        "2160p_remux": 1,
-        "2160p_encode": 1,
-        "1080p_remux": 1,
-        "1080p_encode": 100,
-        "720p_encode": 100,
-        "else": 1
+        }
     },
 
     "torrent_title_format": {

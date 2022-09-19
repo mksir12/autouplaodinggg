@@ -449,8 +449,15 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                             upload_these_tags_list.append(tag)
                     logging.info(f"[Translation] Tags selected for tracker: {upload_these_tags_list}")
                     if len(upload_these_tags_list) != 0:
-                        # currently we support sending tags as comma separated string or as an array
-                        tracker_settings[optional_key] = ",".join(upload_these_tags_list) if optional_value["type"] == "string" else upload_these_tags_list
+                        # currently we support sending tags as string or as an array
+                        if optional_value["type"] == "string":
+                            # if user wants to send tags as string, then a separator needs to be confiured.
+                            # default separator is ,
+                            # Note: If user wants TAG1 | TAG2 ie: <space>|<space> then user must configure separator as " | "
+                            separator = "," if "separator" not in optional_value or len(optional_value["separator"]) < 1 else optional_value["separator"]
+                            tracker_settings[optional_key] = separator.join(upload_these_tags_list)
+                        elif optional_value["type"] == "array":
+                            tracker_settings[optional_key] = upload_these_tags_list
 
                 # TODO figure out why .nfo uploads fail on BHD & don't display on BLU...
                 # if optional_key in ["nfo_file", "nfo"] and "nfo_file" in torrent_info:

@@ -354,7 +354,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
         # certain release groups will add IMDB, TMDB and TVDB id in the general section of mediainfo. If one such id is present then we can use it and
         # consider it the same as being provided by the user (no need to search)
         # PS: We don't use the tvdb id obtained here. (Might be deprecated)
-        mediainfo_summary, tmdb, imdb, _ = basic_utilities.basic_get_mediainfo_summary(media_info_result.to_data())
+        mediainfo_summary, tmdb, imdb, _, torrent_info["subtitles"]  = basic_utilities.basic_get_mediainfo_summary(media_info_result.to_data())
         torrent_info["mediainfo_summary"] = mediainfo_summary
         if tmdb != "0":
             # we will get movie/12345 or tv/12345 => we only need 12345 part.
@@ -562,8 +562,9 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # Whilst most scene group names are just capitalized but occasionally as you can see ^^ some are not (e.g. KOGi)
     # either way we don't want to be capitalizing everything (e.g. we want 'NTb' not 'NTB') so we still need a dict of scene groups and their proper capitalization
     if "release_group" in torrent_info:
+        # this is one place where we can identify scene groups
         torrent_info["scene"], torrent_info["release_group"] = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(
-            f'{working_folder}/parameters/scene_groups.json', torrent_info["release_group"])
+            f'{working_folder}/parameters/scene_groups.json', torrent_info)
 
     # --------- SD? --------- #
     res = re.sub("[^0-9]", "", torrent_info["screen_size"])
@@ -572,7 +573,8 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
 
     # --------- Dual Audio / Multi / Commentary --------- #
     media_info_result = basic_utilities.basic_get_mediainfo(file_to_parse)
-    dual, multi, commentary = miscellaneous_utilities.fill_dual_multi_and_commentary(torrent_info["original_language"], media_info_result.audio_tracks)
+    original_language = torrent_info["tmdb_metadata"]["original_language"] if torrent_info["tmdb_metadata"] is not None else ""
+    dual, multi, commentary = miscellaneous_utilities.fill_dual_multi_and_commentary(original_language, media_info_result.audio_tracks)
     torrent_info["dualaudio"] = dual
     torrent_info["multiaudio"] = multi
     torrent_info["commentary"] = commentary
@@ -610,12 +612,12 @@ def upload_to_site(upload_to, tracker_api_key):
             logging.info(f"[TrackerUpload] Using Header based authentication method for tracker {upload_to}")
             for header in config["technical_jargons"]["headers"]:
                 logging.info(f"[TrackerUpload] Adding header '{header['key']}' to request")
-                headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{upload_to}_{header['value']}", "")
+                headers[header["key"]] = tracker_api_key if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{upload_to}_{header['value']}", "")
             return headers
         else:
             logging.fatal(f'[TrackerUpload] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
-    # TODO add support for cookie based authentication
     elif config["technical_jargons"]["authentication_mode"] == "COOKIE":
+        # TODO add support for cookie based authentication
         logging.fatal('[TrackerUpload] Cookie based authentication is not supported as for now.')
 
     for key, val in tracker_settings.items():
@@ -681,8 +683,7 @@ def upload_to_site(upload_to, tracker_api_key):
                 logging.critical(f"[TrackerUpload] The file/path `{tracker_settings[key]}` for key {req_opt} does not exist!")
                 continue
         else:
-            # if str(val).endswith(".nfo") or str(val).endswith(".txt"):
-            if str(val).endswith(".txt"):
+            if str(val).endswith(".nfo") or str(val).endswith(".txt"):
                 if not os.path.exists(val):
                     create_file = open(val, "w+")
                     create_file.close()
@@ -691,6 +692,8 @@ def upload_to_site(upload_to, tracker_api_key):
             if req_opt == "Optional":
                 logging.info(f"[TrackerUpload] Optional key {key} will be added to payload")
             payload[key] = val
+
+    logging.debug(f"[TrackerUpload] Tracker Payload: {payload}")
 
     if not auto_mode:
         # prompt the user to verify everything looks OK before uploading
@@ -862,6 +865,8 @@ if args.debug:
     logging.getLogger("rebulk.rules").setLevel(logging.INFO)
     logging.getLogger("rebulk.rebulk").setLevel(logging.INFO)
     logging.getLogger("rebulk.processors").setLevel(logging.INFO)
+    logging.getLogger("imdbpy").setLevel(logging.FATAL)
+    logging.getLogger("imdbpy.parser.http.piculet").setLevel(logging.FATAL)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
     logging.debug(f"Arguments provided by user: {args}")
 
@@ -917,8 +922,7 @@ for upload_to_tracker in ["Acronym", "Site", "URL", "Platform"]:
     upload_to_trackers_overview.add_column(f"{upload_to_tracker}", justify='center', style='#38ACEC')
 
 for tracker in upload_to_trackers:
-    with open(f"{working_folder}/site_templates/{str(acronym_to_tracker.get(str(tracker).lower()))}.json", "r", encoding="utf-8") as config_file:
-        config = json.load(config_file)
+    config = json.load(open(f"{working_folder}/site_templates/{str(acronym_to_tracker.get(str(tracker).lower()))}.json", "r", encoding="utf-8"))
     # Add tracker data to each row & show the user an overview
     upload_to_trackers_overview.add_row(tracker, config["name"], config["url"], config["platform"])
 
@@ -1109,6 +1113,7 @@ for file in upload_queue:
         torrent_info["bbcode_thumb_nothumb"] = screenshots_data["bbcode_thumb_nothumb"]
         torrent_info["url_images"] = screenshots_data["url_images"]
         torrent_info["data_images"] = screenshots_data["data_images"]
+        torrent_info["screenshots_data"] = f"{working_folder}/temp_upload/{torrent_info['working_folder']}screenshots/screenshots_data.json"
 
     # At this point the only stuff that remains to be done is site specific so we can start a loop here for each site we are uploading to
     logging.info("[Main] Now starting tracker specific tasks")
@@ -1212,8 +1217,23 @@ for file in upload_queue:
         if translation_utilities.choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, args, working_folder) == "STOP":
             continue
 
-        logging.debug("::::::::::::::::::::::::::::: Final torrent_info with all data filled :::::::::::::::::::::::::::::")
+        logging.debug("::::::::::::::::::::::::::::: Final 'torrent_info' with all data filled :::::::::::::::::::::::::::::")
         logging.debug(f'\n{pformat(torrent_info)}')
+
+        # once the uploader finishes filling all the details as per the template, users can override values with custom actions.
+        if "custom_actions" in config["technical_jargons"] and len(config["technical_jargons"]["custom_actions"]) > 0:
+            for action in config["technical_jargons"]["custom_actions"]:
+                logging.info(f"[Main] Loading custom action :: {action}")
+                custom_action = utils.load_custom_actions(action)
+                logging.info(f"[Main] Loaded custom action :: {action} :: Executing...")
+                # any additional values added to tracker_settings will be treated as optional values by `upload_to_site`
+                # and all such keys will be send to tracker.
+                custom_action(torrent_info, tracker_settings, config)
+            # TODO save torrent_info before custom actions and restore the original torrent_info.
+            # custom actions cannot modify torrent info, only tracker settings and tracker config can be modified
+            # logging.debug("::::::::::::::::::::::::::::: Final 'torrent_info' after 'custom_actions' :::::::::::::::::::::::::::::")
+            # logging.debug(f'\n{pformat(torrent_info)}')
+
         # -------- Upload everything! --------
         # 1.0 everything we do in this for loop isn't persistent, its specific to each site that you upload to
         # 1.1 things like screenshots, TMDB/IMDB ID's can & are reused for each site you upload to

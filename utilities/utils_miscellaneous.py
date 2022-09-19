@@ -18,6 +18,7 @@ import re
 import sys
 import json
 import logging
+import requests
 
 from pathlib import Path
 from rich.console import Console
@@ -27,16 +28,48 @@ from rich.prompt import Prompt
 console = Console()
 
 
-def miscellaneous_perform_scene_group_capitalization(scene_groups_path, release_group):
+def miscellaneous_perform_scene_group_capitalization(scene_groups_path, torrent_info):
     # Scene releases after they unrared are all lowercase (usually) so we fix the torrent title here (Never rename the actual file)
     # new groups can be added in the `scene_groups.json`
     scene_group_capitalization = json.load(open(scene_groups_path))
+    release_group = torrent_info["release_group"]
 
     # compare the release group we extracted to the groups in the dict above ^^
     if str(release_group).lower() in scene_group_capitalization.keys():
         # replace the "release_group" with the dict value we have
         # Also save the fact that this is a scene group for later (we can add a 'scene' tag later to BHD)
         return 'true', scene_group_capitalization[str(release_group).lower()]
+
+    # if we don't have this particular group not stored in the metadata, we can check whether the release is scene using pre.corroupt-net and srrdb api
+    raw_file_name = torrent_info["raw_file_name"]
+    if "raw_video_file" not in torrent_info:
+        # user wants to upload a single file, we need to get scene release name from `raw_file_name` after removing the file format
+        idx_dots = [idx for idx, x in enumerate(raw_file_name) if x == '.']
+        raw_file_name = raw_file_name[:max(idx_dots)]
+
+    # searching in pre.corrupt-net.org to check whether its a scene release or not.
+    logging.info("[MiscellaneousUtils] Checking for scene release in 'pre.corrupt-net'")
+    precorrupt_response = requests.get(f"https://pre.corrupt-net.org/search.php?search={raw_file_name}", headers={"Accept-Language": "en-US,en;q=0.8"}).text
+    if f"Nothing found for: {raw_file_name}" in precorrupt_response:
+        # no results found in pre.corrupt-net.org. We can check srrdb api also just to be sure.
+        logging.info("[MiscellaneousUtils] Could not match upload to a scene release in 'pre.corroupt-net'")
+        logging.info("[MiscellaneousUtils] Checking for scene release in 'srrdb'")
+
+        srrdb_response = requests.get(f"https://api.srrdb.com/v1/search/r:{raw_file_name}").json()
+
+        if "results" not in srrdb_response or len(srrdb_response["results"]) < 1:
+            logging.info("[MiscellaneousUtils] Could not match upload to a scene release in 'srrdb'")
+            return 'false', release_group
+        else:
+            # TODO: is it possible to do scene group capitalization here?
+            logging.info("[MiscellaneousUtils] This release has been matched to a scene release in 'srrdb'")
+            # TODO: call https://api.srrdb.com/v1/imdb/{release_name} api to check and vverify the imdb id
+            return "true", release_group
+    else:
+        # TODO: is it possible to do scene group capitalization here?
+        logging.info("[MiscellaneousUtils] This release has been matched to a scene release in 'pre.corroupt-net'")
+        return "true", release_group
+
     return 'false', release_group
 
 

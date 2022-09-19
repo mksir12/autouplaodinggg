@@ -245,9 +245,9 @@ docker run --rm -it \
 <br />
 
 **Things to note:**
-1. We use TMDB API for all things media related (Title, Year, External IDs, etc)
+1. We use TMDb and IMDb for all things media related (Title, Year, External IDs, etc)
 2. If you provide the IMDB ID via ```-imdb```, you must include the 'tt' that precedes the numerical ID
-3. When providing multiple database (TMDB, IMDB, TVMAZE ) ids via optional arguments, uploader uses the ids with priority **`IMDB > TMDB > TVMAZE`**
+3. When providing multiple database (TMDB, IMDB, TVMAZE ) ids via optional arguments, uploader uses the ids with priority **`IMDB > TMDB > TVMAZE > TVDB`**
 4. Full Disk uploads are supported ONLY in FAT version of the docker images. Look for image tags in the format **`:FullDisk-{TAG}`**
 
 <br>
@@ -265,10 +265,11 @@ docker run --rm -it \
 
 ### v3.0.4
 - [ ] New Tracker: PTP (Only for Upload Assistant)
-- [ ] Support for detecting and identifying subtitle information.
+- [X] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
-- [X] Support for Dual Audio Detection
 - [X] Support for tagging `Multi` audio releases for DT
+- [X] Issue#41: Incorrect channel count detected
+- [X] Issue#42: Support for Dual Audio Detection
 
 ### v3.0.5
 - [ ] Improved TMDB metadata search Phase 3

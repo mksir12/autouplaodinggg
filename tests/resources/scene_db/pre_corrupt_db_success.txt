@@ -1,0 +1,18 @@
+<table id="result_data" query="1" align="center">
+	<tr>
+		<td id="rlstype" align="left" style="color:red; cursor: pointer;">X264</td>
+		<td style="cursor: pointer;" align="left"
+			title="<b><font color='orange'>Genre</font>: <font color='green'>Horror_Mystery</font></b>">
+			&nbsp;&nbsp;Get.Out.2017.1080p.BluRay.x264-<span id="rlsgroup"><font color='#C0C0C0'>SPARKS</font></span>&nbsp;&nbsp;
+		</td>
+		<td style="color: orange;" align="left">83F&nbsp;&nbsp;</td>
+		<td style="color: gray;" align="left">7834.73M</td>
+		<td style="color: #657383; cursor: pointer;"
+			title="<font color='#CC0066'>5 years 4 months 2 weeks 6 days 12 hours 33 minutes</font>">
+			&nbsp;&nbsp;2017-05-11 02:50:25</td>
+		<td title="<font color='green'>Raced</font>">&nbsp;&nbsp;<a
+				href="https://trace.corrupt-net.org/?q=Get.Out.2017.1080p.BluRay.x264-SPARKS">
+				<font color='green'>R</font>
+			</a></td>
+	</tr>
+</table>

@@ -1,0 +1,46 @@
+{
+    "Page": "Details",
+    "Result": "OK",
+    "GroupId": "138295",
+    "Name": "Name",
+    "Year": "2015",
+    "ImdbId": "4947084",
+    "ImdbRating": "7.0",
+    "ImdbVoteCount": 1955,
+    "Torrents": [
+        {
+            "Id": "409342",
+            "Quality": "Standard Definition",
+            "Source": "DVD",
+            "Container": "MKV",
+            "Codec": "x264",
+            "Resolution": "720x304",
+            "Size": "750499988",
+            "Scene": false,
+            "UploadTime": "2016-02-20 00:03:55",
+            "Snatched": "4",
+            "Seeders": "0",
+            "Leechers": "1",
+            "ReleaseGroup": null,
+            "Checked": true,
+            "GoldenPopcorn": false
+        },
+        {
+            "Id": "989077",
+            "Quality": "High Definition",
+            "Source": "WEB",
+            "Container": "MKV",
+            "Codec": "H.264",
+            "Resolution": "1080p",
+            "Size": "12294421033",
+            "Scene": false,
+            "UploadTime": "2021-11-22 12:58:06",
+            "Snatched": "33",
+            "Seeders": "3",
+            "Leechers": "0",
+            "ReleaseGroup": "RG",
+            "Checked": true,
+            "GoldenPopcorn": false
+        }
+    ]
+}

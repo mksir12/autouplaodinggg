@@ -135,6 +135,15 @@ api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict('./parameters/t
 # If there are any configuration errors for a particular tracker, then they'll not be used
 upload_to_trackers = utils.get_and_validate_configured_trackers(args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys())
 
+def restrict_ptp_uploads(upload_to_trackers):
+    if "PTP" in upload_to_trackers:
+        upload_to_trackers.remove("PTP")
+        console.print("[red bold] Uploading to [yellow]PTP[/yellow] not supported in GGBOT Auto ReUploader")
+        if len(upload_to_trackers) < 1:
+            raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
+
+restrict_ptp_uploads(upload_to_trackers)
+
 console.line(count=2)
 utils.display_banner("  Auto  ReUploader  ")
 console.line(count=1)
@@ -572,7 +581,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     #         bdInfo_summary = summary.read()
     #         torrent_info["mediainfo_summary"] = bdInfo_summary
     # else:
-    mediainfo_summary, tmdb, imdb, _ = basic_utilities.basic_get_mediainfo_summary(media_info_result.to_data())
+    mediainfo_summary, tmdb, imdb, _, torrent_info["subtitles"] = basic_utilities.basic_get_mediainfo_summary(media_info_result.to_data())
     torrent_info["mediainfo_summary"] = mediainfo_summary
     if tmdb != "0":
         # we will get movie/12345 or tv/12345 => we only need 12345 part.
@@ -792,7 +801,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # Whilst most scene group names are just capitalized but occasionally as you can see ^^ some are not (e.g. KOGi)
     # either way we don't want to be capitalizing everything (e.g. we want 'NTb' not 'NTB') so we still need a dict of scene groups and their proper capitalization
     if "release_group" in torrent_info:
-        scene, release_group = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info["release_group"])
+        scene, release_group = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info)
         torrent_info["release_group"] = release_group
         torrent_info["scene"] = scene
 
@@ -803,7 +812,8 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
 
     # --------- Dual Audio / Multi / Commentary --------- #
     media_info_result = basic_utilities.basic_get_mediainfo(file_to_parse)
-    dual, multi, commentary = miscellaneous_utilities.fill_dual_multi_and_commentary(torrent_info["original_language"], media_info_result.audio_tracks)
+    original_language = torrent_info["tmdb_metadata"]["original_language"] if torrent_info["tmdb_metadata"] is not None else ""
+    dual, multi, commentary = miscellaneous_utilities.fill_dual_multi_and_commentary(original_language, media_info_result.audio_tracks)
     torrent_info["dualaudio"] = dual
     torrent_info["multiaudio"] = multi
     torrent_info["commentary"] = commentary
@@ -850,6 +860,8 @@ def reupload_job():
             api_keys_dict=api_keys_dict,
             all_trackers_list=acronym_to_tracker.keys()
         )
+        restrict_ptp_uploads(upload_to_trackers_working)
+
         logging.info(f"[Main] Trackers this torrent needs to be uploaded to are {upload_to_trackers_working}")
 
         save_path = torrent["save_path"]

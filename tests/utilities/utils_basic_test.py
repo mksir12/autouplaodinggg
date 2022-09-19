@@ -287,31 +287,41 @@ def test_basic_get_missing_screen_size(torrent_info, is_disc, media_info_video_t
             _get_media_info_data(
                 f"{working_folder}{mediainfo_xml}Dragon.Booster.S01E01.The.Choosing.Part.1.AMZN.WEB-DL.DDP2.0.H.264-DRAGONE.xml"),
             (_get_file_contents(
-                f"{working_folder}{mediainfo_summary}Dragon.Booster.S01E01.The.Choosing.Part.1.AMZN.WEB-DL.DDP2.0.H.264-DRAGONE.summary"), "0", "0", "0"),
+                f"{working_folder}{mediainfo_summary}Dragon.Booster.S01E01.The.Choosing.Part.1.AMZN.WEB-DL.DDP2.0.H.264-DRAGONE.summary"), "0", "0", "0",
+                [{'Language': 'SDH', 'Title': 'SDH', 'Forced': '', 'language_code': 'English', 'Format': 'UTF-8'}]
+            ),
             id="summary_without_id"
         ),
         pytest.param(
             _get_media_info_data(
                 f"{working_folder}{mediainfo_xml}Venom.Let.There.Be.Carnage.2021.2160p.UHD.BluRay.REMUX.DV.HDR.HEVC.Atmos-TRiToN.xml"),
             (_get_file_contents(
-                f"{working_folder}{mediainfo_summary}Venom.Let.There.Be.Carnage.2021.2160p.UHD.BluRay.REMUX.DV.HDR.HEVC.Atmos-TRiToN.summary"), "movie/580489", "tt7097896", "0"),
+                f"{working_folder}{mediainfo_summary}Venom.Let.There.Be.Carnage.2021.2160p.UHD.BluRay.REMUX.DV.HDR.HEVC.Atmos-TRiToN.summary"), "movie/580489", "tt7097896", "0",
+                [{'Language': '', 'Title': '', 'Forced': '', 'language_code': 'English', 'Format': 'PGS'}, {'Language': 'SDH', 'Title': 'SDH', 'Forced': '', 'language_code': 'English', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Bulgarian', 'Format': 'PGS'}, {'Language': 'Cantonese', 'Title': 'Cantonese', 'Forced': '', 'language_code': 'Chinese', 'Format': 'PGS'}, {'Language': 'Mandarin Simplified', 'Title': 'Mandarin Simplified', 'Forced': '', 'language_code': 'Chinese', 'Format': 'PGS'}, {'Language': 'Mandarin Traditional', 'Title': 'Mandarin Traditional', 'Forced': '', 'language_code': 'Chinese', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Croatian', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Czech', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'French', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Greek', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Hungarian', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Icelandic', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Indonesian', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Italian', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Korean', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Malay', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Polish', 'Format': 'PGS'}, {'Language': 'Brazilian', 'Title': 'Brazilian', 'Forced': '', 'language_code': 'Portuguese', 'Format': 'PGS'}, {'Language': 'Iberian', 'Title': 'Iberian', 'Forced': '', 'language_code': 'Portuguese', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Romanian', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Serbian', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Slovak', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Slovenian', 'Format': 'PGS'}, {'Language': 'Latin American', 'Title': 'Latin American', 'Forced': '', 'language_code': 'Spanish', 'Format': 'PGS'}, {'Language': '', 'Title': '', 'Forced': '', 'language_code': 'Thai', 'Format': 'PGS'}]
+            ),
             id="summary_with_imdb_tmdb_movie"
         ),
         pytest.param(
             _get_media_info_data(
                 f"{working_folder}{mediainfo_xml}Peaky.Blinders.S06E01.Black.Day.2160p.iP.WEB-DL.DDP5.1.HLG.H.265-FLUX.xml"),
             (_get_file_contents(
-                f"{working_folder}{mediainfo_summary}Peaky.Blinders.S06E01.Black.Day.2160p.iP.WEB-DL.DDP5.1.HLG.H.265-FLUX.summary"), "tv/60574", "tt2442560", "0"),
+                f"{working_folder}{mediainfo_summary}Peaky.Blinders.S06E01.Black.Day.2160p.iP.WEB-DL.DDP5.1.HLG.H.265-FLUX.summary"), "tv/60574", "tt2442560", "0",
+                [{'Language': '', 'Title': '', 'Forced': '', 'language_code': 'English', 'Format': 'UTF-8'}, {'Language': 'SDH', 'Title': 'SDH', 'Forced': '', 'language_code': 'English', 'Format': 'UTF-8'}]
+            ),
             id="summary_with_imdb_tmdb_tv"
         ),
         pytest.param(
             _get_media_info_data(
                 f"{working_folder}{mediainfo_xml}The.Great.S02E10.Wedding.2160p.HULU.WEB-DL.DDP5.1.DV.HEVC-NOSiViD.xml"),
             (_get_file_contents(
-                f"{working_folder}{mediainfo_summary}The.Great.S02E10.Wedding.2160p.HULU.WEB-DL.DDP5.1.DV.HEVC-NOSiViD.summary"), "tv/93812", "tt2235759", "369301"),
+                f"{working_folder}{mediainfo_summary}The.Great.S02E10.Wedding.2160p.HULU.WEB-DL.DDP5.1.DV.HEVC-NOSiViD.summary"), "tv/93812", "tt2235759", "369301",
+                [{'Language': '', 'Title': '', 'Forced': '', 'language_code': 'English', 'Format': 'UTF-8'}, {'Language': 'SDH', 'Title': 'SDH', 'Forced': '', 'language_code': 'English', 'Format': 'UTF-8'}, {'Language': 'SDH', 'Title': 'SDH', 'Forced': '', 'language_code': 'Spanish', 'Format': 'UTF-8'}]
+            ),
             id="summary_with_imdb_tmdb__tvdb"
         ),
     ]
 )
 def test_basic_get_mediainfo_summary(media_info_result, expected):
+    print(basic_get_mediainfo_summary(media_info_result)[4])
     assert basic_get_mediainfo_summary(media_info_result) == expected
+

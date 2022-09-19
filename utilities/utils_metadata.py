@@ -19,9 +19,10 @@ import logging
 import requests
 
 from rich import box
+from imdb import Cinemagoer
 from rich.table import Table
-from rich.console import Console
 from rich.prompt import Prompt
+from rich.console import Console
 import modules.env as Environment
 
 console = Console()
@@ -357,6 +358,45 @@ def search_for_mal_id(content_type, tmdb_id, torrent_info):
     return temp_map["tvdb"], temp_map["mal"]
 
 
+def _fill_tmdb_metadata_to_torrent_info(torrent_info, tmdb_response):
+    # --------------------- _fill_tmdb_metadata_to_torrent_info ---------------------
+    # TV shows on TMDB have different keys then movies so we need to set that here
+    content_title = "name" if torrent_info["type"] == "episode" else "title"
+
+    tmdb_metadata = dict()
+    # saving the original language. This will be used to detect dual / multi and dubbed releases
+    tmdb_metadata["runtime_minutes"] = tmdb_response["runtime"]
+    tmdb_metadata["overview"] = tmdb_response["overview"] if "overview" in tmdb_response else ""
+    tmdb_metadata["title"] = tmdb_response[content_title] if content_title in tmdb_response else ""
+    tmdb_metadata["original_title"] = tmdb_response["original_title"] if "original_title" in tmdb_response else ""
+    tmdb_metadata["original_language"] = tmdb_response["original_language"] if "original_language" in tmdb_response else ""
+    tmdb_metadata["genres"] = list(map(lambda genre: genre["name"], tmdb_response["genres"])) if "genres" in tmdb_response else []
+    tmdb_metadata["release_date"] = tmdb_response["release_date"] if "release_date" in tmdb_response and len(tmdb_response["release_date"]) > 0 else ""
+    tmdb_metadata["poster"] = f"https://image.tmdb.org/t/p/original{tmdb_response['poster_path']}" if "poster_path" in tmdb_response and len(tmdb_response["poster_path"]) > 0 else ""
+    torrent_info["tmdb_metadata"] = tmdb_metadata
+    # --------------------- _fill_tmdb_metadata_to_torrent_info ---------------------
+
+
+def _fill_imdb_metadata_to_torrent_info(torrent_info, imdb_response, datasource):
+    # --------------------- _fill_imdb_metadata_to_torrent_info ---------------------
+    if datasource not in ["API", "CINEMAGOER"]:
+        # torrent_info["imdb_metadata"] will have None by default. Keeping that same behaviour in this case as well
+        logging.error(f"[MetadataUtils] IMDb metadata from invalid source {datasource} provided. Skipping filling IMDb metadata.")
+        return
+
+    imdb_metadata = dict()
+    imdb_metadata["title"] = imdb_response.get("title", '')
+    imdb_metadata["original_title"] = imdb_response.get("original title", '')
+    imdb_metadata["overview"] = imdb_response.get("plot", [''])[0]
+    imdb_metadata["poster"] = imdb_response.get("full-size cover url", "").replace(".jpg", "._V1_FMjpg_UX750_.jpg")
+    imdb_metadata["year"] = str(imdb_response.get("year"))
+    imdb_metadata["kind"] = imdb_response.get("kind")
+    imdb_metadata["genres"] = imdb_response.get("genres")
+    # TODO: youtube trailer
+    torrent_info["imdb_metadata"] = imdb_metadata
+    # --------------------- _fill_imdb_metadata_to_torrent_info ---------------------
+
+
 def metadata_compare_tmdb_data_local(torrent_info):
     # We need to use TMDB to make sure we set the correct title & year as well as correct punctuation so we don't get held up in torrent moderation queues
     # I've outlined some scenarios below that can trigger issues if we just try to copy and paste the file name as the title
@@ -373,44 +413,63 @@ def metadata_compare_tmdb_data_local(torrent_info):
     year = torrent_info["year"] if "year" in torrent_info else None
     tvdb = "0"
     mal = "0"
+    torrent_info["tmdb_metadata"] = None
+    torrent_info["imdb_metadata"] = None
 
-    if torrent_info["type"] == "episode":  # translation for TMDB API
-        content_type = "tv"
-        # Again TV shows on TMDB have different keys then movies so we need to set that here
-        content_title = "name"
-    else:
-        content_type = torrent_info["type"]
-        content_title = "title"
-
-    # We should only need 1 API request, so do that here
+    content_type = "tv" if torrent_info["type"] == "episode" else torrent_info["type"]  # translation for TMDB API
+    # Getting the movie / tv show details from TMDb
     get_media_info_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key={Environment.get_tmdb_api_key()}"
 
     try:
         logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}?api_key=<REDACTED>")
         get_media_info = requests.get(get_media_info_url).json()
+        _fill_tmdb_metadata_to_torrent_info(torrent_info, get_media_info)
     except Exception:
-        logging.exception('[MetadataUtils] Failed to get TVDB and MAL id from TMDB.')
+        logging.exception('[MetadataUtils] Failed to get TVDB and MAL id from TMDB. Possibly wrong TMDB id.')
         return title, year, tvdb, mal
 
     # Check the genres for 'Animation', if we get a hit we should check for a MAL ID just in case
-    if "genres" in get_media_info:
-        for genre in get_media_info["genres"]:
-            if genre["name"] == 'Animation':
-                tvdb, mal = search_for_mal_id(content_type=content_type, tmdb_id=torrent_info["tmdb"], torrent_info=torrent_info)
-
-    # saving the original language. This will be used to detect dual / multi and dubbed releases
-    torrent_info["original_language"] = get_media_info["original_language"] if "original_language" in get_media_info else ""
+    for genre in torrent_info["tmdb_metadata"]["genres"]:
+        if genre == 'Animation':
+            tvdb, mal = search_for_mal_id(content_type=content_type, tmdb_id=torrent_info["tmdb"], torrent_info=torrent_info)
 
     # Acquire and set the title we get from TMDB here
-    if content_title in get_media_info:
-        title = get_media_info[content_title]
+    if len(torrent_info["tmdb_metadata"]["title"]) > 0:
+        title = torrent_info["tmdb_metadata"]["title"]
         logging.info(f"[MetadataUtils] Using the title we got from TMDB: {title}")
 
     # Set the year (if exists)
-    if "release_date" in get_media_info and len(get_media_info["release_date"]) > 0:
-        # if len(get_media_info["release_date"]) > 0:
-        year = get_media_info["release_date"][:4]
+    if len(torrent_info["tmdb_metadata"]["release_date"]) > 0:
+        year = torrent_info["tmdb_metadata"]["release_date"][:4]
         logging.info(f"[MetadataUtils] Using the year we got from TMDB: {year}")
+
+    # now we'll also fetch and save the keywords from TMDB.
+    get_keywords_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/keywords?api_key={Environment.get_tmdb_api_key()}"
+    try:
+        logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/keywords?api_key=<REDACTED>")
+        keywords_info = requests.get(get_keywords_url).json()
+
+        if keywords_info is not None and "status_message" not in keywords_info:
+            # now that we got a proper response from tmdb, we need to store the keywords in torrent_info
+            # for movies, the keywords will be present in `keywords` and for tv shows it'll be in `results`
+            keywords_attribute = "results" if content_type == "tv" else "keywords"
+            torrent_info["tmdb_metadata"]["keywords"] = list(map(lambda keyword: keyword["name"].lower(), keywords_info[keywords_attribute]))
+            logging.info(f"[MetadataUtils] Obtained the following keywords from TMDb :: {torrent_info['tmdb_metadata']['keywords']}")
+        else:
+            logging.error("[MetadataUtils] Could not obtain keywords for the release from TMDb")
+    except Exception as e:
+        logging.exception("[MetadataUtils] Error occured while trying to fetch keywords for the relese.", exc_info=e)
+
+    # now that we've added TMDb metadata and TMDb keywords, we need to add the IMDb metadata to torrent info as well.
+    # We'll add the data from IMDB API and Cinemagoer
+    try:
+        # at this point in processing we don't have imdb without tt. Hence we create that.
+        imdb_details = Cinemagoer().get_movie(torrent_info["imdb"].replace("tt", ""))
+        _fill_imdb_metadata_to_torrent_info(torrent_info, imdb_details, "CINEMAGOER")
+    except Exception as ex:
+        logging.exception("[MetadataUtils] Exception occured while trying to get IMDb data from cinemagoer", exc_info=ex)
+        # TODO: if cinemagoer fails then attempt to get this metadata from imdb api
+
     return title, year, tvdb, mal
 
 

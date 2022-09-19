@@ -123,7 +123,7 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
 
     elif img_host == 'ptpimg':
         try:
-            ptp_img_upload = ptpimg_uploader.upload(api_key=Environment.get_ptpimg_api_key(), files_or_urls=[image_path], timeout=5)
+            ptp_img_upload = ptpimg_uploader.upload(api_key=Environment.get_ptpimg_api_key(), files_or_urls=[image_path], timeout=15)
             # Make sure the response we get from ptpimg is a list
             if not isinstance(ptp_img_upload, list):
                 return False
@@ -261,6 +261,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     console.rule("Screenshots", style='red', align='center')
     console.line(count=1)
 
+    # getting the number of screenshots to be taken
     num_of_screenshots = Environment.get_num_of_screenshots()
 
     logging.info(f"[Screenshots] Sanitizing the torrent title `{torrent_title_import}` since this is from TMDB")
@@ -271,28 +272,35 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
 
     enabled_img_hosts_list = []
     if skip_screenshots:
+        # user has provided the `skip_screenshots` in the command line arguments. Hence we are going to skip taking screenshots
         logging.info("[Screenshots] User has provided the `skip_screenshots` argument. Hence continuing without screenshots.")
         console.print('\nUser provided the argument `[red]skip_screenshots[/red]`. Overriding screenshot configurations in config.env', style='bold green')
     # ---------------------- check if 'num_of_screenshots=0' or not set ---------------------- #
-    elif num_of_screenshots == "0" or num_of_screenshots is None: # TODO: check when does this boolean case is executed
+    elif num_of_screenshots == "0":
+        # if user has set number of screenshots to 0, then we don't have to take any screenshots.
         logging.error(f'[Screenshots] num_of_screenshots is {"not set" if num_of_screenshots is None else f"set to {num_of_screenshots}"}, continuing without screenshots.')
         console.print(f'\nnum_of_screenshots is {"not set" if num_of_screenshots is None else f"set to {num_of_screenshots}"}, \n', style='bold red')
     else:
         # ---------------------- verify at least 1 image-host is set/enabled ---------------------- #
+        # here we are looking for the number of image hosts enabled (img_host_1, img_host_2, img_host_3...)
         enabled_img_host_num_loop = 0
-        while Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1) is not None:
+        while Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1) is not None and len(Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1)) > 0:
             enabled_img_hosts_list.append(Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1))
             enabled_img_host_num_loop += 1
+
         # now check if the loop ^^ found any enabled image hosts
-        if not bool(enabled_img_host_num_loop):
+        if len(enabled_img_hosts_list) == 0:
             logging.error('[Screenshots] All image-hosts are disabled/not set (try setting "img_host_1=imgbox" in config.env)')
             console.print('\nNo image-hosts are enabled, maybe try setting [dodger_blue2][bold]img_host_1=imgbox[/bold][/dodger_blue2] in [dodger_blue2]config.env[/dodger_blue2]\n', style='bold red')
+        else:
+            logging.info(f"[Screenshots] User has configured the following image hosts: {enabled_img_hosts_list}")
 
         # -------------------- verify an API key is set for 'enabled_img_hosts' -------------------- #
         for img_host_api_check in enabled_img_hosts_list:
             # Check if an API key is set for the image host
+            logging.debug(f"[Screenshots] Doing api key validation for {img_host_api_check}")
             if Environment.get_image_host_api_key(img_host_api_check) is None:
-                logging.error(f"Can't upload to {img_host_api_check} without an API key")
+                logging.error(f"[Screenshots]Can't upload to {img_host_api_check} without an API key")
                 console.print(f"\nCan't upload to [bold]{img_host_api_check}[/bold] without an API key\n", style='red3', highlight=False)
                 # If the api key is missing then remove the img_host from the 'enabled_img_hosts_list' list
                 enabled_img_hosts_list.remove(img_host_api_check)
@@ -302,14 +310,14 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     # -------------------------- Check if any img_hosts are still in the 'enabled_img_hosts_list' list -------------------------- #
     # if no image_hosts are left then we show the user an error that we will continue the upload with screenshots & return back to auto_upload.py
     # TODO: update this to work in line with the new json screenshot data
-    if not bool(enabled_img_hosts_list):
+    if len(enabled_img_hosts_list) == 0:
         with open(f"{base_path}/temp_upload/{hash_prefix}bbcode_images.txt", "w") as no_images, open(f"{base_path}/temp_upload/{hash_prefix}url_images.txt", "a") as append_url_txt:
             no_images.write("[b][color=#FF0000][size=22]No Screenshots Available[/size][/color][/b]")
             append_url_txt.write("No Screenshots Available")
             append_url_txt.close()
             no_images.close()
-        logging.error("[Screenshots] Continuing upload without screenshots")
-        console.print('Continuing without screenshots\n', style='chartreuse1')
+        logging.error("[Screenshots] Continuing upload without screenshots because no image hosts has been configured properly")
+        console.print('Continuing without screenshots. [red bold]No imagehosts configured properly[/red bold]\n', style='chartreuse1')
         return False # indicates that screenshots are NOT available
 
     # ##### Now that we've verified that at least 1 imghost is available & has an api key etc we can try & upload the screenshots ##### #
@@ -328,19 +336,21 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
             FFmpeg(inputs={upload_media_import: f'-loglevel panic -ss {ss_timestamp} -itsoffset -2'},
                    outputs={f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png': '-frames:v 1 -q:v 10'}).run()
         else:
-            logging.info(f"[Screenshots] Continuing upload existing screenshot: {torrent_title_import} - ({ss_timestamp.replace(':', '.')}).png")
+            logging.info(f"[Screenshots] Continuing with existing screenshot instead of taking new one: {torrent_title_import} - ({ss_timestamp.replace(':', '.')}).png")
         image_data_paths.append(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
 
     console.print('Finished taking screenshots!\n', style='sea_green3')
     # log the list of screenshot timestamps
-    logging.info(f'[Screenshots] Taking screenshots at the following timestamps {ss_timestamps_list}')
+    logging.info(f'[Screenshots] Took screenshots at the following timestamps {ss_timestamps_list}')
 
     # checking whether we have previously uploaded all the screenshots. If we have, then no need to upload them again
     # if screenshots were not uploaded previously, then we'll upload them.
     # As of now partial uploads are not discounted for. During upload, all screenshots will be uploaded
+
     if Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark').is_file():
         logging.info("[Screenshots] Noticed that all screenshots have been uploaded to image hosts. Skipping Uploads")
         console.print('Reusing previously uploaded screenshot urls!\n', style='sea_green3')
+        return True # indicates that screenshots are available
     else:
         # ---------------------------------------------------------------------------------------- #
         # all different type of screenshots that the upload takes.
@@ -353,7 +363,6 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
         console.print(f"Image host order: [chartreuse1]{' [bold blue]:arrow_right:[/bold blue] '.join(enabled_img_hosts_list)}[/chartreuse1]", style="Bold Blue")
 
         successfully_uploaded_image_count = 0
-
         for ss_to_upload in track(screenshots_to_upload_list, description="Uploading screenshots..."):
             # This is how we fall back to a second host if the first fails
             for img_host in enabled_img_hosts_list:

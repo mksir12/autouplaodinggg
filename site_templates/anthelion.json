@@ -135,15 +135,7 @@
             "torrent_name": "title",
             "combine_fields": true,
             "fields": [ "title", "year", "resolution", "media", "flags", "audioFormat", "codec", "releaseGroup" ]
-        },
-
-        "different_cuts": "1",
-        "2160p_remux": 1,
-        "2160p_encode": 1,
-        "1080p_remux": 1,
-        "1080p_encode": 100,
-        "720p_encode": 100,
-        "else": 1
+        }
     },
 
 

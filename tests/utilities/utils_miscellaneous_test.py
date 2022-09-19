@@ -17,12 +17,27 @@
 import pytest
 
 from pathlib import Path
+from pytest_mock import mocker
 from pymediainfo import MediaInfo
 from utilities.utils_miscellaneous import *
 
 
 working_folder = Path(__file__).resolve().parent.parent.parent
 mediainfo_xml = "/tests/resources/mediainfo/xml/"
+
+
+class APIResponse:
+    ok = None
+    data = None
+    text = None
+
+    def __init__(self, data, text=None):
+        self.ok = "True"
+        self.data = data
+        self.text = text
+
+    def json(self):
+        return self.data
 
 
 def _get_file_contents(raw_file_name):
@@ -38,18 +53,75 @@ def _get_media_info_audio_tracks(raw_file_name):
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("torrent_info", "expected"),
     (
-        ("0mnidvd", ("true", "0MNiDVD")),
-        ("kogi", ("true", "KOGi")),
-        ("ocular", ("true", "OCULAR")),
-        pytest.param("NTb", ("false", "NTb"), id="p2p_group_1"),
-        pytest.param("ntb", ("false", "ntb"), id="p2p_group_2")
+        pytest.param({"release_group":"0mnidvd"}, ("true", "0MNiDVD"), id="scene_group_from_json"),
+        pytest.param({"release_group":"kogi"}, ("true", "KOGi"), id="scene_group_from_json"),
+        pytest.param({"release_group":"ocular"}, ("true", "OCULAR"), id="scene_group_from_json")
     )
 )
-def test_miscellaneous_perform_scene_group_capitalization(input, expected):
-    assert miscellaneous_perform_scene_group_capitalization(
-        f'{working_folder}/parameters/scene_groups.json', input) == expected
+def test_miscellaneous_perform_scene_group_capitalization(torrent_info, expected):
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_for_p2p_group_folder(monkeypatch):
+    torrent_info = {
+        "release_group":"decibeL",
+        "raw_file_name":"Mr.And.Mrs.Smith.2005.1080p.BluRay.DTS.HD-MA.h264.Remux-decibeL",
+        "raw_video_file" : "Mr.And.Mrs.Smith.2005.1080p.BluRay.DTS.HD-MA.h264.Remux-decibeL.mkv"
+    }
+    expected = ("false", "decibeL")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt", "r").read())
+    srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db.json", "r")))
+    scene_api_responses = iter([pre_corrupt_db, srr_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_for_p2p_group_file(monkeypatch):
+    torrent_info = {
+        "release_group":"decibeL",
+        "raw_file_name":"Mr.And.Mrs.Smith.2005.1080p.BluRay.DTS.HD-MA.h264.Remux-decibeL.mkv",
+    }
+    expected = ("false", "decibeL")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt", "r").read())
+    srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db.json", "r")))
+    scene_api_responses = iter([pre_corrupt_db, srr_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_pre_corrupt_db_match(monkeypatch):
+    torrent_info = {
+        "release_group":"SPARKS",
+        "raw_file_name":"Get.Out.2017.1080p.BluRay.x264-SPARKS.mkv",
+    }
+    expected = ("true", "SPARKS")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_success.txt", "r").read())
+    scene_api_responses = iter([pre_corrupt_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/tests/resources/scene_db/empty.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_srr_db_match(monkeypatch):
+    torrent_info = {
+        "release_group":"SPARKS",
+        "raw_file_name":"Get.Out.2017.1080p.BluRay.x264-SPARKS.mkv",
+    }
+    expected = ("true", "SPARKS")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_sparks.txt", "r").read())
+    srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db_success.json", "r")))
+    scene_api_responses = iter([pre_corrupt_db, srr_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/tests/resources/scene_db/empty.json', torrent_info) == expected
 
 
 @pytest.mark.parametrize(
