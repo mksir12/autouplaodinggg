@@ -225,48 +225,49 @@ def get_ptp_type(torrent_info, tracker_settings, tracker_config):
 
 def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
     subtitle_mapping = {
-        ("Arabic", "ara", "ar") : 22,
-        ("Brazilian Portuguese", "Brazilian", "Portuguese-BR", 'pt-br') : 49,
-        ("Bulgarian", "bul", "bg") : 29,
-        ("Chinese", "chi", "zh", "Chinese (Simplified)", "Chinese (Traditional)") : 14,
-        ("Croatian", "hrv", "hr", "scr") : 23,
-        ("Czech", "cze", "cz", "cs") : 30,
-        ("Danish", "dan", "da") : 10,
-        ("Dutch", "dut", "nl") : 9,
         ("English", "eng", "en", "English (CC)", "English - SDH") : 3,
-        ("English - Forced", "English (Forced)", "en (Forced)") : 50,
-        ("English Intertitles", "English (Intertitles)", "English - Intertitles", "en (Intertitles)") : 51,
-        ("Estonian", "est", "et") : 38,
-        ("Finnish", "fin", "fi") : 15,
+        ("Spanish", "spa", "es") : 4,
         ("French", "fre", "fr") : 5,
         ("German", "ger", "de") : 6,
+        ("Russian", "rus", "ru") : 7,
+        ("Japanese", "jpn", "ja") : 8,
+        ("Dutch", "dut", "nl") : 9,
+        ("Danish", "dan", "da") : 10,
+        ("Swedish", "swe", "sv") : 11,
+        ("Norwegian", "nor", "no") : 12,
+        ("Romanian", "rum", "ro") : 13,
+        ("Chinese", "chi", "zh", "Chinese (Simplified)", "Chinese (Traditional)") : 14,
+        ("Finnish", "fin", "fi") : 15,
+        ("Italian", "ita", "it") : 16,
+        ("Polish", "pol", "pl") : 17,
+        ("Turkish", "tur", "tr") : 18,
+        ("Korean", "kor", "ko") : 19,
+        ("Thai", "tha", "th") : 20,
+        ("Portuguese", "por", "pt") : 21,
+        ("Arabic", "ara", "ar") : 22,
+        ("Croatian", "hrv", "hr", "scr") : 23,
+        ("Hungarian", "hun", "hu") : 24,
+        ("Vietnamese", "vie", "vi") : 25,
         ("Greek", "gre", "el") : 26,
+        ("Icelandic", "ice", "is") : 28,
+        ("Bulgarian", "bul", "bg") : 29,
+        ("Czech", "cze", "cz", "cs") : 30,
+        ("Serbian", "srp", "sr", "scc") : 31,
+        ("Ukrainian", "ukr", "uk") : 34,
+        ("Latvian", "lav", "lv") : 37,
+        ("Estonian", "est", "et") : 38,
+        ("Lithuanian", "lit", "lt") : 39,
         ("Hebrew", "heb", "he") : 40,
         ("Hindi" "hin", "hi") : 41,
-        ("Hungarian", "hun", "hu") : 24,
-        ("Icelandic", "ice", "is") : 28,
-        ("Indonesian", "ind", "id") : 47,
-        ("Italian", "ita", "it") : 16,
-        ("Japanese", "jpn", "ja") : 8,
-        ("Korean", "kor", "ko") : 19,
-        ("Latvian", "lav", "lv") : 37,
-        ("Lithuanian", "lit", "lt") : 39,
-        ("Norwegian", "nor", "no") : 12,
-        ("Persian", "fa", "far") : 52,
-        ("Polish", "pol", "pl") : 17,
-        ("Portuguese", "por", "pt") : 21,
-        ("Romanian", "rum", "ro") : 13,
-        ("Russian", "rus", "ru") : 7,
-        ("Serbian", "srp", "sr", "scc") : 31,
         ("Slovak", "slo", "sk") : 42,
         ("Slovenian", "slv", "sl") : 43,
-        ("Spanish", "spa", "es") : 4,
-        ("Swedish", "swe", "sv") : 11,
-        ("Thai", "tha", "th") : 20,
-        ("Turkish", "tur", "tr") : 18,
-        ("Ukrainian", "ukr", "uk") : 34,
-        ("Vietnamese", "vie", "vi") : 25,
+        ("Indonesian", "ind", "id") : 47,
+        ("Brazilian Portuguese", "Brazilian", "Portuguese-BR", 'pt-br') : 49,
+        ("English - Forced", "English (Forced)", "en (Forced)") : 50,
+        ("English Intertitles", "English (Intertitles)", "English - Intertitles", "en (Intertitles)") : 51,
+        ("Persian", "fa", "far") : 52,
     }
+
     logging.info("[CustomActions][PTP] Adding subtitles information to tracker payload")
     available_subtitles = []
     # TODO: test the performance impact of this nested looping.
@@ -281,7 +282,7 @@ def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
                 subtitle["language_code"] = "en (Intertitles)"
 
         for lang, subtitleId in subtitle_mapping.items():
-            if subtitle["language_code"] in lang or subtitle["title"] in lang and subtitleId not in available_subtitles:
+            if subtitle["language_code"] in lang or ( "title" in subtitle and subtitle["title"] in lang ) and subtitleId not in available_subtitles:
                 available_subtitles.append(subtitleId)
 
     if len(torrent_info["subtitles"]) < 1:

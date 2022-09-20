@@ -82,3 +82,90 @@ def test_new_group_custom_action(mocker):
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
     assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php" # there should not be any change to upload url
+
+
+@pytest.mark.parametrize(
+    ("torrent_info", "tracker_settings", "expected"),
+    [
+        pytest.param(
+            { "scene" : "true" },
+            { "scene" : "1" },
+            { "scene" : "on" },
+            id = "scene_release"
+        ),
+        pytest.param(
+            { "scene" : "false" },
+            { "scene" : "0" },
+            {},
+            id = "not_scene_release"
+        ),
+        pytest.param(
+            {},
+            { "scene" : "1" },
+            {},
+            id = "no_scene_in_torrent_info_present_in_tracker_settings"
+        ),
+        pytest.param(
+            {},
+            {},
+            {},
+            id = "no_scene_in_torrent_info_not_in_tracker_settings"
+        ),
+    ]
+)
+def test_mark_scene_release_if_applicable(torrent_info, tracker_settings, expected):
+    ptp_actions.mark_scene_release_if_applicable(torrent_info, tracker_settings, None)
+    assert tracker_settings == expected
+
+
+@pytest.mark.parametrize(
+    ("tracker_settings", "expected"),
+    [
+        pytest.param(
+            { "resolution" : "1080p" },
+            { "resolution" : "1080p" },
+            id = "proper_resolution"
+        ),
+        pytest.param(
+            { "resolution" : "Other" },
+            {},
+            id = "other_resolution"
+        )
+    ]
+)
+def test_fix_other_resolution(tracker_settings, expected):
+    ptp_actions.fix_other_resolution(None, tracker_settings, None)
+    assert tracker_settings == expected
+
+
+@pytest.mark.parametrize(
+    ("torrent_info", "tracker_settings", "expected"),
+    [
+        pytest.param(
+            { "subtitles" : [] },
+            {},
+            { "subtitles[]" : [44] },
+            id = "no_subtitle_present"
+        ),
+        pytest.param(
+            { "subtitles" : [] },
+            { "resolution" : "Other" },
+            { "resolution" : "Other", "subtitles[]" : [44] },
+            id = "no_subtitle_present_retaining_tracker_settings"
+        ),
+        pytest.param(
+            { "subtitles" : [
+                    {"language_code": "swe", "title": "Swedish"},
+                    {"language_code": "is"},
+                    {"language_code": "cze", "title": "Czech"}
+                ]
+            },
+            { "resolution" : "Other" },
+            { "resolution" : "Other", "subtitles[]" : [11, 28, 30] },
+            id = "some_subs_present"
+        )
+    ]
+)
+def test_add_subtitle_information(torrent_info, tracker_settings, expected):
+    ptp_actions.add_subtitle_information(torrent_info, tracker_settings, None)
+    assert tracker_settings == expected
