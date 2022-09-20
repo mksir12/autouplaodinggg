@@ -675,7 +675,6 @@ def analyze_video_file(missing_value, media_info):
 
     # ---------------- Video Resolution ---------------- #
     if missing_value == "screen_size":
-        # return basic_utilities.basic_get_missing_screen_size(torrent_info, args.disc, media_info_video_track, auto_mode, missing_value)
         return basic_utilities.basic_get_missing_screen_size(torrent_info, False, media_info_video_track, auto_mode, missing_value)
 
     # ---------------- Audio Channels ---------------- #

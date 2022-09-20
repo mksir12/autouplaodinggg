@@ -409,14 +409,12 @@ def basic_get_missing_screen_size(torrent_info, is_disc, media_info_video_track,
         track_width = str(media_info_video_track.width)
         if track_width in width_to_height_dict:
             height = width_to_height_dict[track_width]
-            logging.info(
-                f"[BasicUtils] Used pymediainfo 'track.width' to identify a resolution of: {str(height)}p")
+            logging.info(f"[BasicUtils] Used pymediainfo 'track.width' to identify a resolution of: {str(height)}p")
             return f"{str(height)}p"
 
     # If "Width" somehow fails its unlikely that "Height" will work but might as well try
     if str(media_info_video_track.height) != "None":
-        logging.info(
-            f"[BasicUtils] Used pymediainfo 'track.height' to identify a resolution of: {str(media_info_video_track.height)}p")
+        logging.info(f"[BasicUtils] Used pymediainfo 'track.height' to identify a resolution of: {str(media_info_video_track.height)}p")
         return f"{str(media_info_video_track.height)}p"
 
     # User input as a last resort
@@ -424,21 +422,16 @@ def basic_get_missing_screen_size(torrent_info, is_disc, media_info_video_track,
         # If auto_mode is enabled we can prompt the user for input
         if not auto_mode:
             while True:
-                screen_size_input = Prompt.ask(
-                    f'\n[red]We could not auto detect the {missing_value}[/red], [bold]Please input it now[/bold]: (e.g. 720p, 1080p, 2160p) ')
+                screen_size_input = Prompt.ask(f'\n[red]We could not auto detect the {missing_value}[/red], [bold]Please input it now[/bold]: (e.g. 720p, 1080p, 2160p) ')
                 if len(str(screen_size_input)) < 2:
-                    logging.error(
-                        f'[BasicUtils] User enterted an invalid input `{str(screen_size_input)}` for {missing_value}. Attempting to read again.')
-                    console.print(
-                        f'[red]Invalid input provided. Please provide a valid {missing_value}[/red]')
+                    logging.error(f'[BasicUtils] User enterted an invalid input `{str(screen_size_input)}` for {missing_value}. Attempting to read again.')
+                    console.print(f'[red]Invalid input provided. Please provide a valid {missing_value}[/red]')
                 else:
-                    logging.info(
-                        f"[BasicUtils] Used user_input to identify the {missing_value}: {str(screen_size_input)}")
+                    logging.info(f"[BasicUtils] Used user_input to identify the {missing_value}: {str(screen_size_input)}")
                     return str(screen_size_input)
         else:
             # If we don't have the resolution we can't upload this media since all trackers require the resolution in the upload form
-            quit_log_reason(
-                reason="Resolution not in filename, and we can't extract it using pymediainfo. Upload form requires the Resolution", missing_value=missing_value)
+            quit_log_reason(reason="Resolution not in filename, and we can't extract it using pymediainfo. Upload form requires the Resolution", missing_value=missing_value)
 
 
 def basic_get_missing_source(torrent_info, is_disc, auto_mode, missing_value):
@@ -452,8 +445,7 @@ def basic_get_missing_source(torrent_info, is_disc, auto_mode, missing_value):
     # Well shit, this is a problem and I can't think of a good way to consistently & automatically get the right result
     # if auto_mode is set to false we can ask the user but if auto_mode is set to true then we'll just need to quit since we can't upload without it
     if not auto_mode:
-        console.print(
-            f"Can't auto extract the [bold]{missing_value}[/bold] from the filename, you'll need to manually specify it", style='red', highlight=False)
+        console.print(f"Can't auto extract the [bold]{missing_value}[/bold] from the filename, you'll need to manually specify it", style='red', highlight=False)
 
         basic_source_to_source_type_dict = {
             # this dict is used to associate a 'parent' source with one if its possible final forms

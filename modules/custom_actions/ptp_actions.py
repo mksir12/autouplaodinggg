@@ -306,6 +306,9 @@ def mark_scene_release_if_applicable(torrent_info, tracker_settings, tracker_con
 
 def fix_other_resolution(torrent_info, tracker_settings, tracker_config):
     if tracker_settings["resolution"] == "Other":
-        logging.info("[CustomActions][PTP] Uploader identified resolution as 'Other'. Going to apply custom action")
+        logging.info("[CustomActions][PTP] Uploader identified resolution as 'Other'. Removing the resolution from payload")
+        # if we couldn't map the video resolution to one, that is applicable to ptp groups, then we can just remove the resolution
+        # key and PTP will detect and upload the width and height.
+        tracker_settings.pop('resolution', None)
     else:
         logging.info("[CustomActions][PTP] Resolution is not 'Other'. No actions needed")
