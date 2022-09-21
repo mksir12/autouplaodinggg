@@ -613,7 +613,6 @@ def upload_to_site(upload_to, tracker_api_key):
             for header in config["technical_jargons"]["headers"]:
                 logging.info(f"[TrackerUpload] Adding header '{header['key']}' to request")
                 headers[header["key"]] = tracker_api_key if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{upload_to}_{header['value']}", "")
-            return headers
         else:
             logging.fatal(f'[TrackerUpload] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
     elif config["technical_jargons"]["authentication_mode"] == "COOKIE":
@@ -623,6 +622,10 @@ def upload_to_site(upload_to, tracker_api_key):
     for key, val in tracker_settings.items():
         # First check to see if its a required or optional key
         req_opt = 'Required' if key in config["Required"] else 'Optional' if key in config["Optional"] else "Default"
+
+        if key not in config[req_opt]:
+            # if there are any keys in tracker settings that doesn't belong to tracker template, then we ignore them.
+            continue
 
         # Now that we know if we are looking for a required or optional key we can try to add it into the payload
         if str(config[req_opt][key]) == "file":
@@ -693,7 +696,8 @@ def upload_to_site(upload_to, tracker_api_key):
                 logging.info(f"[TrackerUpload] Optional key {key} will be added to payload")
             payload[key] = val
 
-    logging.debug(f"[TrackerUpload] Tracker Payload: {payload}")
+    logging.debug("::::::::::::::::::::::::::::: Tracker Payload :::::::::::::::::::::::::::::")
+    logging.debug(f'\n{pformat(payload)}')
 
     if not auto_mode:
         # prompt the user to verify everything looks OK before uploading

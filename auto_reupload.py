@@ -247,7 +247,6 @@ def upload_to_site(upload_to, tracker_api_key, config, tracker_settings):
             for header in config["technical_jargons"]["headers"]:
                 logging.info(f"[TrackerUpload] Adding header '{header['key']}' to request")
                 headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{upload_to}_{header['value']}", "")
-            return headers
         else:
             logging.fatal(f'[TrackerUpload] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
     # TODO add support for cookie based authentication
