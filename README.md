@@ -148,7 +148,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong><a href="https://www.bit-hdtv.com">BIT-HDTV</a></strong></td>
         </tr>
         <tr style="text-align: center">
-            <td rowspan="3"><strong>Gazelle</strong></td>
+            <td rowspan="4"><strong>Gazelle</strong></td>
             <td><strong>NBL</strong></td>
             <td><strong><a href="https://nebulance.io">Nebulance</a></strong></td>
         </tr>
@@ -159,6 +159,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
         <tr style="text-align: center">
             <td><strong>PTP</strong></td>
             <td><strong><a href="https://passthepopcorn.me">PassThePopcorn</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>GPW</strong></td>
+            <td><strong><a href="https://greatposterwall.com">GreatPosterWall</a></strong></td>
         </tr>
     </tbody>
 </table>
@@ -264,7 +268,9 @@ docker run --rm -it \
 # Roadmap
 
 ### v3.0.4
-- [ ] New Tracker: PTP (Only for Upload Assistant)
+- [ ] Add Support for new platforms (Only for Upload Assistant)
+    - [ ] GreatPosterWall
+    - [ ] PassThePopcorn
 - [X] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
 - [X] Support for tagging `Multi` audio releases for DT
@@ -292,7 +298,6 @@ docker run --rm -it \
 - [ ] Add Support for new platforms
     - [ ] Anasch
     - [ ] MoreThanTV
-    - [ ] GreatPosterWall
 - [ ] Add support for DVDs
 
 <br>
