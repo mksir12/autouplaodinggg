@@ -703,18 +703,22 @@ def analyze_video_file(missing_value, media_info):
     # I'm pretty confident that a video_codec will be selected automatically each time, unless mediainfo fails catastrophically we should always
     # have a codec we can return. User input isn't needed here
     if missing_value == "video_codec":
-        dv, hdr, video_codec = basic_utilities.basic_get_missing_video_codec(
+        dv, hdr, video_codec, pymediainfo_video_codec= basic_utilities.basic_get_missing_video_codec(
             torrent_info=torrent_info,
             is_disc=False,
             auto_mode=auto_mode,
-            media_info_video_track=media_info_video_track,
-            force_pymediainfo=args.force_pymediainfo
+            media_info_video_track=media_info_video_track
         )
         if dv is not None:
             torrent_info["dv"] = dv
         if hdr is not None:
             torrent_info["hdr"] = hdr
-        return video_codec
+        torrent_info["pymediainfo_video_codec"] = pymediainfo_video_codec
+
+        if video_codec != pymediainfo_video_codec:
+            logging.error(f"[BasicUtils] Regex extracted video_codec [{video_codec}] and pymediainfo extracted video_codec [{pymediainfo_video_codec}] doesn't match!!")
+            logging.info("[BasicUtils] If `--force_pymediainfo` or `-fpm` is provided as argument, PyMediaInfo video_codec will be used, else regex extracted video_codec will be used")
+        return pymediainfo_video_codec if args.force_pymediainfo else video_codec
 # -------------- END of analyze_video_file --------------
 
 
@@ -817,6 +821,9 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     torrent_info["commentary"] = commentary
     # --------- Dual Audio / Dubbed / Multi / Commentary --------- #
 
+    # Video continer information
+    torrent_info["container"] = os.path.splitext(torrent_info[""])[1]
+    # Video continer information
 # -------------- END of identify_miscellaneous_details --------------
 
 
@@ -875,6 +882,7 @@ def reupload_job():
 
         # Remove all old temp_files & data from the previous upload
         torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, file=torrent_path, resume=False)
+        torrent_info["absolute_working_folder"] = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}'
 
         console.print(f'Re-Uploading File/Folder: [bold][blue]{torrent_path}[/blue][/bold]')
 

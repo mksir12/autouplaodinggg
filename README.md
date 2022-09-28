@@ -271,6 +271,7 @@ docker run --rm -it \
 - [ ] Add Support for new platforms (Only for Upload Assistant)
     - [ ] GreatPosterWall
     - [ ] PassThePopcorn
+- [ ] Support for encrypted values from config
 - [X] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
 - [X] Support for tagging `Multi` audio releases for DT
@@ -296,8 +297,8 @@ docker run --rm -it \
     - [ ] Transmission
 - [ ] Add support for bitorrent v2 and v2 hybrid torrents
 - [ ] Add Support for new platforms
-    - [ ] Anasch
     - [ ] MoreThanTV
+    - [ ] DanishBytes
 - [ ] Add support for DVDs
 
 <br>

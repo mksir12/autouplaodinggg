@@ -79,7 +79,7 @@ def _get_dv_hdr(media_info_video_track):
     return dv, hdr
 
 
-def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_video_track, force_pymediainfo):
+def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_video_track):
     """Along with video_codec extraction the HDR format and DV is also updated from here.
 
         Steps:
@@ -127,6 +127,7 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
                 else:
                     # if this executes its AVC/HEVC or x265/x264
                     regex_video_codec = video_codec
+        # using H.264 and H.265 as codec for web contents
         if "source" in torrent_info and torrent_info["source"] == "Web":
             if regex_video_codec == "HEVC":
                 regex_video_codec = 'H.265'
@@ -137,11 +138,11 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
     # If video codec is HEVC then depending on the specific source (web, bluray, etc) we might need to format that differently
     if "HEVC" in media_info_video_track.format:
         # Removing the writing library based codec selection
-        # if media_info_video_track.writing_library is not None:
-        #     pymediainfo_video_codec = 'x265'
+        if media_info_video_track.writing_library is not None:
+            pymediainfo_video_codec = 'x265'
         # Possible video_codecs now are either H.265 or HEVC
         # If the source is WEB I think we should use H.265 & leave HEVC for bluray discs/remuxs (encodes would fall under x265)
-        if "source" in torrent_info and torrent_info["source"] == "Web":
+        elif "source" in torrent_info and torrent_info["source"] == "Web":
             pymediainfo_video_codec = 'H.265'
         # for everything else we can just default to 'HEVC' since it'll technically be accurate no matter what
         else:
@@ -166,14 +167,7 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
     # Log it!
     logging.info(f"[BasicUtils] Regex identified the video_codec as: {regex_video_codec}")
     logging.info(f"[BasicUtils] Pymediainfo identified the video_codec as: {pymediainfo_video_codec}")
-    if regex_video_codec != pymediainfo_video_codec:
-        logging.error(f"[BasicUtils] Regex extracted video_codec [{regex_video_codec}] and pymediainfo extracted video_codec [{pymediainfo_video_codec}] doesn't match!!")
-        logging.info("[BasicUtils] If `--force_pymediainfo` or `-fpm` is provided as argument, PyMediaInfo video_codec will be used, else regex extracted video_codec will be used")
-        if force_pymediainfo:
-            return dv, hdr, pymediainfo_video_codec
-
-    logging.debug(f"[BasicUtils] Regex extracted video_codec [{regex_video_codec}] and pymediainfo extracted video_codec [{pymediainfo_video_codec}] matches")
-    return dv, hdr, regex_video_codec
+    return dv, hdr, regex_video_codec, pymediainfo_video_codec
 
 
 def __get_atmos_from_media_info(media_info_audio_track):

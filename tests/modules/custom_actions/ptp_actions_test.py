@@ -16,6 +16,7 @@
 
 import json
 import copy
+import pickle
 import pytest
 
 from pathlib import Path
@@ -25,15 +26,18 @@ import modules.custom_actions.ptp_actions as ptp_actions
 
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
-
+crsf_token_path = "/tests/resources/crsf_token/"
 
 class APIResponse:
     ok = None
     data = None
+    url = None
 
-    def __init__(self, data):
+    def __init__(self, data, text=None, url=None):
         self.ok = "True"
         self.data = data
+        self.text = text
+        self.url = url
 
     def json(self):
         return self.data
@@ -169,3 +173,158 @@ def test_fix_other_resolution(tracker_settings, expected):
 def test_add_subtitle_information(torrent_info, tracker_settings, expected):
     ptp_actions.add_subtitle_information(torrent_info, tracker_settings, None)
     assert tracker_settings == expected
+
+
+def _clean_up(pth):
+    pth = Path(pth)
+    for child in pth.iterdir():
+        if child.is_file():
+            child.unlink()
+        else:
+            _clean_up(child)
+    pth.rmdir()
+
+
+@pytest.fixture(scope="function")
+def create_cookie_dirs():
+    folder = f"{working_folder}{crsf_token_path}cookies/"
+
+    if Path(folder).is_dir():
+        _clean_up(folder)
+
+    Path(folder).mkdir(parents=True, exist_ok=True)
+    yield
+    _clean_up(folder)
+
+
+def __ptp_crsf_token_side_effect(key, default=None):
+    if key == "PTP_2FA_ENABLED":
+        return True
+    elif key == "PTP_ANNOUNCE_URL":
+        return "http://please.passthepopcorn.me:2710/l1mfaclmdb5p0o8pbyhjl0g9ihrry1ef/announce"
+    else:
+        return default
+
+
+@pytest.mark.usefixtures('create_cookie_dirs')
+def test_get_crsf_token_successful_login(mocker):
+    tracker_settings = {}
+    torrent_info = {"cookies_dump": f"{working_folder}{crsf_token_path}"}
+
+    mocker.patch("os.getenv", side_effect=__ptp_crsf_token_side_effect)
+    mocker.patch("requests.Session.post", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_login_success.json"))))
+
+    ptp_actions.get_crsf_token(torrent_info, tracker_settings, {})
+    assert tracker_settings["AntiCsrfToken"] == "ObviouslyTheRealCsrfToken"
+
+
+@pytest.mark.usefixtures('create_cookie_dirs')
+def test_get_crsf_token_failed_login(mocker):
+    torrent_info = {"cookies_dump": f"{working_folder}{crsf_token_path}"}
+
+    mocker.patch("os.getenv", side_effect=__ptp_crsf_token_side_effect)
+    mocker.patch("requests.Session.post", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_login_failed.json"))))
+    with pytest.raises(Exception) as ex:
+        ptp_actions.get_crsf_token(torrent_info, {}, {})
+        assert ex.message == "Failed to login to PTP. Bad 'username' / 'password' / '2fa_key' provided."
+
+
+
+@pytest.mark.usefixtures('create_cookie_dirs')
+def test_get_crsf_token_cached_cookie(mocker):
+    tracker_settings = {}
+    torrent_info = { "cookies_dump" : f"{working_folder}{crsf_token_path}" }
+    tracker_config = { "upload_form" : "https://passthepopcorn.me/upload.php" }
+    cookiefile = f"{torrent_info['cookies_dump']}cookies/cookie.dat"
+
+    # creating a dummy pickle file
+    pickle.dump(torrent_info, open(cookiefile, 'wb'))
+
+    mocker.patch("os.getenv", side_effect=__ptp_crsf_token_side_effect)
+    mocker.patch("requests.Session.get", return_value=APIResponse(None, text="data-AntiCsrfToken=\"ObviouslyTheRealCsrfToken\""))
+
+    ptp_actions.get_crsf_token(torrent_info, tracker_settings, tracker_config)
+    assert tracker_settings["AntiCsrfToken"] == "ObviouslyTheRealCsrfToken"
+
+
+
+@pytest.mark.usefixtures('create_cookie_dirs')
+def test_get_crsf_token_cached_cookie_failure(mocker):
+    tracker_settings = {}
+    torrent_info = { "cookies_dump" : f"{working_folder}{crsf_token_path}" }
+    tracker_config = { "upload_form" : "https://passthepopcorn.me/upload.php" }
+    cookiefile = f"{torrent_info['cookies_dump']}cookies/cookie.dat"
+
+    # creating a dummy pickle file
+    pickle.dump(torrent_info, open(cookiefile, 'wb'))
+
+    mocker.patch("os.getenv", side_effect=__ptp_crsf_token_side_effect)
+    mocker.patch("requests.Session.get", return_value=APIResponse(None, text="Dear, Hacker! Do you really have nothing better do than this?"))
+    mocker.patch("requests.Session.post", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_login_success.json"))))
+
+    ptp_actions.get_crsf_token(torrent_info, tracker_settings, tracker_config)
+    assert tracker_settings["AntiCsrfToken"] == "ObviouslyTheRealCsrfToken"
+
+
+@pytest.mark.parametrize(
+    ("imdb_tags", "tmdb_tags", "expected"),
+    [
+        pytest.param(
+            ['action', 'comedy', 'drama'],
+            ['comedy', 'action'],
+            ["action", "comedy", "drama"],
+            id="ptp_tags"
+        ),
+        pytest.param(
+            ['action', 'drama'],
+            ['comedy'],
+            ["action", "comedy", "drama"],
+            id="ptp_tags"
+        ),
+        pytest.param(
+            ['scifi', 'drama'],
+            [],
+            ["drama", "sci.fi"],
+            id="ptp_tags"
+        ),
+        pytest.param(
+            [],
+            ['scifi', 'drama'],
+            ["drama", "sci.fi"],
+            id="ptp_tags"
+        ),
+        pytest.param(
+            [],
+            [],
+            [],
+            id="ptp_tags"
+        )
+    ]
+)
+def test_get_tags(imdb_tags, tmdb_tags, expected):
+    assert ptp_actions._get_tags(imdb_tags, tmdb_tags) == expected
+
+
+@pytest.mark.parametrize(
+    ("response", "expected"),
+    [
+        pytest.param(
+            APIResponse(None, text=None, url="https://passthepopcorn.me/torrents.php?id=1234567&torrentid=7654321"),
+            (True),
+            id="ptp_successful_upload"
+        ),
+        pytest.param(
+            APIResponse(None, text='ANNOUNCE_URL<div class="alert-bar"><a class="alert-bar__link" href="user.php?action=sessions">This is the error message displayed to the user</a></div>', url=None),
+            (False, "This is the error message displayed to the user"),
+            id="ptp_failed_upload"
+        ),
+        pytest.param(
+            APIResponse(None, text='ANNOUNCE_URL<div class="alert alert--error alert--centered-content"><div>This is another type of error</div></div>', url=None),
+            (False, "This is another type of error"),
+            id="ptp_failed_upload_2"
+        ),
+    ]
+)
+def test_check_successful_upload(response, expected, mocker):
+    mocker.patch("os.getenv", return_value="ANNOUNCE_URL")
+    assert ptp_actions.check_successful_upload(response) == expected

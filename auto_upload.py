@@ -23,6 +23,7 @@ import sys
 import glob
 import time
 import json
+import pickle
 import base64
 import logging
 import argparse
@@ -67,6 +68,7 @@ console = Console()
 # Import & set some global variables that we reuse later
 # This shows the full path to this files location
 working_folder = os.path.dirname(os.path.realpath(__file__))
+cookies_dump = f"{working_folder}/cookies"
 
 # This is an important dict that we use to store info about the media file as we discover it
 # Once all necessary info has been collected we will loop through this dict and set the correct tracker API Keys to it
@@ -471,17 +473,21 @@ def analyze_video_file(missing_value, media_info):
     # I'm pretty confident that a video_codec will be selected automatically each time, unless mediainfo fails catastrophically we should always
     # have a codec we can return. User input isn't needed here
     if missing_value == "video_codec":
-        dv, hdr, video_codec = basic_utilities.basic_get_missing_video_codec(
+        dv, hdr, video_codec, pymediainfo_video_codec = basic_utilities.basic_get_missing_video_codec(
             torrent_info=torrent_info,
             is_disc=args.disc, auto_mode=auto_mode,
-            media_info_video_track=media_info_video_track,
-            force_pymediainfo=args.force_pymediainfo
+            media_info_video_track=media_info_video_track
         )
         if dv is not None:
             torrent_info["dv"] = dv
         if hdr is not None:
             torrent_info["hdr"] = hdr
-        return video_codec
+        torrent_info["pymediainfo_video_codec"] = pymediainfo_video_codec
+
+        if video_codec != pymediainfo_video_codec:
+            logging.error(f"[BasicUtils] Regex extracted video_codec [{video_codec}] and pymediainfo extracted video_codec [{pymediainfo_video_codec}] doesn't match!!")
+            logging.info("[BasicUtils] If `--force_pymediainfo` or `-fpm` is provided as argument, PyMediaInfo video_codec will be used, else regex extracted video_codec will be used")
+        return pymediainfo_video_codec if args.force_pymediainfo else video_codec
 
 
 def identify_miscellaneous_details(guess_it_result, file_to_parse):
@@ -579,6 +585,11 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     torrent_info["multiaudio"] = multi
     torrent_info["commentary"] = commentary
     # --------- Dual Audio / Dubbed / Multi / Commentary --------- #
+
+    # Video continer information
+    torrent_info["container"] = os.path.splitext(torrent_info["raw_video_file"] if "raw_video_file" in torrent_info else torrent_info["upload_media"])[1]
+    # Video continer information
+
 # -------------- END of identify_miscellaneous_details --------------
 
 
@@ -592,6 +603,7 @@ def upload_to_site(upload_to, tracker_api_key):
     payload = {}
     files = []
     display_files = {}
+    requests_orchestator = requests
 
     logging.debug("::::::::::::::::::::::::::::: Tracker settings that will be used for creating payload :::::::::::::::::::::::::::::")
     logging.debug(f'\n{pformat(tracker_settings)}')
@@ -616,8 +628,21 @@ def upload_to_site(upload_to, tracker_api_key):
         else:
             logging.fatal(f'[TrackerUpload] Header based authentication cannot be done without `header_key` for tracker {upload_to}.')
     elif config["technical_jargons"]["authentication_mode"] == "COOKIE":
-        # TODO add support for cookie based authentication
-        logging.fatal('[TrackerUpload] Cookie based authentication is not supported as for now.')
+        logging.info("[TrackerUpload] User wants to use cookie based auth for tracker.")
+        if config["technical_jargons"]["cookie"]["provider"] == "custom_action":
+            logging.info(f'[TrackerUpload] Cookie Provider: [{config["technical_jargons"]["cookie"]["provider"]}] => [{config["technical_jargons"]["cookie"]["data"]}]')
+
+            logging.info("[TrackerUpload] Loading custom action to get cookie")
+            requests_orchestator = requests_orchestator.Session()
+            custom_action = utils.load_custom_actions(action)
+            cookiefile = custom_action(torrent_info, tracker_settings, config)
+
+            logging.info("[TrackerUpload] Setting cookie to session")
+            # here we are storing the session on the requests_orchestator object
+            requests_orchestator.cookies.update(pickle.load(open(cookiefile, 'rb')))
+        else:
+            # TODO add support for cookie based authentication
+            logging.fatal('[TrackerUpload] Cookie based authentication is not supported as for now.')
 
     for key, val in tracker_settings.items():
         # First check to see if its a required or optional key
@@ -752,19 +777,32 @@ def upload_to_site(upload_to, tracker_api_key):
     response = None
     if not args.dry_run: # skipping tracker upload during dry runs
         if config["technical_jargons"]["payload_type"] == "JSON":
-            response = requests.request("POST", url, json=payload, files=files, headers=headers)
+            response = requests_orchestator.request("POST", url, json=payload, files=files, headers=headers)
         else:
-            response = requests.request("POST", url, data=payload, files=files, headers=headers)
+            response = requests_orchestator.request("POST", url, data=payload, files=files, headers=headers)
 
         logging.info(f"[TrackerUpload] POST Request: {url}")
-        logging.info(f"[TrackerUpload] Response code: {response.status_code}")
+        logging.info(f"[TrackerUpload] Response Code: {response.status_code}")
+        logging.info(f'[TrackerUpload] Response URL: {response.url}')
 
-        console.print(f'\nSite response: [blue]{response.text}[/blue]')
-        logging.info(f'[TrackerUpload] {response.text}')
+        console.print(f'\nSite response: [blue]{response.text[0:200]}...[/blue]')
 
         if response.status_code in (200, 201):
-            logging.info(f"[TrackerUpload] Upload response for {upload_to}: {response.text.encode('utf8')}")
-            if "success" in response.json():
+            logging.info(f"[TrackerUpload] Upload response for {upload_to}:::::::::::::::::::::::::\n {response.text}")
+            if config["technical_jargons"]["response_type"] == "TEXT":
+                # trackers that send text as upload response instead of json.
+                # since parsing this could be different, we just use a custom action
+                logging.info("[TrackerUpload] Response parsing is of type 'TEXT'. Invoking custom action to parse the response.")
+                try:
+                    custom_action = utils.load_custom_actions(config["technical_jargons"]["response_action"])
+                    upload_status, error_message = custom_action(response)
+                    if not upload_status:
+                        console.print(f"Upload to tracker failed. Error: [bold red]{error_message}[/bold red]")
+                    return upload_status
+                except Exception as ex:
+                    logging.exception("[TrackerUpload] Custom action to parse response text failed. Marking upload as failed", exc_info=ex)
+                    return False
+            elif "success" in response.json():
                 if str(response.json()["success"]).lower() == "true":
                     logging.info(f"[TrackerUpload] Upload to {upload_to} was a success!")
                     console.line(count=2)
@@ -999,6 +1037,7 @@ for file in upload_queue:
     torrent_info["tags"] = []
     # the working_folder will container a hash value with succeeding /
     torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, resume=args.resume, file=file)
+    torrent_info["cookies_dump"] = cookies_dump
 
     # TODO these are some hardcoded values to be handled at a later point in time
     # setting this to 0 is fine. But need to add support for these eventually.
@@ -1226,13 +1265,21 @@ for file in upload_queue:
 
         # once the uploader finishes filling all the details as per the template, users can override values with custom actions.
         if "custom_actions" in config["technical_jargons"] and len(config["technical_jargons"]["custom_actions"]) > 0:
-            for action in config["technical_jargons"]["custom_actions"]:
-                logging.info(f"[Main] Loading custom action :: {action}")
-                custom_action = utils.load_custom_actions(action)
-                logging.info(f"[Main] Loaded custom action :: {action} :: Executing...")
-                # any additional values added to tracker_settings will be treated as optional values by `upload_to_site`
-                # and all such keys will be send to tracker.
-                custom_action(torrent_info, tracker_settings, config)
+            try:
+                for action in config["technical_jargons"]["custom_actions"]:
+                    logging.info(f"[Main] Loading custom action :: {action}")
+                    custom_action = utils.load_custom_actions(action)
+                    logging.info(f"[Main] Loaded custom action :: {action} :: Executing...")
+                    # any additional values added to tracker_settings will be treated as optional values by `upload_to_site`
+                    # and all such keys will be send to tracker.
+                    custom_action(torrent_info, tracker_settings, config)
+            except Exception as e:
+                # if any sorts of exception occurs from custom actions, we stop the upload to the tracker here
+                logging.exception(f"[Main] Exception thrown from custom action :: {action}. Skipping upload to tracker {tracker}", exc_info=e)
+                console.print(f"[bold red]A custom action [yellow]({action})[/yellow] has failed for this tracker. Skipping upload to {tracker}[/bold red]")
+                torrent_info[f"{tracker}_upload_status"] = False # to skip Post-Processing steps for this tracker
+                continue
+
             # TODO save torrent_info before custom actions and restore the original torrent_info.
             # custom actions cannot modify torrent info, only tracker settings and tracker config can be modified
             # logging.debug("::::::::::::::::::::::::::::: Final 'torrent_info' after 'custom_actions' :::::::::::::::::::::::::::::")

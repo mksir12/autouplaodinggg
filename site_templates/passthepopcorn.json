@@ -1,8 +1,5 @@
 {
     "doubts":[
-        "search_existing",
-        "fill_upload_form",
-        "upload",
         "Blu-ray | WEB | HDTV => Supported sources currently [No full disk uploads]",
         "check and what all information from ptp imdb auto fill can be obtained from tmdb => ptp imdb auto_fill.txt",
         "NTSC and PAL resolutions are not supported"
@@ -23,17 +20,13 @@
     },
 
     "technical_jargons": {
-        "authentication_mode": "HEADER",
-        "headers" : [
-            {
-                "key": "ApiUser",
-                "value": "API_USER"
-            },
-            {
-                "key": "ApiKey",
-                "value": "API_KEY"
-            }
-        ],
+        "authentication_mode": "COOKIE",
+        "cookie": {
+            "provider": "custom_action",
+            "data": "modules.custom_actions.ptp_actions.get_crsf_token"
+        },
+        "response_type": "TEXT",
+        "response_action": "modules.custom_actions.ptp_actions.check_successful_upload",
         "payload_type": "MULTI-PART",
         "custom_actions": [
             "modules.custom_actions.ptp_actions.check_for_existing_group",
@@ -42,11 +35,60 @@
             "modules.custom_actions.ptp_actions.rewrite_description",
             "modules.custom_actions.ptp_actions.add_subtitle_information",
             "modules.custom_actions.ptp_actions.mark_scene_release_if_applicable",
-            "modules.custom_actions.ptp_actions.fix_other_resolution"
+            "modules.custom_actions.ptp_actions.fix_other_resolution",
+            "modules.custom_actions.ptp_actions.get_crsf_token"
         ]
     },
 
     "hybrid_mappings": {
+        "container":{
+            "required":true,
+            "prerequisite":[],
+            "mapping":{
+                "MKV":{
+                    "container":{
+                        "data_source": "torrent",
+                        "values":[".mkv"]
+                    }
+                },
+                "MP4":{
+                    "container":{
+                        "data_source": "torrent",
+                        "values":[".mp4"]
+                    }
+                }
+            }
+        },
+        "codec":{
+            "required":true,
+            "prerequisite":[],
+            "mapping":{
+                "H.264":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["AVC", "H.264"]
+                    }
+                },
+                "x264":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["x264"]
+                    }
+                },
+                "H.265":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["HEVC", "H.265"]
+                    }
+                },
+                "x265":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["x265"]
+                    }
+                }
+            }
+        },
         "source": {
             "required": true,
             "prerequisite": [
@@ -82,6 +124,8 @@
     "translation": {
         "dot_torrent": "file_input",
         "hybrid_type_1": "source",
+        "hybrid_type_2": "codec",
+        "hybrid_type_3": "container",
         "description": "release_desc",
         "tags": "remaster_title",
         "imdb": "imdb",
@@ -103,6 +147,8 @@
         "file_input": "file",
         "release_desc": "string",
         "source": "hybrid_type",
+        "codec": "hybrid_type",
+        "container": "hybrid_type",
 
         "name": "string",
         "anonymous": "string",
@@ -213,7 +259,16 @@
     "Default":{
         "submit" : "true",
         "remaster_year": "",
-        "remaster": ""
+        "remaster": "",
+        "AntiCsrfToken": "",
+        "type": "",
+        "title": "",
+        "year": "",
+        "image": "",
+        "tags": "",
+        "album_desc": "",
+        "trailer": "",
+        "subtitles[]__": ""
     },
 
     "dupes": {

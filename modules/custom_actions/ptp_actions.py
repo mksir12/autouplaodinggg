@@ -16,21 +16,41 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import re
 import json
 import logging
+import pickle
 import requests
 import ptpimg_uploader
 
+from pathlib import Path
 from imdb import Cinemagoer
 from rich.prompt import Prompt
 from rich.console import Console
 
 import modules.env as Environment
 
+from modules.tfa.tfa import get_totp_token
 from utilities.utils import prepare_headers_for_tracker
 
 
 console = Console()
+
+
+def _get_tags(imdb_tags, tmdb_tags):
+    tags = []
+    imdb_tags.extend(tmdb_tags)
+    input_tags = set(imdb_tags)
+    ptp_tags = [
+        "action", "adventure", "animation", "arthouse", "asian", "biography", "camp", "comedy",
+        "crime", "cult", "documentary", "drama", "experimental", "exploitation", "family", "fantasy", "film.noir",
+        "history", "horror", "martial.arts", "musical", "mystery", "performance", "philosophy", "politics", "romance",
+        "sci.fi", "short", "silent", "sport", "thriller", "video.art", "war", "western"
+    ]
+    for tag in ptp_tags:
+        if any(tag.replace('.', '') in x for x in input_tags):
+            tags.append(tag)
+    return tags
 
 
 def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
@@ -75,12 +95,14 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
                 while overview == "":
                     user_overview = console.input(f"Please provide the plot / overview of {torrent_info['title']}\n")
                     overview = user_overview if len(user_overview) > 0 else overview
+            tags = _get_tags(torrent_info["imdb_metadata"]["tags"], torrent_info["tmdb_metadata"]["tags"])
+            logging.info(f"[CustomAction][PTP] Tags identified for this release: {tags}")
 
             metadata = {
                 "title": torrent_info["title"],
                 "year": torrent_info["year"],
                 "image": poster,
-                "tags": "", # TODO: fill this tags somehow
+                "tags": tags,
                 "album_desc": overview,
                 "trailer": "", # TODO: get this youtube trailer link
             }
@@ -313,3 +335,76 @@ def fix_other_resolution(torrent_info, tracker_settings, tracker_config):
         tracker_settings.pop('resolution', None)
     else:
         logging.info("[CustomActions][PTP] Resolution is not 'Other'. No actions needed")
+
+
+def get_crsf_token(torrent_info, tracker_settings, tracker_config):
+    # first lets create a cookies folder to store ptp login cookies.
+    if not Path(f"{torrent_info['cookies_dump']}cookies").is_dir():
+        Path(f"{torrent_info['cookies_dump']}cookies").mkdir(parents=True, exist_ok=True)
+
+    cookiefile = f"{torrent_info['cookies_dump']}cookies/cookie.dat"
+
+    with requests.Session() as session:
+        # if we have a cookie file saved previously (user running with resume flag), then we can reuse it.
+        if Path(cookiefile).is_file():
+            session.cookies.update(pickle.load(open(cookiefile, 'rb')))
+            uploadresponse = session.get(tracker_config["upload_form"])
+            if uploadresponse.text.find("""Dear, Hacker! Do you really have nothing better do than this?""") != -1:
+                logging.info("[CustomAction][PTP] Could not login to PTP using the stored cookies.")
+            else:
+                crsf_token = re.search(r'data-AntiCsrfToken="(.*)"', uploadresponse.text).group(1)
+                tracker_settings["AntiCsrfToken"] = crsf_token
+                return cookiefile
+
+        logging.info("[CustomActions][PTP] PTP Cookies not found. Creating new session.")
+        tracker_passkey = re.match(r"https?://please\.passthepopcorn\.me:?\d*/(.+)/announce", Environment.get_tracker_announce_url("ptp")).group(1)
+        data = {
+            "username" : Environment.get_property_or_default("PTP_USER_NAME"),
+            "password" : Environment.get_property_or_default("PTP_USER_PASSWORD"),
+            "passkey": tracker_passkey,
+            "keeplogged": "1"
+        }
+        # adding tfa code if user has tfa enabled
+        if Environment.get_property_or_default("PTP_2FA_ENABLED", False):
+            data["TfaType"] = "normal"
+            logging.info("[CustomActions][PTP] User has 2FA enabled. Trying to generate TOTP code.")
+            data["TfaCode"] = get_totp_token(Environment.get_property_or_default("PTP_2FA_CODE", ""))
+
+        headers = {}
+        session_response = session.post("https://passthepopcorn.me/ajax.php?action=login", data=data, headers=headers)
+        session_response = session_response.json()
+
+        if session_response["Result"] != "Ok":
+            raise Exception(f"Failed to login to PTP. Bad 'username' / 'password' / '2fa_key' provided: {session_response}")
+
+        logging.info("[CustomActions][PTP] Successfully logged in to PTP and obtained cross site request forgery token.")
+        pickle.dump(session.cookies, open(cookiefile, 'wb'))
+        tracker_settings["AntiCsrfToken"] = session_response["AntiCsrfToken"]
+        return cookiefile
+
+
+def check_successful_upload(response):
+    response_text = response.text
+
+    # If the repsonse contains our announce url then we are on the upload page and the upload wasn't successful.
+    if response_text is not None and response_text.find(Environment.get_tracker_announce_url("ptp")) != -1:
+        # Get the error message.
+        # <div class="alert alert--error text--center">No torrent file uploaded, or file is empty.</div>
+        errorMessage = ""
+        match = re.search(r"""<div class="alert alert--error.*?><div>(.+?)<\/div>""", response_text)
+        if match is not None:
+            errorMessage = match.group(1)
+        else:
+            match = re.search(r"""<a class="alert-bar__link" href="user\.php\?action=sessions">(.+?)<\/a><\/div>""", response_text)
+            if match is not None:
+                errorMessage = match.group(1)
+        logging.error(f"[CustomActions][PTP] Upload to tracker failed due to: {errorMessage}")
+        return False, errorMessage
+
+    # URL format in case of successful upload: https://passthepopcorn.me/torrents.php?id=9329&torrentid=91868
+    match = re.match(r"http[s]*:\/\/passthepopcorn\.me\/torrents\.php\?id=(\d+)&torrentid=(\d+)", response.url)
+    if match is None:
+        return False, f"Unexpected result. Couldn't detect torrent url:: {response.url}"
+    else:
+        logging.info(f"[CustomAction][PTP] Upload to PTP successful. Group ID :: {match[0]}, Torrent ID :: {match[1]}")
+    return True

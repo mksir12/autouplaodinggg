@@ -373,6 +373,7 @@ def _fill_tmdb_metadata_to_torrent_info(torrent_info, tmdb_response):
     tmdb_metadata["genres"] = list(map(lambda genre: genre["name"], tmdb_response["genres"])) if "genres" in tmdb_response else []
     tmdb_metadata["release_date"] = tmdb_response["release_date"] if "release_date" in tmdb_response and len(tmdb_response["release_date"]) > 0 else ""
     tmdb_metadata["poster"] = f"https://image.tmdb.org/t/p/original{tmdb_response['poster_path']}" if "poster_path" in tmdb_response and len(tmdb_response["poster_path"]) > 0 else ""
+    tmdb_metadata["tags"] = list(map(lambda genre: genre.lower().replace(" ", "").replace("-", ""), tmdb_metadata["genres"]))
     torrent_info["tmdb_metadata"] = tmdb_metadata
     # --------------------- _fill_tmdb_metadata_to_torrent_info ---------------------
 
@@ -391,7 +392,8 @@ def _fill_imdb_metadata_to_torrent_info(torrent_info, imdb_response, datasource)
     imdb_metadata["poster"] = imdb_response.get("full-size cover url", "").replace(".jpg", "._V1_FMjpg_UX750_.jpg")
     imdb_metadata["year"] = str(imdb_response.get("year"))
     imdb_metadata["kind"] = imdb_response.get("kind")
-    imdb_metadata["genres"] = imdb_response.get("genres")
+    imdb_metadata["genres"] = imdb_response.get("genres", "")
+    imdb_metadata["tags"] = list(map(lambda genre: genre.lower().replace(" ", "").replace("-", ""), imdb_metadata["genres"]))
     # TODO: youtube trailer
     torrent_info["imdb_metadata"] = imdb_metadata
     # --------------------- _fill_imdb_metadata_to_torrent_info ---------------------
@@ -614,8 +616,8 @@ def fill_database_ids(torrent_info, tmdb_id, imdb_id, tvmaze_id, auto_mode, tvdb
         ids_present = list(filter(lambda id: id in torrent_info and torrent_info[id] != "0", metadata_providers))
         ids_missing = [id for id in metadata_providers if id not in ids_present]
 
-        logging.info(f"[MetadataUtils] We have '{ids_present}' with us currently.")
-        logging.info(f"[MetadataUtils] We are missing '{ids_missing}' starting External Database API requests now")
+        logging.info(f"[MetadataUtils] We have {ids_present} with us currently.")
+        logging.info(f"[MetadataUtils] We are missing {ids_missing} starting External Database API requests now")
         # ----------------------------------------
         # Priority Order
         # 1 => Ids from Mediainfo
