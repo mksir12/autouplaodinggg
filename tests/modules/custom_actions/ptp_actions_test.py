@@ -201,7 +201,7 @@ def __ptp_crsf_token_side_effect(key, default=None):
     if key == "PTP_2FA_ENABLED":
         return True
     elif key == "PTP_ANNOUNCE_URL":
-        return "http://please.passthepopcorn.me:2710/l1mfaclmdb5p0o8pbyhjl0g9ihrry1ef/announce"
+        return "http://please.passthepopcorn.me:2710/asdklasn923jnklmsadnclajns23jlasjn/announce"
     else:
         return default
 
