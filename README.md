@@ -270,8 +270,10 @@ docker run --rm -it \
 ### v3.0.4
 - [ ] Add Support for new platforms (Only for Upload Assistant)
     - [ ] GreatPosterWall
-    - [ ] PassThePopcorn
-- [ ] Support for encrypted values from config
+    - [X] PassThePopcor
+- [X] Visor server module
+- [ ] Get movie/tv youtube trailers
+- [X] Updated banned groups for BLU
 - [X] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
 - [X] Support for tagging `Multi` audio releases for DT
@@ -279,10 +281,11 @@ docker run --rm -it \
 - [X] Issue#42: Support for Dual Audio Detection
 
 ### v3.0.5
+- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
+- [ ] Support for encrypted values from config
 
 ### Backlogs
-- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] EPIC: GGBOT Metadata Aggregator
 - [ ] EPIC: GGBOT P2P Network Relay
 - [ ] EPIC: Migrate GG-BOT Runtime to work with GG-BOT Auto ReUploader

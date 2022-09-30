@@ -1,7 +1,7 @@
 # Docker compose for GG-Bot Auto Uploader
 # please note that this compose file cannot be used with GG-Bot Upload Assistant
 # ------------------------------------
-# To use this compose file, you'll need to create the following file in the location where you have this compose file 
+# To use this compose file, you'll need to create the following file in the location where you have this compose file
 # and provide values for the following variables (samples for all these files are available in the env-files-samples folder)
 #
 # .env file           -> variables for docker-compose
@@ -36,6 +36,8 @@ services:
     # change the below volume mapping according to your torrent client
     volumes:
       - ${BASE_PATH}/data/downloads:/downloads
+    ports:
+      - ${VISOR_SERVER_PORT}:30035
     env_file:
       - reupload.config.env
     # based on your configuration the gg-bot-auto-uploader will depend on either mongo or redis

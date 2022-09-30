@@ -365,7 +365,7 @@ def _fill_tmdb_metadata_to_torrent_info(torrent_info, tmdb_response):
 
     tmdb_metadata = dict()
     # saving the original language. This will be used to detect dual / multi and dubbed releases
-    tmdb_metadata["runtime_minutes"] = tmdb_response["runtime"]
+    tmdb_metadata["runtime_minutes"] = tmdb_response["runtime"] if "runtime" in tmdb_response else ""
     tmdb_metadata["overview"] = tmdb_response["overview"] if "overview" in tmdb_response else ""
     tmdb_metadata["title"] = tmdb_response[content_title] if content_title in tmdb_response else ""
     tmdb_metadata["original_title"] = tmdb_response["original_title"] if "original_title" in tmdb_response else ""
@@ -530,7 +530,7 @@ def _get_external_ids_from_tmdb(content_type, tmdb):
     logging.info("[MetadataUtils] Fetching external ids from TMDB")
     tmdb_external_id_url = f"https://api.themoviedb.org/3/{content_type}/{tmdb}/external_ids?api_key={Environment.get_tmdb_api_key()}&language=en-US"
     tmdb_external_id_url_redacted = f"https://api.themoviedb.org/3/{content_type}/{tmdb}/external_ids?api_key=<REDACTED>&language=en-US"
-    logging.info(f"[MetadataUtils] IMDB request url: {tmdb_external_id_url_redacted}")
+    logging.info(f"[MetadataUtils] TMDB external ids request url: {tmdb_external_id_url_redacted}")
 
     try:
         tmdb_response = requests.get(tmdb_external_id_url).json()
@@ -540,9 +540,9 @@ def _get_external_ids_from_tmdb(content_type, tmdb):
             return None
         else:
             return {
-                "imdb": str(tmdb_response["imdb_id"]) if "imdb_id" in tmdb_response else "0",
+                "imdb": str(tmdb_response["imdb_id"]) if "imdb_id" in tmdb_response and tmdb_response["imdb_id"] is not None else "0",
                 "tmdb": str(tmdb_response["id"]),
-                "tvdb": str(tmdb_response["tvdb_id"]) if "tvdb_id" in tmdb_response else "0"
+                "tvdb": str(tmdb_response["tvdb_id"]) if "tvdb_id" in tmdb_response and tmdb_response["tvdb_id"] is not None else "0"
             }
     except Exception as e:
         logging.exception("[MetadataUtils] Fatal error occured while fetching external ids from TMDB api.", exc_info=e)

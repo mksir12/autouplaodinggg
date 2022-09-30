@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# default included packages
 import os
 import re
 import sys
@@ -907,8 +906,10 @@ if args.debug:
     logging.getLogger("rebulk.rules").setLevel(logging.INFO)
     logging.getLogger("rebulk.rebulk").setLevel(logging.INFO)
     logging.getLogger("rebulk.processors").setLevel(logging.INFO)
-    logging.getLogger("imdbpy").setLevel(logging.FATAL)
-    logging.getLogger("imdbpy.parser.http.piculet").setLevel(logging.FATAL)
+    logging.getLogger("imdbpy").disabled = True
+    logging.getLogger("imdbpy.parser").disabled = True
+    logging.getLogger("imdbpy.parser.http").disabled = True
+    logging.getLogger("imdbpy.parser.http.piculet").disabled = True
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
     logging.debug(f"Arguments provided by user: {args}")
 

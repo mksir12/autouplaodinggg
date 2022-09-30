@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# default included packages
 import os
 import re
 import glob
@@ -55,9 +54,11 @@ import utilities.utils_basic as basic_utilities
 import utilities.utils as utils
 
 # processing modules
+from modules.server import Server
 from modules.cache import CacheFactory, CacheVendor
 from modules.torrent_client import Clients, TorrentClientFactory
 import modules.env as Environment
+
 # Used for rich.traceback
 install()
 
@@ -173,9 +174,17 @@ cache = cache_client_factory.create(CacheVendor[Environment.get_cache_type()])
 # checking whether the cache connection has been created successfully or not
 cache.hello()
 logging.info("[Main] Successfully established connection to the cache server configured")
+
 # now that we have verified that the client and cache connections have been created successfully
-# we can start the reupload job
-# At the end of this file xD
+#  - we can optionally start gg-bot visor server
+#  - we can start the reupload job (At the end of this file xD)
+if Environment.is_visor_server_enabled():
+    logging.info("[Main] Starting GG-BOT Visor server...")
+    server = Server(cache)
+    server.start(detached=True)
+    console.print("[cyan]Started GG-BOT Visor server...[/cyan]")
+    logging.info("[Main] GG-BOT Visor server started successfully")
+
 
 
 # ---------------------------------------------------------------------- #

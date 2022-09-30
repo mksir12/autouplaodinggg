@@ -166,6 +166,8 @@ class Rutorrent:
     def hello(self):
         response = self.__call_server(f'{self.base_url}{self.__cpu_load_path}')
         try:
+            if not isinstance(response, dict):
+                raise Exception("Failed to connect to rutorrent instance.")
             print(f"Rutorrent CPU Load: {response['load']}%")
             response = self.__call_server(f'{self.base_url}{self.__disk_size_path}')
             print(f"Rutorrent Storage: {self.__format_bytes(response['free'])} free out of {self.__format_bytes(response['total'])}")
