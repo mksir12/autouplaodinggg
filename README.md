@@ -273,6 +273,7 @@ docker run --rm -it \
     - [X] PassThePopcorn
 - [ ] Get movie/tv youtube trailers
 - [X] Visor server module
+- [X] Introduced new 2FA module
 - [X] Updated banned groups for BLU
 - [X] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
