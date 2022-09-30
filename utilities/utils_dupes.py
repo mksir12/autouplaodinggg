@@ -73,7 +73,7 @@ def _get_torrent_item(dupe_check_response, parse_json):
     if parse_json["is_needed"]:
         if parse_json["top_lvl"] not in dupe_check_response:
             logging.error(f"[DupeCheck] Unexpected response obtained from tracker. top_lvl item {parse_json['top_lvl']} is not present in dupe check response")
-            logging.debug(f"[DupeCheck] Dumping dupe check response:::::::::::::::::::::::::\n")
+            logging.debug("[DupeCheck] Dumping dupe check response:::::::::::::::::::::::::\n")
             logging.debug(pformat(dupe_check_response))
             logging.info("[DupeCheck] Proceeding with the 'EXPECTATION' that 'NO DUPES' are present in tracker")
             return []

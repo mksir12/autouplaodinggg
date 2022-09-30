@@ -334,7 +334,7 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
         if 'LFE' in channel_total:
             audio_channels_pymedia = f'{int(len(channel_total)) - 1}.1'
         elif channel_layout == "":
-            if int(channels) <= 2:
+            if int(channel_total) <= 2:
                 audio_channels_pymedia = f"{int(len(channel_total))}.0"
             else:
                 audio_channels_pymedia = f"{int(len(channel_total)) - 1}.1"
@@ -357,7 +357,7 @@ def basic_get_missing_audio_channels(torrent_info, is_disc, auto_mode, parse_me,
             # convert the words 'mono, stereo, quad' to work with regex below
             ffmpy_channel_layout_translation = {'mono': '1.0', 'stereo': '2.0', 'quad': '4.0'}
 
-            if str(stream["channel_layout"]) in ffmpy_channel_layout_translation.keys():
+            if str(stream["channel_layout"]) in ffmpy_channel_layout_translation:
                 stream["channel_layout"] = ffmpy_channel_layout_translation[stream["channel_layout"]]
 
             # Make sure what we got back from the ffprobe search fits into the audio_channels 'format' (num.num)
@@ -579,7 +579,6 @@ def prepare_mediainfo_summary(media_info_result):
     mediainfo_summary["Video"] = []
     mediainfo_summary["Audio"] = []
     mediainfo_summary["Text"] = []
-    subtitle_language_codes = []
 
     for track in media_info_result["tracks"]:
         if track["track_type"] == "General":
