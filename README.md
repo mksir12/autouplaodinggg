@@ -270,9 +270,9 @@ docker run --rm -it \
 ### v3.0.4
 - [ ] Add Support for new platforms (Only for Upload Assistant)
     - [ ] GreatPosterWall
-    - [X] PassThePopcor
-- [X] Visor server module
+    - [X] PassThePopcorn
 - [ ] Get movie/tv youtube trailers
+- [X] Visor server module
 - [X] Updated banned groups for BLU
 - [X] Support for detecting and identifying subtitle information.
 - [X] New dry run mode to test uploader without uploading payload to trackers
