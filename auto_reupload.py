@@ -831,7 +831,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # --------- Dual Audio / Dubbed / Multi / Commentary --------- #
 
     # Video continer information
-    torrent_info["container"] = os.path.splitext(torrent_info[""])[1]
+    torrent_info["container"] = os.path.splitext(torrent_info["raw_video_file"] if "raw_video_file" in torrent_info else torrent_info["upload_media"])[1]
     # Video continer information
 # -------------- END of identify_miscellaneous_details --------------
 
