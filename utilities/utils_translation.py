@@ -449,8 +449,15 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                             upload_these_tags_list.append(tag)
                     logging.info(f"[Translation] Tags selected for tracker: {upload_these_tags_list}")
                     if len(upload_these_tags_list) != 0:
-                        # currently we support sending tags as comma separated string or as an array
-                        tracker_settings[optional_key] = ",".join(upload_these_tags_list) if optional_value["type"] == "string" else upload_these_tags_list
+                        # currently we support sending tags as string or as an array
+                        if optional_value["type"] == "string":
+                            # if user wants to send tags as string, then a separator needs to be confiured.
+                            # default separator is ,
+                            # Note: If user wants TAG1 | TAG2 ie: <space>|<space> then user must configure separator as " | "
+                            separator = "," if "separator" not in optional_value or len(optional_value["separator"]) < 1 else optional_value["separator"]
+                            tracker_settings[optional_key] = separator.join(upload_these_tags_list)
+                        elif optional_value["type"] == "array":
+                            tracker_settings[optional_key] = upload_these_tags_list
 
                 # TODO figure out why .nfo uploads fail on BHD & don't display on BLU...
                 # if optional_key in ["nfo_file", "nfo"] and "nfo_file" in torrent_info:
@@ -614,6 +621,30 @@ def __add_applicable_tags(torrent_info, group, subkey):
 #           !!! WARN !!! This Method has side effects. !!! WARN !!!
 # ---------------------------------------------------------------------- #
 def generate_all_applicable_tags(torrent_info):
+    """
+        What is this tag_grouping.json file?
+        ------------------------------------
+        The `tag_grouping` groups the tags by `groupkeys` and `subkeys`.
+        `hdr_format`, `edition` etc are referred to as `groupkeys`
+        `hdr`, `hdr10+`, `uncut`, `bluray_remux` etc are referred to as the `subkeys` of the corresponding `groupkeys`
+
+        The value of a subkey are a list of string. Where each of these strings are tags that are applicable to the
+        upload for the given groupkey and subkey.
+
+        How are tags handled in GGBOT?
+        ------------------------------
+        The upload process will fill in all the required informations in the torrent info.
+        Once all the details have been collected, both upload assistant and reuploader will invoke this method to
+        generate and add tags that are applicable to the current upload.
+
+        Note: The tags added here are not specific to any trackers.
+
+        All the tags that are applicable to the upload based on the groupkey and subkey are added to the torrent_info.
+
+        Later during `tracker_settings` preparation the tags that are applicable to a particular tracker
+        are selected from this list of all applicable tags.
+
+    """
     logging.debug("[Tags] Generating tags for the upload")
     logging.debug("[Tags] Creating tags for hdr_format")
     __add_applicable_tags(torrent_info, "hdr_format", torrent_info["hdr"] if "hdr" in torrent_info else None)
@@ -624,6 +655,9 @@ def generate_all_applicable_tags(torrent_info):
 
     logging.debug("[Tags] Creating tags for audio")
     __add_applicable_tags(torrent_info, "audio", torrent_info["atmos"] if "atmos" in torrent_info else None)
+    __add_applicable_tags(torrent_info, "audio", "commentary" if "commentary" in torrent_info and torrent_info["commentary"] == True else None)
+    __add_applicable_tags(torrent_info, "audio", torrent_info["dualaudio"] if "dualaudio" in torrent_info else None)
+    __add_applicable_tags(torrent_info, "audio", torrent_info["multiaudio"] if "multiaudio" in torrent_info else None)
 
     logging.debug("[Tags] Creating tags for edition")
     __add_applicable_tags(torrent_info, "edition", torrent_info["edition"] if "edition" in torrent_info else None)

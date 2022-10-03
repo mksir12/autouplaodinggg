@@ -18,6 +18,7 @@
 
     "technical_jargons": {
         "authentication_mode": "API_KEY",
+        "response_type": "JSON",
         "payload_type": "MULTI-PART"
     },
 
@@ -159,15 +160,7 @@
             "is_needed": true,
             "top_lvl": "data",
             "torrent_details": "attributes"
-        },
-
-        "different_cuts": "100",
-        "2160p_remux": 1,
-        "2160p_encode": 1,
-        "1080p_remux": 1,
-        "1080p_encode": 2,
-        "720p_encode": 1,
-        "else": 1
+        }
     },
 
     "torrent_title_format": {

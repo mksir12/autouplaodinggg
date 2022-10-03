@@ -16,6 +16,7 @@
 
 import math
 import json
+import functools
 
 from bson import json_util
 
@@ -50,11 +51,24 @@ class Query():
     TMDB_IDENTIFICATION_FAILED = {'status': TorrentStatus.TMDB_IDENTIFICATION_FAILED}
 
 
+def serialize_json(function):
+    @functools.wraps(function)
+    def decorator(*args, **kwargs):
+        # TODO: figure out how to handle the exceptions
+        return json.loads(json_util.dumps(function(*args, **kwargs)))
+    return decorator
+
+
 def __count_torrents_collection(cache, filter_criteria):
     return cache.count(TORRENT_DB_KEY_PREFIX, filter_criteria)
 
 
+@serialize_json
 def __get_all_data_from_torrents_collection(cache, page_number, sort_field, items_per_page, filter_query):
+    return __get_all_data_from_torrents_collection_as_object(cache, page_number, sort_field, items_per_page, filter_query)
+
+
+def __get_all_data_from_torrents_collection_as_object(cache, page_number, sort_field, items_per_page, filter_query):
     return cache.advanced_get(TORRENT_DB_KEY_PREFIX, items_per_page, page_number, sort_field, filter_query)
 
 
@@ -93,5 +107,17 @@ def all_torrents(cache, filter_query: dict = None, items_per_page: int = 20, pag
             "total_pages" : total_pages,
             "total_torrents": total_number_of_torrents,
         },
-        "torrents" : json.loads(json_util.dumps(__get_all_data_from_torrents_collection(cache, page, sort.lower(), items_per_page, filter_query)))
+        "torrents" : __get_all_data_from_torrents_collection(cache, page, sort.lower(), items_per_page, filter_query)
     }
+
+
+def torrent_details(cache, torrent_id):
+    return __get_all_data_from_torrents_collection(cache, 1, "id", 1, { "id" : torrent_id })
+
+
+def get_torrent_details_object(cache, torrent_id):
+    return __get_all_data_from_torrents_collection_as_object(cache, 1, "id", 1, { "id" : torrent_id })
+
+
+def update_torrent_object(cache, torrent):
+    cache.save(TORRENT_DB_KEY_PREFIX, torrent)

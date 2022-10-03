@@ -17,24 +17,111 @@
 import pytest
 
 from pathlib import Path
+from pytest_mock import mocker
+from pymediainfo import MediaInfo
 from utilities.utils_miscellaneous import *
 
+
 working_folder = Path(__file__).resolve().parent.parent.parent
+mediainfo_xml = "/tests/resources/mediainfo/xml/"
+
+
+class APIResponse:
+    ok = None
+    data = None
+    text = None
+
+    def __init__(self, data, text=None):
+        self.ok = "True"
+        self.data = data
+        self.text = text
+
+    def json(self):
+        return self.data
+
+
+def _get_file_contents(raw_file_name):
+    return open(raw_file_name, encoding="utf-8").read()
+
+
+def _get_media_info(raw_file_name):
+    return MediaInfo(_get_file_contents(raw_file_name))
+
+
+def _get_media_info_audio_tracks(raw_file_name):
+    return _get_media_info(raw_file_name).audio_tracks
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("torrent_info", "expected"),
     (
-        ("0mnidvd", ("true", "0MNiDVD")),
-        ("kogi", ("true", "KOGi")),
-        ("ocular", ("true", "OCULAR")),
-        pytest.param("NTb", ("false", "NTb"), id="p2p_group_1"),
-        pytest.param("ntb", ("false", "ntb"), id="p2p_group_2")
+        pytest.param({"release_group":"0mnidvd"}, ("true", "0MNiDVD"), id="scene_group_from_json"),
+        pytest.param({"release_group":"kogi"}, ("true", "KOGi"), id="scene_group_from_json"),
+        pytest.param({"release_group":"ocular"}, ("true", "OCULAR"), id="scene_group_from_json")
     )
 )
-def test_miscellaneous_perform_scene_group_capitalization(input, expected):
-    assert miscellaneous_perform_scene_group_capitalization(
-        f'{working_folder}/parameters/scene_groups.json', input) == expected
+def test_miscellaneous_perform_scene_group_capitalization(torrent_info, expected):
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_for_p2p_group_folder(monkeypatch):
+    torrent_info = {
+        "release_group":"decibeL",
+        "raw_file_name":"Mr.And.Mrs.Smith.2005.1080p.BluRay.DTS.HD-MA.h264.Remux-decibeL",
+        "raw_video_file" : "Mr.And.Mrs.Smith.2005.1080p.BluRay.DTS.HD-MA.h264.Remux-decibeL.mkv"
+    }
+    expected = ("false", "decibeL")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt", "r").read())
+    srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db.json", "r")))
+    scene_api_responses = iter([pre_corrupt_db, srr_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_for_p2p_group_file(monkeypatch):
+    torrent_info = {
+        "release_group":"decibeL",
+        "raw_file_name":"Mr.And.Mrs.Smith.2005.1080p.BluRay.DTS.HD-MA.h264.Remux-decibeL.mkv",
+    }
+    expected = ("false", "decibeL")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt", "r").read())
+    srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db.json", "r")))
+    scene_api_responses = iter([pre_corrupt_db, srr_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_pre_corrupt_db_match(monkeypatch):
+    torrent_info = {
+        "release_group":"SPARKS",
+        "raw_file_name":"Get.Out.2017.1080p.BluRay.x264-SPARKS.mkv",
+    }
+    expected = ("true", "SPARKS")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_success.txt", "r").read())
+    scene_api_responses = iter([pre_corrupt_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/tests/resources/scene_db/empty.json', torrent_info) == expected
+
+
+def test_scene_group_capitalization_srr_db_match(monkeypatch):
+    torrent_info = {
+        "release_group":"SPARKS",
+        "raw_file_name":"Get.Out.2017.1080p.BluRay.x264-SPARKS.mkv",
+    }
+    expected = ("true", "SPARKS")
+
+    pre_corrupt_db = APIResponse(None, open(f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_sparks.txt", "r").read())
+    srr_db = APIResponse(json.load(open(f"{working_folder}/tests/resources/scene_db/srr_db_success.json", "r")))
+    scene_api_responses = iter([pre_corrupt_db, srr_db])
+    monkeypatch.setattr('requests.get', lambda url, headers=None, verify=True: next(scene_api_responses))
+
+    assert miscellaneous_perform_scene_group_capitalization(f'{working_folder}/tests/resources/scene_db/empty.json', torrent_info) == expected
 
 
 @pytest.mark.parametrize(
@@ -229,3 +316,34 @@ def test_miscellaneous_identify_web_streaming_source(raw_file_name, guess_it_res
 def test_miscellaneous_identify_source_type(raw_file_name, expected):
     assert miscellaneous_identify_source_type(
         raw_file_name, True, None) == expected
+
+
+@pytest.mark.parametrize(
+    ("original_language", "audio_tracks", "expected"),
+    [
+        pytest.param(
+            "ko",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}Squid.Game.S01E01.Red.Light.Green.Light.2160p.NF.WEB-DL.DV.HDR.DDP5.1.Atmos.H.265-RG.xml"),
+            { "dual" : "Dual-Audio", "multi" : "", "commentary" : False },
+            id="dual_audio_only"
+        ),
+        pytest.param(
+            "te",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}Sita.Ramam.2022.1080p.AMZN.WEB-DL.Multi.DDP5.1.H.264-RG.xml"),
+            { "dual" : "", "multi" : "Multi", "commentary" : False },
+            id="multi_audio_only"
+        ),
+        pytest.param(
+            "en",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}2001.A.Space.Odyssey.1968.Hybrid.2160p.UHD.BluRay.REMUX.DV.HDR10Plus.HEVC.DTS-HD.MA.5.1-RG.xml"),
+            { "dual" : "", "multi" : "", "commentary" : True },
+            id="commentary_only"
+        )
+    ]
+)
+def test_fill_dual_multi_and_commentary(original_language, audio_tracks, expected):
+    dual, multi, commentary = fill_dual_multi_and_commentary(original_language, audio_tracks)
+
+    assert dual == expected["dual"]
+    assert multi == expected["multi"]
+    assert commentary == expected["commentary"]

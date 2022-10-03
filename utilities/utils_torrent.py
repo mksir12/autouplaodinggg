@@ -67,7 +67,7 @@ def get_piece_size_for_mktorrent(size):
         return 23
     elif size <= 64 * 2**30:    # 16 GiB - 64 GiB
         return 24
-    else:                       # anything > 32 GiB
+    else:                       # anything > 64 GiB
         return 25
 
 

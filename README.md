@@ -148,13 +148,21 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong><a href="https://www.bit-hdtv.com">BIT-HDTV</a></strong></td>
         </tr>
         <tr style="text-align: center">
-            <td rowspan="2"><strong>Gazelle</strong></td>
+            <td rowspan="4"><strong>Gazelle</strong></td>
             <td><strong>NBL</strong></td>
             <td><strong><a href="https://nebulance.io">Nebulance</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td><strong>ANT</strong></td>
             <td><strong><a href="https://anthelion.me">Anthelion</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>PTP</strong></td>
+            <td><strong><a href="https://passthepopcorn.me">PassThePopcorn</a></strong></td>
+        </tr>
+        <tr style="text-align: center">
+            <td><strong>GPW</strong></td>
+            <td><strong><a href="https://greatposterwall.com">GreatPosterWall</a></strong></td>
         </tr>
     </tbody>
 </table>
@@ -193,6 +201,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
         <tr>
             <td>7</td>
             <td>snappie</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>pixhost</td>
         </tr>
     </tbody>
 </table>
@@ -237,9 +249,9 @@ docker run --rm -it \
 <br />
 
 **Things to note:**
-1. We use TMDB API for all things media related (Title, Year, External IDs, etc)
+1. We use TMDb and IMDb for all things media related (Title, Year, External IDs, etc)
 2. If you provide the IMDB ID via ```-imdb```, you must include the 'tt' that precedes the numerical ID
-3. When providing multiple database (TMDB, IMDB, TVMAZE ) ids via optional arguments, uploader uses the ids with priority **`IMDB > TMDB > TVMAZE`**
+3. When providing multiple database (TMDB, IMDB, TVMAZE ) ids via optional arguments, uploader uses the ids with priority **`IMDB > TMDB > TVMAZE > TVDB`**
 4. Full Disk uploads are supported ONLY in FAT version of the docker images. Look for image tags in the format **`:FullDisk-{TAG}`**
 
 <br>
@@ -256,13 +268,25 @@ docker run --rm -it \
 # Roadmap
 
 ### v3.0.4
-- [ ] New Tracker: PTP
+- [ ] Add Support for new platforms (Only for Upload Assistant)
+    - [ ] GreatPosterWall
+    - [X] PassThePopcorn
+- [ ] Get movie/tv youtube trailers
+- [X] Visor server module
+- [X] Introduced new 2FA module
+- [X] Updated banned groups for BLU
+- [X] Support for detecting and identifying subtitle information.
+- [X] New dry run mode to test uploader without uploading payload to trackers
+- [X] Support for tagging `Multi` audio releases for DT
+- [X] Issue#41: Incorrect channel count detected
+- [X] Issue#42: Support for Dual Audio Detection
+
+### v3.0.5
+- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
-- [ ] Support for detecting and identifying subtitle information.
-- [ ] Support for Dual Audio Detection
+- [ ] Support for encrypted values from config
 
 ### Backlogs
-- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] EPIC: GGBOT Metadata Aggregator
 - [ ] EPIC: GGBOT P2P Network Relay
 - [ ] EPIC: Migrate GG-BOT Runtime to work with GG-BOT Auto ReUploader
@@ -277,9 +301,8 @@ docker run --rm -it \
     - [ ] Transmission
 - [ ] Add support for bitorrent v2 and v2 hybrid torrents
 - [ ] Add Support for new platforms
-    - [ ] Anasch
     - [ ] MoreThanTV
-    - [ ] GreatPosterWall
+    - [ ] DanishBytes
 - [ ] Add support for DVDs
 
 <br>
@@ -289,13 +312,16 @@ docker run --rm -it \
 ## **3.0.3**
     New Image Hosts
         * Pixhost
-    
+
     New Features
         * Support for IMDB api
         * Improved TMDB metadata search Phase 2
         * Accept TVDB id from runtime argument
         * Updated source for lst
         * Restored tracker: Telly
+
+    Bug Fixes
+        * Issue#77: NOGROUP identified as group when title has spaces instead of dot
 
 <br>
 

@@ -92,8 +92,7 @@ def start_server():
 
     @app.route('/api/torrents/filter/header', methods=['GET'])
     def filter_torrents_dummy_header():
-        sample_data = json.load(open(
-            f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'))
+        sample_data = json.load(open(f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'))
         token = request.headers.get('X-API-KEY')
         logging.info(f"Token: {token}")
         if token == tracker_api_key:
@@ -154,4 +153,4 @@ def test_search_for_dupes_api_api_key_based(site_template, imdb, tmdb, tvmaze, a
     #   `debug` to False
     #   `tracker_api` to TRACKER_API_DUMMY (tracker_api_key)
     mocker.patch("os.getenv", return_value=80)
-    assert search_for_dupes_api(site_template, imdb, tmdb, tvmaze, torrent_info, tracker_api_key, True, working_folder, auto_mode) == expected
+    assert search_for_dupes_api("ACRONYM", site_template, imdb, tmdb, tvmaze, torrent_info, tracker_api_key, working_folder, auto_mode) == expected

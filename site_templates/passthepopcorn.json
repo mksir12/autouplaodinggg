@@ -1,0 +1,344 @@
+{
+    "doubts":[
+        "Blu-ray | WEB | HDTV => Supported sources currently [No full disk uploads]",
+        "check and what all information from ptp imdb auto fill can be obtained from tmdb => ptp imdb auto_fill.txt",
+        "NTSC and PAL resolutions are not supported"
+    ],
+    "name": "PassThePopcorn",
+    "url": "https://passthepopcorn.me/",
+    "upload_form": "https://passthepopcorn.me/upload.php",
+    "torrents_search": "https://passthepopcorn.me/torrents.php",
+    "source": "PTP",
+    "platform": "Gazelle",
+    "bbcode_line_break": "\n",
+    "title_separator" : " ",
+
+    "description_components":{
+        "code_code": "[code][/code]",
+        "spoiler_code":"[hide=TITLE_PLACEHOLDER][/hide]",
+        "quote_code":"[quote][/quote]"
+    },
+
+    "technical_jargons": {
+        "authentication_mode": "COOKIE",
+        "cookie": {
+            "provider": "custom_action",
+            "data": "modules.custom_actions.ptp_actions.get_crsf_token"
+        },
+        "response_type": "TEXT",
+        "response_action": "modules.custom_actions.ptp_actions.check_successful_upload",
+        "payload_type": "MULTI-PART",
+        "custom_actions": [
+            "modules.custom_actions.ptp_actions.check_for_existing_group",
+            "modules.custom_actions.ptp_actions.rehost_screens_to_ptpimg",
+            "modules.custom_actions.ptp_actions.get_ptp_type",
+            "modules.custom_actions.ptp_actions.rewrite_description",
+            "modules.custom_actions.ptp_actions.add_subtitle_information",
+            "modules.custom_actions.ptp_actions.mark_scene_release_if_applicable",
+            "modules.custom_actions.ptp_actions.fix_other_resolution",
+            "modules.custom_actions.ptp_actions.get_crsf_token"
+        ]
+    },
+
+    "hybrid_mappings": {
+        "container":{
+            "required":true,
+            "prerequisite":[],
+            "mapping":{
+                "MKV":{
+                    "container":{
+                        "data_source": "torrent",
+                        "values":[".mkv"]
+                    }
+                },
+                "MP4":{
+                    "container":{
+                        "data_source": "torrent",
+                        "values":[".mp4"]
+                    }
+                }
+            }
+        },
+        "codec":{
+            "required":true,
+            "prerequisite":[],
+            "mapping":{
+                "H.264":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["AVC", "H.264"]
+                    }
+                },
+                "x264":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["x264"]
+                    }
+                },
+                "H.265":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["HEVC", "H.265"]
+                    }
+                },
+                "x265":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["x265"]
+                    }
+                }
+            }
+        },
+        "source": {
+            "required": true,
+            "prerequisite": [
+                "type_id"
+            ],
+            "mapping":{
+                "Blu-ray":{
+                    "source":{
+                        "data_source": "torrent",
+                        "values": ["BluRay", "Blu-Ray"]
+                    },
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["2", "3"]
+                    }
+                },
+                "WEB":{
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["4", "5"]
+                    }
+                },
+                "HDTV":{
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["6"]
+                    }
+                }
+            }
+        }
+    },
+
+    "translation": {
+        "dot_torrent": "file_input",
+        "hybrid_type_1": "source",
+        "hybrid_type_2": "codec",
+        "hybrid_type_3": "container",
+        "description": "release_desc",
+        "tags": "remaster_title",
+        "imdb": "imdb",
+        "scene": "scene",
+
+        "torrent_title": "name",
+        "mediainfo": "mediainfo",
+        "bdinfo": "bdinfo",
+        "type": "category_id",
+        "source": "type_id",
+        "resolution": "resolution",
+        "anon": "anonymous",
+        "live": "live",
+        "sd": "sd",
+        "nfo_file": "nfo_text"
+    },
+
+    "Required": {
+        "file_input": "file",
+        "release_desc": "string",
+        "source": "hybrid_type",
+        "codec": "hybrid_type",
+        "container": "hybrid_type",
+
+        "name": "string",
+        "anonymous": "string",
+        "sd": "string",
+        "stream": "string",
+        "imdb": "url",
+
+        "internal": "string",
+        "free": "string",
+        "featured": "string",
+        "doubleup": "string",
+        "sticky": "string",
+
+        "category_id": {
+            "1": "movie"
+        },
+
+        "type_id": {
+            "1": {
+                "disc": 1,
+                "bluray_disc": 2,
+                "dvd_disc": 2
+            },
+            "2": {
+                "remux": 1,
+                "bluray_remux": 2,
+                "dvd_remux": 2
+            },
+            "3": {
+                "bluray_encode": 1
+            },
+            "4": {
+                "webdl": 1
+            },
+            "5": {
+                "webrip": 1
+            },
+            "6": {
+                "hdtv": 1
+            }
+        },
+
+        "resolution": {
+            "2160p": {
+                "2160p": 1
+            },
+            "1080p": {
+                "1080p": 1
+            },
+            "1080i": {
+                "1080i": 1
+            },
+            "720p": {
+                "720p": 1
+            },
+            "576p": {
+                "576p": 2,
+                "576i": 2
+            },
+            "480p": {
+                "480p": 2,
+                "480i": 2
+            },
+            "Other": {
+                "other": 2,
+                "4360p": 2
+            }
+        }
+    },
+
+    "Optional": {
+        "nfo_text": "string",
+        "scene": "string",
+
+        "season_number": "string",
+        "episode_number": "string",
+
+        "bdinfo": "string",
+        "mediainfo": "string",
+
+        "remaster_title": {
+            "type" : "string",
+            "separator": " / ",
+            "tags": [
+                "Remux",
+                "Director's Cut",
+                "Extended Cut",
+                "Uncut",
+                "Unrated",
+                "4K Restoration",
+                "Dolby Atmos",
+                "Dolby Vision",
+                "With Commentary",
+                "DTS:X",
+                "Dual Audio",
+                "English Dub",
+                "Extras",
+                "HDR10",
+                "HDR10+",
+                "Hybrid",
+                "Non English Dub",
+                "Theatrical Cut",
+                "Workprint"
+            ]
+        }
+    },
+
+    "Default":{
+        "submit" : "true",
+        "remaster_year": "",
+        "remaster": "",
+        "AntiCsrfToken": "",
+        "type": "",
+        "title": "",
+        "year": "",
+        "image": "",
+        "tags": "",
+        "album_desc": "",
+        "trailer": "",
+        "subtitles[]__": ""
+    },
+
+    "dupes": {
+        "technical_jargons": {
+            "authentication_mode": "HEADER",
+            "headers" : [
+                {
+                    "key": "ApiUser",
+                    "value": "API_USER"
+                },
+                {
+                    "key": "ApiKey",
+                    "value": "API_KEY"
+                }
+            ],
+            "payload_type": "MULTI-PART",
+            "request_method": "GET"
+        },
+
+        "url_format": "{search_url}?imdb={imdb}",
+        "strip_text": false,
+
+        "parse_json": {
+            "is_needed": true,
+            "top_lvl": "Torrents",
+            "torrent_name": "ReleaseName"
+        }
+    },
+
+    "torrent_title_format": {
+        "movie": {
+            "bluray_disc": "{title} {year} {edition} {repack} {screen_size} {region} {source} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
+            "bluray_remux": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {remux} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
+            "bluray_encode": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
+            "web": "{title} {year} {edition} {repack} {screen_size} {hybrid} {web_source} {web_type} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
+            "hdtv": "{title} {year} {edition} {repack} {screen_size} {hybrid} {source} {audio_codec} {audio_channels} {atmos} {video_codec} {release_group}",
+            "dvd": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {video_codec} {remux} {audio_codec} {audio_channels} {atmos} {release_group}"
+        }
+    },
+
+    "banned_groups": [
+        "EVO",
+        "HDT",
+        "aXXo",
+        "BRrip",
+        "CM8",
+        "CrEwSaDe",
+        "CTFOH",
+        "DNL",
+        "FaNGDiNG0",
+        "HD2DVD",
+        "HDTime",
+        "ION10",
+        "iPlanet",
+        "KiNGDOM",
+        "mHD",
+        "mSD",
+        "nHD",
+        "nikt0",
+        "nSD",
+        "NhaNc3",
+        "OFT",
+        "PRODJi",
+        "SANTi",
+        "STUTTERSHIT",
+        "ViSION",
+        "VXT",
+        "WAF",
+        "d3g",
+        "x0r",
+        "YIFY"
+    ]
+}

@@ -22,6 +22,7 @@ import shutil
 import hashlib
 import logging
 import pyfiglet
+import importlib
 import subprocess
 
 from pathlib import Path
@@ -337,6 +338,12 @@ def get_and_validate_configured_trackers(trackers, all_trackers, api_keys_dict, 
         else:
             logging.error(f"[Utils] We can't upload to '{tracker}' because that site is not supported")
 
+    if "PTP" in upload_to_trackers:
+        logging.info("[Utils] User wants to upload to PTP. Checking whether ptpimg has been configured or not")
+        if not _can_upload_to_ptp():
+            logging.error("[Main] Cannot upload to 'PTP' since 'ptpimg' is not enabled / configured properly.")
+            upload_to_trackers.remove("PTP")
+
     # Make sure that the user provides at least 1 valid tracker we can upload to
     # if len(upload_to_trackers) == 0 that means that the user either
     #   1. didn't provide any site at all,
@@ -567,3 +574,63 @@ def sanitize_release_group_from_guessit(torrent_info):
         logging.debug("[Utils]Release group could not be identified by guessit. Setting release group as NOGROUP")
         return "NOGROUP"
     return torrent_info["release_group"]
+
+
+def load_custom_actions(full_method_string):
+    """
+        dynamically load a method from a string
+    """
+
+    method_data = full_method_string.split(".")
+    module_path = ".".join(method_data[:-1])
+    method_string = method_data[-1]
+
+    module = importlib.import_module(module_path)
+    # Finally, we retrieve the Class
+    return getattr(module, method_string)
+
+
+def prepare_headers_for_tracker(technical_jargons, search_site, tracker_api):
+    if technical_jargons["authentication_mode"] == "API_KEY":
+        return None
+
+    if technical_jargons["authentication_mode"] == "BEARER":
+        logging.info(f"[DupeCheck] Using Bearer Token authentication method for tracker {search_site}")
+        return {'Authorization': f'Bearer {tracker_api}'}
+
+    if technical_jargons["authentication_mode"] == "HEADER":
+        if len(technical_jargons["headers"]) > 0:
+            headers = {}
+            logging.info(f"[DupeCheck] Using Header based authentication method for tracker {search_site}")
+            for header in technical_jargons["headers"]:
+                logging.info(f"[DupeCheck] Adding header '{header['key']}' to request")
+                headers[header["key"]] = tracker_api if header["value"] == "API_KEY" else Environment.get_property_or_default(f"{search_site}_{header['value']}", "")
+            return headers
+        else:
+            logging.fatal(f'[DupeCheck] Header based authentication cannot be done without `header_key` for tracker {search_site}.')
+    elif technical_jargons["authentication_mode"] == "COOKIE":
+        logging.fatal('[DupeCheck] Cookie based authentication is not supported yet.')
+
+    return None
+
+
+def _can_upload_to_ptp():
+    # to upload to ptp the image host ptpimg needs to be configured and enabled.
+    enabled_img_host_num_loop = 0
+    found_ptpimg = False
+    # checking whether user has enabled ptpimg in img_host_X env variable
+    while Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1) is not None:
+        if Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1) == "ptpimg":
+            found_ptpimg = True
+            break
+        enabled_img_host_num_loop += 1
+
+    # if user has not configured ptpimg, then we can say with confidence that user cannot upload to ptp
+    if not found_ptpimg:
+        return False
+
+    # now lets check whether user has provided the ptpimg api key
+    if Environment.get_image_host_api_key("ptpimg") is None or len(Environment.get_image_host_api_key("ptpimg")) <= 0:
+        return False
+
+    return True

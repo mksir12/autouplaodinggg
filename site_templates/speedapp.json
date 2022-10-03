@@ -8,10 +8,13 @@
     "bbcode_line_break": "\n",
     "bbcode_code": "[code][/code]",
     "title_separator": ".",
+
     "technical_jargons": {
         "authentication_mode": "BEARER",
+        "response_type": "JSON",
         "payload_type": "JSON"
     },
+
     "translation": {
         "dot_torrent": "file",
         "torrent_title": "name",
@@ -29,6 +32,7 @@
         "mal": "mal",
         "nfo_file": "nfo"
     },
+
     "hybrid_mappings": {
         "type": {
             "required": true,
@@ -296,14 +300,7 @@
         "strip_text": true,
         "parse_json": {
             "is_needed": false
-        },
-        "different_cuts": "1",
-        "2160p_remux": 1,
-        "2160p_encode": 1,
-        "1080p_remux": 1,
-        "1080p_encode": 100,
-        "720p_encode": 100,
-        "else": 1
+        }
     },
     "torrent_title_format": {
         "episode": {

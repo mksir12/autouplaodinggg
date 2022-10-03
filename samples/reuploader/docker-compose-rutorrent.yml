@@ -39,6 +39,8 @@ services:
     # change the below volume mapping according to your torrent client
     volumes:
       - ${BASE_PATH}/data/downloads:/downloads
+    ports:
+      - ${VISOR_SERVER_PORT}:30035
     env_file:
       - reupload.config.env
     # based on your configuration the gg-bot-auto-uploader will depend on either mongo or redis

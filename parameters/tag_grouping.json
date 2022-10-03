@@ -5,7 +5,7 @@
         "hlg": ["HDR", "HLG"],
         "wcg": ["HDR", "WCG"],
         "hdr10+": ["HDR10+", "HDR10Plus"],
-        "dv": ["DV", "DoVi", "Do-Vi"]
+        "dv": ["DV", "DoVi", "Do-Vi", "Dolby Vision"]
     },
 
     "edition": {
@@ -49,9 +49,10 @@
     },
 
     "audio": {
-        "commentary": ["Commentary"],
-        "dual_audio": ["DualAudio"],
-        "atmos": ["Atmos", " Dolby Atmos"]
+        "commentary": ["Commentary", "Commentary Track", "With Commentary"],
+        "dualaudio": ["DualAudio", "DUAL", "Dual-Audio", "Dual Audio"],
+        "multiaudio": ["MultiAudio", "Multi", "Multi-Audio"],
+        "atmos": ["Atmos", "Dolby Atmos"]
     },
 
     "source_type": {
@@ -67,12 +68,17 @@
 
     "__no_mappings_yet": [
         "Extras",
+        "DTS:X",
         "DigitalExtras",
         "Scene",
         "Hybrid",
         "OpenMatte",
         "2D3D",
         "EnglishDub",
-        "Personal"
+        "Personal",
+        "Workprint",
+        "English Dub",
+        "Non English Dub",
+        "4K Restoration"
     ]
 }

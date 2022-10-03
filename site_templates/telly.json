@@ -7,6 +7,7 @@
     "platform": "UNIT3D",
     "bbcode_line_break": "<br />",
     "title_separator": " ",
+    
     "description_components": {
         "code_code": "[code][/code]",
         "spoiler_code": "[spoiler=TITLE_PLACEHOLDER][/spoiler]",
@@ -14,10 +15,13 @@
         "quote_code": "[quote][/quote]",
         "alert_code": "[alert][/alert]"
     },
+
     "technical_jargons": {
         "authentication_mode": "API_KEY",
+        "response_type": "JSON",
         "payload_type": "MULTI-PART"
     },
+
     "hybrid_mappings": {},
     "translation": {
         "dot_torrent": "torrent",
@@ -144,14 +148,7 @@
             "is_needed": true,
             "top_lvl": "data",
             "torrent_details": "attributes"
-        },
-        "different_cuts": "1",
-        "2160p_remux": 1,
-        "2160p_encode": 1,
-        "1080p_remux": 1,
-        "1080p_encode": 100,
-        "720p_encode": 100,
-        "else": 1
+        }
     },
     "torrent_title_format": {
         "episode": {

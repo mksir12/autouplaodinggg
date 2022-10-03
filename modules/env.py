@@ -15,14 +15,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import binascii
+
 from distutils import util
 
 # This class will be used by the application to get all the environment variables
 # This also allows to return defaults consistently across the whole application.
 # Why is this full of method instead of variables??? ------ Backwards compatibility ------
+# wtf?? what was i thinking when i wrote backwards compatibility here??? Idiot! didn't write the proper reason...
 
 # any method starting with is will be boolean and returns False by default
 # TODO: should all these method be replaced with a single `is_enabled` method ??
+# again, what was i thinking here????
 def is_auto_mode():
     return bool(util.strtobool(str(os.getenv('auto_mode', False))))
 
@@ -192,3 +196,28 @@ def gg_bot_metadata_aggregator():
 def can_share_with_community():
     return False
 # GGBOT Metadata Aggregator
+
+
+# GGBOT Visor server
+def is_visor_server_enabled():
+    return bool(util.strtobool(str(os.getenv("ENABLE_VISOR_SERVER", False))))
+
+def get_visor_port():
+    return int(os.getenv('VISOR_SERVER_PORT', 30035))
+
+
+# caching the generated api key in memory to prevent key generation
+# every time the `get_visor_api_key` method is invoked
+generated_api_key = None
+def get_visor_api_key():
+    global generated_api_key
+    api_key = os.getenv("VISOR_API_KEY")
+    # if user has not configured visor_api_key, we'll generate one.
+    if api_key is None:
+        if generated_api_key is None:
+            generated_api_key = str(binascii.hexlify(os.urandom(16)), "UTF-8")
+            print(f"Generated visor server api key: {generated_api_key}")
+        api_key = generated_api_key
+    return api_key
+
+# GGBOT Visor server
