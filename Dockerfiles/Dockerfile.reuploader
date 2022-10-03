@@ -19,6 +19,12 @@ FROM noobmaster669/gg-bot-base:latest
 
 WORKDIR /app
 
+RUN \
+	echo "**** install build packages ****" && \
+	apk add --no-cache --virtual=build-dependencies \
+	libxml2-dev \
+  libxslt-dev
+
 # add local files
 COPY requirements/requirements_reuploader.txt .
 RUN \
