@@ -22,15 +22,19 @@ WORKDIR /app
 RUN \
 	echo "**** install build packages ****" && \
 	apk add --no-cache --virtual=build-dependencies \
-	libxml2-dev \
-  libxslt-dev
+	g++ \
+  libxml2-dev \
+  libxslt-dev \
+	py3-pip \
+	python3-dev
+
 
 # add local files
 COPY requirements/requirements_reuploader.txt .
 RUN \
   echo "**** install pip packages ****" && \
-  pip3 install -r requirements_reuploader.txt && \
-  pip3 freeze > requirements_reuploader.txt
+  pip install -r requirements_reuploader.txt && \
+  pip freeze > requirements_reuploader.txt
 
 COPY . .
 RUN rm -r requirements/ requirements_reuploader.txt
