@@ -1,6 +1,6 @@
 #!/bin/bash
-rm upload_script.log
-rm reupload_script.log
+rm assistant.log
+rm reuploader.log
 rm pytest.log
 rm junit_report.xml
 rm -r temp_upload
