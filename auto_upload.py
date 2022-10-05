@@ -55,8 +55,9 @@ import utilities.utils_torrent as torrent_utilities
 import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_basic as basic_utilities
 import utilities.utils_dupes as dupe_utilities
-import utilities.utils as utils
 import modules.env as Environment
+import utilities.utils as utils
+from modules.constants import *
 
 # Used for rich.traceback
 install()
@@ -67,7 +68,7 @@ console = Console()
 # Import & set some global variables that we reuse later
 # This shows the full path to this files location
 working_folder = os.path.dirname(os.path.realpath(__file__))
-cookies_dump = f"{working_folder}/cookies"
+cookies_dump = COOKIES_DUMP_DIR.format(base_path=working_folder)
 
 # This is an important dict that we use to store info about the media file as we discover it
 # Once all necessary info has been collected we will loop through this dict and set the correct tracker API Keys to it
@@ -75,21 +76,22 @@ torrent_info = {}
 
 # Debug logs for the upload processing
 # Logger running in "w" : write mode
-logging.basicConfig(filename='{}/upload_script.log'.format(working_folder), filemode="w", level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+logging.basicConfig(filename=ASSISTANT_LOG.format(base_path=working_folder), filemode="w", level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
 # Load the .env file that stores info like the tracker/image host API Keys & other info needed to upload
-load_dotenv(f'{working_folder}/config.env')
+load_dotenv(ASSISTANT_CONFIG.format(base_path=working_folder))
+
 # Getting the keys present in the config.env.sample
 # These keys are then used to compare with the env variable keys provided during runtime.
 # Presently we just displays any missing keys, in the future do something more useful with this information
-utils.validate_env_file(f'{working_folder}/samples/assistant/config.env')
+utils.validate_env_file(ASSISTANT_SAMPLE_CONFIG.format(base_path=working_folder))
 
 # Used to correctly select json file
 # the value in this dictionay must correspond to the file name of the site template
-acronym_to_tracker = json.load(open(f'{working_folder}/parameters/tracker/acronyms.json'))
+acronym_to_tracker = json.load(open(TRACKER_ACRONYMS.format(base_path=working_folder)))
 
 # the `prepare_tracker_api_keys_dict` prepares the api_keys_dict and also does mandatory property validations
-api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict(f'{working_folder}/parameters/tracker/api_keys.json')
+api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict(TRACKER_API_KEYS.format(base_path=working_folder))
 
 # Import 'auto_mode' status
 auto_mode = Environment.is_auto_mode()
@@ -156,8 +158,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
         Returns False => No dupes present in the tracker and upload can continue
     """
     # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-    with open(f"{working_folder}/site_templates/" + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8") as config_file:
-        config = json.load(config_file)
+    config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
     # If the user provides this arg with the title right after in double quotes then we automatically use that
     # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title
@@ -175,7 +176,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
             tvmaze=torrent_info["tvmaze"],
             torrent_info=torrent_info,
             tracker_api=temp_tracker_api_key,
-            working_folder=working_folder,
+            config=config,
             auto_mode=auto_mode
         )
     except Exception as e:
@@ -313,7 +314,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
         bdinfo_start_time = time.perf_counter()
         logging.debug(f"Generating and parsing the BDInfo for playlist {torrent_info['largest_playlist']}")
         console.print(f"\nGenerating and parsing the BDInfo for playlist {torrent_info['largest_playlist']}\n", style='bold blue')
-        torrent_info["mediainfo"] = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}mediainfo.txt'
+        torrent_info["mediainfo"] = MEDIAINFO_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder'])
         torrent_info["bdinfo"] = bdinfo_utilities.bdinfo_generate_and_parse_bdinfo(bdinfo_script, torrent_info, args.debug)  # TODO handle non-happy paths
         logging.debug("::::::::::::::::::::::::::::: Parsed BDInfo output :::::::::::::::::::::::::::::")
         logging.debug(f"\n{pformat(torrent_info['bdinfo'])}")
@@ -348,7 +349,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
     if args.disc:
         # for full disk uploads the bdinfo summary itself will be set as the `mediainfo_summary`
         logging.info("[Main] Full Disk Upload. Setting bdinfo summary as mediainfo summary")
-        with open(f'{working_folder}/temp_upload/{torrent_info["working_folder"]}mediainfo.txt', 'r') as summary:
+        with open(MEDIAINFO_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder']), 'r') as summary:
             bdInfo_summary = summary.read()
             torrent_info["mediainfo_summary"] = bdInfo_summary
     else:
@@ -434,7 +435,7 @@ def analyze_video_file(missing_value, media_info):
 
     # ------------ Save mediainfo to txt ------------ #
     if missing_value == "mediainfo":
-        return basic_utilities.basic_get_missing_mediainfo(torrent_info, parse_me, working_folder)
+        return basic_utilities.basic_get_missing_mediainfo(torrent_info, parse_me, MEDIAINFO_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder']))
 
     # ------------------- Source ------------------- #
     if missing_value == "source":
@@ -457,7 +458,7 @@ def analyze_video_file(missing_value, media_info):
             torrent_info=torrent_info,
             is_disc=args.disc,
             auto_mode=auto_mode,
-            audio_codec_file_path=f'{working_folder}/parameters/audio_codecs.json',
+            audio_codec_file_path = AUDIO_CODECS_MAP.format(base_path=working_folder),
             media_info_audio_track=media_info_audio_track,
             parse_me=parse_me,
             missing_value=missing_value
@@ -506,7 +507,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     if torrent_info["source"] == "Web":
         # TODO check whether None needs to be set as `web_source`
         torrent_info["web_source"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
-            f'{working_folder}/parameters/streaming_services.json', torrent_info["raw_file_name"], guess_it_result)
+            STREAMING_SERVICES_MAP.format(base_path=working_folder), torrent_info["raw_file_name"], guess_it_result)
 
     # --- Custom & extra info --- #
     # some torrents have 'extra' info in the title like 'repack', 'DV', 'UHD', 'Atmos', 'remux', etc
@@ -522,7 +523,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
 
     # Bluray disc regions
     # Regions are read from new json file
-    bluray_regions = json.load(open(f'{working_folder}/parameters/bluray_regions.json'))
+    bluray_regions = json.load(open(BLURAY_REGIONS_MAP.format(base_path=working_folder)))
 
     # Try to split the torrent title and match a few key words
     # End user can add their own 'key_words' that they might want to extract and add to the final torrent title
@@ -568,8 +569,9 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # either way we don't want to be capitalizing everything (e.g. we want 'NTb' not 'NTB') so we still need a dict of scene groups and their proper capitalization
     if "release_group" in torrent_info:
         # this is one place where we can identify scene groups
-        torrent_info["scene"], torrent_info["release_group"] = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(
-            f'{working_folder}/parameters/scene_groups.json', torrent_info)
+        scene, release_group = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(SCENE_GROUPS_MAP.format(base_path=working_folder), torrent_info)
+        torrent_info["release_group"] = release_group
+        torrent_info["scene"] = scene
 
     # --------- SD? --------- #
     res = re.sub("[^0-9]", "", torrent_info["screen_size"])
@@ -906,12 +908,15 @@ if args.debug:
     logging.getLogger("rebulk.rules").setLevel(logging.INFO)
     logging.getLogger("rebulk.rebulk").setLevel(logging.INFO)
     logging.getLogger("rebulk.processors").setLevel(logging.INFO)
-    logging.getLogger("imdbpy").disabled = True
-    logging.getLogger("imdbpy.parser").disabled = True
-    logging.getLogger("imdbpy.parser.http").disabled = True
-    logging.getLogger("imdbpy.parser.http.piculet").disabled = True
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
     logging.debug(f"Arguments provided by user: {args}")
+
+# Disabling the logs from cinemagoer
+logging.getLogger("imdbpy").disabled = True
+logging.getLogger("imdbpy.parser").disabled = True
+logging.getLogger("imdbpy.parser.http").disabled = True
+logging.getLogger("imdbpy.parser.http.piculet").disabled = True
+logging.getLogger("imdbpy.parser.http.build_person").disabled = True
 
 """
 ----------------------- Full Disk & BDInfo CLI Related Notes -----------------------
@@ -965,7 +970,7 @@ for upload_to_tracker in ["Acronym", "Site", "URL", "Platform"]:
     upload_to_trackers_overview.add_column(f"{upload_to_tracker}", justify='center', style='#38ACEC')
 
 for tracker in upload_to_trackers:
-    config = json.load(open(f"{working_folder}/site_templates/{str(acronym_to_tracker.get(str(tracker).lower()))}.json", "r", encoding="utf-8"))
+    config = json.load(open(f"{SITE_TEMPLATES_DIR.format(base_path=working_folder)}{str(acronym_to_tracker.get(str(tracker).lower()))}.json", "r", encoding="utf-8"))
     # Add tracker data to each row & show the user an overview
     upload_to_trackers_overview.add_row(tracker, config["name"], config["url"], config["platform"])
 
@@ -1034,11 +1039,13 @@ for file in upload_queue:
     torrent_info.clear()
     # This list will contain tags that are applicable to the torrent being uploaded.
     # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
-    torrent_info["tag_grouping"] = json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+    torrent_info["tag_grouping"] = json.load(open(TAG_GROUPINGS.format(base_path=working_folder)))
     torrent_info["tags"] = []
+
     # the working_folder will container a hash value with succeeding /
     torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, resume=args.resume, file=file)
     torrent_info["cookies_dump"] = cookies_dump
+    torrent_info["absolute_working_folder"] = f"{WORKING_DIR.format(base_path=working_folder)}{torrent_info['working_folder']}"
 
     # TODO these are some hardcoded values to be handled at a later point in time
     # setting this to 0 is fine. But need to add support for these eventually.
@@ -1108,7 +1115,7 @@ for file in upload_queue:
 
     if not auto_mode and Confirm.ask("Do you want to add custom texts to torrent description?", default=False):
         logging.debug('[Main] User decided to add custom text to torrent description. Handing control to custom_user_input module')
-        torrent_info["custom_user_inputs"] = collect_custom_messages_from_user(f'{working_folder}/parameters/custom_text_components.json')
+        torrent_info["custom_user_inputs"] = collect_custom_messages_from_user(CUSTOM_TEXT_COMPONENTS.format(base_path=working_folder))
     else:
         logging.debug('[Main] User decided not to add custom text to torrent description or running in auto_mode')
 
@@ -1151,13 +1158,13 @@ for file in upload_queue:
     )
 
     if is_screenshots_available:
-        screenshots_data = json.load(open(f"{working_folder}/temp_upload/{torrent_info['working_folder']}screenshots/screenshots_data.json"))
+        screenshots_data = json.load(open(SCREENSHOTS_RESULT_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder'])))
         torrent_info["bbcode_images"] = screenshots_data["bbcode_images"]
         torrent_info["bbcode_images_nothumb"] = screenshots_data["bbcode_images_nothumb"]
         torrent_info["bbcode_thumb_nothumb"] = screenshots_data["bbcode_thumb_nothumb"]
         torrent_info["url_images"] = screenshots_data["url_images"]
         torrent_info["data_images"] = screenshots_data["data_images"]
-        torrent_info["screenshots_data"] = f"{working_folder}/temp_upload/{torrent_info['working_folder']}screenshots/screenshots_data.json"
+        torrent_info["screenshots_data"] = SCREENSHOTS_RESULT_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder'])
 
     # At this point the only stuff that remains to be done is site specific so we can start a loop here for each site we are uploading to
     logging.info("[Main] Now starting tracker specific tasks")
@@ -1172,8 +1179,7 @@ for file in upload_queue:
         tracker_settings.clear()
 
         # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-        with open("{}/site_templates/".format(working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8") as config_file:
-            config = json.load(config_file)
+        config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
         # If the user provides this arg with the title right after in double quotes then we automatically use that
         # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title
@@ -1187,7 +1193,7 @@ for file in upload_queue:
         # -------- Add custom descriptions to description.txt --------
         utils.write_cutsom_user_inputs_to_description(
             torrent_info=torrent_info,
-            description_file_path=f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt',
+            description_file_path = DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
             config=config,
             tracker=tracker,
             bbcode_line_break=bbcode_line_break,
@@ -1198,19 +1204,19 @@ for file in upload_queue:
         utils.add_bbcode_images_to_description(
             torrent_info=torrent_info,
             config=config,
-            description_file_path=f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt',
+            description_file_path=DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
             bbcode_line_break=bbcode_line_break
         )
 
         # -------- Add custom uploader signature to description.txt --------
         utils.write_uploader_signature_to_description(
-            description_file_path=f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt',
+            description_file_path=DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
             tracker=tracker,
             bbcode_line_break=bbcode_line_break
         )
 
         # Add the finished file to the 'torrent_info' dict
-        torrent_info["description"] = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt'
+        torrent_info["description"] = DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"])
 
         # -------- Check for Dupes Multiple Trackers --------
         # when the user has configured multiple trackers to upload to

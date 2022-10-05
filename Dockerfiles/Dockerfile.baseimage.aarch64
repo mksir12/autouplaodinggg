@@ -25,6 +25,8 @@ RUN \
 	echo "**** install build packages ****" && \
 	apk add --no-cache --virtual=build-dependencies \
 	g++ \
+	libxml2-dev \
+  	libxslt-dev \
 	py3-pip \
 	python3-dev
 
@@ -42,3 +44,12 @@ RUN \
 	python3 \
 	mktorrent \
 	unrar
+
+
+COPY requirements/requirements_baseimages.txt .
+RUN \
+  echo "**** install pip prerequisite packages ****" && \
+  pip3 install -r requirements_baseimages.txt && \
+  pip3 freeze > requirements_baseimages.txt
+
+RUN rm requirements_baseimages.txt

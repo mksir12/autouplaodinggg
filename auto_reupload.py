@@ -58,6 +58,7 @@ from modules.server import Server
 from modules.cache import CacheFactory, CacheVendor
 from modules.torrent_client import Clients, TorrentClientFactory
 import modules.env as Environment
+from modules.constants import *
 
 # Used for rich.traceback
 install()
@@ -68,6 +69,7 @@ console = Console()
 # Import & set some global variables that we reuse later
 # This shows the full path to this files location
 working_folder = os.path.dirname(os.path.realpath(__file__))
+cookies_dump = COOKIES_DUMP_DIR.format(base_path=working_folder)
 
 # This is an important dict that we use to store info about the media file as we discover it
 # Once all necessary info has been collected we will loop through this dict and set the correct tracker API Keys to it
@@ -75,19 +77,19 @@ torrent_info = {}
 
 # Debug logs for the upload processing
 # Logger running in "w" : write mode
-logging.basicConfig(filename='{}/reupload_script.log'.format(working_folder), filemode="w", level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+logging.basicConfig(filename=REUPLOADER_LOG.format(base_path=working_folder), filemode="w", level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 
 # Load the .env file that stores info like the tracker/image host API Keys & other info needed to upload
-load_dotenv(f'{working_folder}/reupload.config.env')
+load_dotenv(REUPLOADER_CONFIG.format(base_path=working_folder))
 
 # Getting the keys present in the config.env.sample
 # These keys are then used to compare with the env variable keys provided during runtime.
 # Presently we just displays any missing keys, TODO in the future do something more useful with this information
-utils.validate_env_file(f'{working_folder}/samples/reuploader/reupload.config.env')
+utils.validate_env_file(REUPLOADER_SAMPLE_CONFIG.format(base_path=working_folder))
 
 # Used to correctly select json file
 # the value in this dictionay must correspond to the file name of the site template
-acronym_to_tracker = json.load(open(f'{working_folder}/parameters/tracker/acronyms.json'))
+acronym_to_tracker = json.load(open(TRACKER_ACRONYMS.format(base_path=working_folder)))
 
 auto_mode = 'true'
 
@@ -200,8 +202,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
         Returns False => No dupes present in the tracker and upload can continue
     """
     # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-    with open(f"{working_folder}/site_templates/" + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8") as config_file:
-        config = json.load(config_file)
+    config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
     # -------- format the torrent title --------
     torrent_info["torrent_title"] = translation_utilities.format_title(config, torrent_info)
@@ -216,7 +217,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
             tvmaze=torrent_info["tvmaze"],
             torrent_info=torrent_info,
             tracker_api=temp_tracker_api_key,
-            working_folder=working_folder,
+            config=config,
             auto_mode=auto_mode
         )
     except Exception as e:
@@ -669,7 +670,7 @@ def analyze_video_file(missing_value, media_info):
 
     # ------------ Save mediainfo to txt ------------ #
     if missing_value == "mediainfo":
-        return basic_utilities.basic_get_missing_mediainfo(torrent_info, parse_me, working_folder)
+        return basic_utilities.basic_get_missing_mediainfo(torrent_info, parse_me, MEDIAINFO_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder']))
 
     # !!! [ Block tests/probes start now ] !!!
 
@@ -697,7 +698,7 @@ def analyze_video_file(missing_value, media_info):
             torrent_info=torrent_info,
             is_disc=False,
             auto_mode=auto_mode,
-            audio_codec_file_path=f'{working_folder}/parameters/audio_codecs.json',
+            audio_codec_file_path = AUDIO_CODECS_MAP.format(base_path=working_folder),
             media_info_audio_track=media_info_audio_track,
             parse_me=parse_me,
             missing_value=missing_value
@@ -752,7 +753,8 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # ------ WEB streaming service stuff here ------ #
     if torrent_info["source"] == "Web":
         # TODO check whether None needs to be set as `web_source`
-        torrent_info["web_source"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(f'{working_folder}/parameters/streaming_services.json', torrent_info["raw_file_name"], guess_it_result)
+        torrent_info["web_source"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
+            STREAMING_SERVICES_MAP.format(base_path=working_folder), torrent_info["raw_file_name"], guess_it_result)
 
     # --- Custom & extra info --- #
     # some torrents have 'extra' info in the title like 'repack', 'DV', 'UHD', 'Atmos', 'remux', etc
@@ -766,8 +768,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
 
     # Bluray disc regions
     # Regions are read from new json file
-    bluray_regions = json.load(
-        open(f'{working_folder}/parameters/bluray_regions.json'))
+    bluray_regions = json.load(open(BLURAY_REGIONS_MAP.format(base_path=working_folder)))
 
     # Try to split the torrent title and match a few key words
     # End user can add their own 'key_words' that they might want to extract and add to the final torrent title
@@ -812,7 +813,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # Whilst most scene group names are just capitalized but occasionally as you can see ^^ some are not (e.g. KOGi)
     # either way we don't want to be capitalizing everything (e.g. we want 'NTb' not 'NTB') so we still need a dict of scene groups and their proper capitalization
     if "release_group" in torrent_info:
-        scene, release_group = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(f'{working_folder}/parameters/scene_groups.json', torrent_info)
+        scene, release_group = miscellaneous_utilities.miscellaneous_perform_scene_group_capitalization(SCENE_GROUPS_MAP.format(base_path=working_folder), torrent_info)
         torrent_info["release_group"] = release_group
         torrent_info["scene"] = scene
 
@@ -886,12 +887,13 @@ def reupload_job():
         torrent_info.clear()
         # This list will contain tags that are applicable to the torrent being uploaded.
         # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
-        torrent_info["tag_grouping"] = json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+        torrent_info["tag_grouping"] = json.load(open(TAG_GROUPINGS.format(base_path=working_folder)))
         torrent_info["tags"] = []
 
         # Remove all old temp_files & data from the previous upload
         torrent_info["working_folder"] = utils.delete_leftover_files(working_folder, file=torrent_path, resume=False)
-        torrent_info["absolute_working_folder"] = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}'
+        torrent_info["cookies_dump"] = cookies_dump
+        torrent_info["absolute_working_folder"] = f"{WORKING_DIR.format(base_path=working_folder)}{torrent_info['working_folder']}"
 
         console.print(f'Re-Uploading File/Folder: [bold][blue]{torrent_path}[/blue][/bold]')
 
@@ -998,12 +1000,13 @@ def reupload_job():
         )
 
         if is_screenshots_available:
-            screenshots_data = json.load(open(f"{working_folder}/temp_upload/{torrent_info['working_folder']}screenshots/screenshots_data.json"))
+            screenshots_data = json.load(open(SCREENSHOTS_RESULT_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder'])))
             torrent_info["bbcode_images"] = screenshots_data["bbcode_images"]
             torrent_info["bbcode_images_nothumb"] = screenshots_data["bbcode_images_nothumb"]
             torrent_info["bbcode_thumb_nothumb"] = screenshots_data["bbcode_thumb_nothumb"]
             torrent_info["url_images"] = screenshots_data["url_images"]
             torrent_info["data_images"] = screenshots_data["data_images"]
+            torrent_info["screenshots_data"] = SCREENSHOTS_RESULT_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info['working_folder'])
 
         # At this point the only stuff that remains to be done is site specific so we can start a loop here for each site we are uploading to
         logging.info("[Main] Now starting tracker specific tasks")
@@ -1025,8 +1028,7 @@ def reupload_job():
             tracker_settings.clear()
 
             # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-            with open("{}/site_templates/".format(working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8") as config_file:
-                config = json.load(config_file)
+            config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
             # -------- format the torrent title --------
             torrent_info["torrent_title"] = translation_utilities.format_title(config, torrent_info)
@@ -1039,19 +1041,19 @@ def reupload_job():
             utils.add_bbcode_images_to_description(
                 torrent_info=torrent_info,
                 config=config,
-                description_file_path=f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt',
+                description_file_path=DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
                 bbcode_line_break=bbcode_line_break
             )
 
             # -------- Add custom uploader signature to description.txt --------
             utils.write_uploader_signature_to_description(
-                description_file_path=f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt',
+                description_file_path=DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
                 tracker=tracker,
                 bbcode_line_break=bbcode_line_break
             )
 
             # Add the finished file to the 'torrent_info' dict
-            torrent_info["description"] = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}description.txt'
+            torrent_info["description"] = DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"])
 
             # -------- Check for Dupes Multiple Trackers --------
             # when the user has configured multiple trackers to upload to
@@ -1120,7 +1122,6 @@ def reupload_job():
                 reupload_utilities.update_success_status_for_torrent_upload(cache, torrent, tracker, upload_response)
 
                 # -------- Post Processing --------
-                # TODO do proper post processing steps
                 logging.fatal(f'[Main] `upload_media` :: {torrent_info["upload_media"]} `save_path` :: {save_path}')
                 if "raw_video_file" in torrent_info:
                     logging.fatal(f'[Main] `raw_video_file` :: {torrent_info["raw_video_file"]}')
@@ -1134,7 +1135,7 @@ def reupload_job():
                         logging.info(f'[Main] `raw_video_file` is missing in torrent_info. Hence updating client save path to {save_path}')
 
                 torrent_client.upload_torrent(
-                    torrent=f'{working_folder}/temp_upload/{torrent_info["working_folder"]}{tracker}-{torrent_info["torrent_title"]}.torrent',
+                    torrent=f'{WORKING_DIR.format(base_path=working_folder)}{torrent_info["working_folder"]}{tracker}-{torrent_info["torrent_title"]}.torrent',
                     save_path=save_path,
                     use_auto_torrent_management=False,
                     is_skip_checking=True

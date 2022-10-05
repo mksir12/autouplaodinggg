@@ -8,6 +8,7 @@
 __pycache__/
 /POC/
 /coverage
+/cookies
 
 # Excluded file formats
 *.mkv

@@ -19,6 +19,7 @@ import logging
 
 from rich.console import Console
 import modules.env as Environment
+from modules.constants import WORKING_DIR
 
 console = Console()
 
@@ -338,7 +339,7 @@ def choose_right_tracker_keys(config, tracker_settings, tracker, torrent_info, a
                         tracker_settings[config["translation"][translation_key]] = torrent_info[translation_key]
                     # Make sure you select the right .torrent file
                     if translation_key == "dot_torrent":
-                        tracker_settings[config["translation"]["dot_torrent"]] = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}{tracker}-{torrent_info["torrent_title"]}.torrent'
+                        tracker_settings[config["translation"]["dot_torrent"]] = f'{WORKING_DIR.format(base_path=working_folder)}{torrent_info["working_folder"]}{tracker}-{torrent_info["torrent_title"]}.torrent'
 
                 # The reason why we keep this elif statement here is because the conditional right above is also technically a "string"
                 # but its easier to keep mediainfo and description in text files until we need them so we have that small exception for them

@@ -31,6 +31,7 @@ from utilities.utils_miscellaneous import miscellaneous_identify_repacks
 from utilities.utils import prepare_headers_for_tracker
 import modules.env as Environment
 
+
 console = Console()
 
 
@@ -205,11 +206,7 @@ def _fuzzy_similarity(our_title, check_against_title, release_title, release_yea
     return token_set_ratio
 
 
-def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info, tracker_api, working_folder, auto_mode):
-
-    with open(f'{working_folder}/site_templates/{search_site}.json', "r", encoding="utf-8") as config_file:
-        config = json.load(config_file)
-
+def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info, tracker_api, config, auto_mode):
     is_repack_or_proper = torrent_info["repack"]
     logging.info(f"[DupeCheck] We curently are tying to upload a repack type: '{is_repack_or_proper}'. Non '{is_repack_or_proper}' release will be ignored during dupe check")
 

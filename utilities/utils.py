@@ -33,6 +33,8 @@ from rich.console import Console
 
 from modules.torrent_client import Clients, TorrentClientFactory
 import modules.env as Environment
+from modules.constants import WORKING_DIR, SCREENSHOTS_PATH
+
 
 console = Console()
 
@@ -174,21 +176,22 @@ def delete_leftover_files(working_folder, file, resume=False):
     """
     # We need these folders to store things like screenshots, .torrent & description files.
     # So create them now if they don't exist
-    if Path(f"{working_folder}/temp_upload/").is_dir():
+    working_dir = WORKING_DIR.format(base_path=working_folder)
+    if Path(working_dir).is_dir():
         # this means that the directory exists
         # If they do already exist then we need to remove any old data from them
         if resume:
-            logging.info(f"[Utils] Resume flag provided by user. Preserving the contents of the folder: {working_folder}/temp_upload/")
+            logging.info(f"[Utils] Resume flag provided by user. Preserving the contents of the folder: {working_dir}")
         else:
-            files = glob.glob(f'{working_folder}/temp_upload/*')
+            files = glob.glob(f'{working_dir}*')
             for f in files:
                 if os.path.isfile(f):
                     os.remove(f)
                 else:
                     shutil.rmtree(f)
-            logging.info(f"[Utils] Deleted the contents of the folder: {working_folder}/temp_upload/")
+            logging.info(f"[Utils] Deleted the contents of the folder: {working_dir}")
     else:
-        os.mkdir(f"{working_folder}/temp_upload/")
+        os.mkdir(working_dir)
 
     if Environment.is_readble_temp_data_needed():
         files = f'{file}/'.replace("//", "/").strip().replace(" ", ".").replace(":", ".").replace("'", "").split("/")[:-1]
@@ -196,13 +199,16 @@ def delete_leftover_files(working_folder, file, resume=False):
         unique_hash = files[0]
     else:
         unique_hash = get_hash(file)
+    unique_hash = f"{unique_hash}/"
 
-    if not Path(f"{working_folder}/temp_upload/{unique_hash}").is_dir():
-        os.mkdir(f"{working_folder}/temp_upload/{unique_hash}")
-    if not Path(f"{working_folder}/temp_upload/{unique_hash}/screenshots/").is_dir():
-        os.mkdir(f"{working_folder}/temp_upload/{unique_hash}/screenshots/")
+    if not Path(f"{working_dir}{unique_hash}").is_dir():
+        os.mkdir(f"{working_dir}{unique_hash}")
+
+    if not Path(SCREENSHOTS_PATH.format(base_path=working_folder, sub_folder=unique_hash)).is_dir():
+        os.mkdir(SCREENSHOTS_PATH.format(base_path=working_folder, sub_folder=unique_hash))
+
     logging.info(f"[Utils] Created subfolder {unique_hash} for file {file}")
-    return f"{unique_hash}/"
+    return unique_hash
 
 
 def write_file_contents_to_log_as_debug(file_path):
@@ -411,7 +417,7 @@ def _post_mode_cross_seed(torrent_client, torrent_info, working_folder, tracker,
 
         # getting the proper .torrent file for the provided tracker
         torrent_file = None
-        for file in glob.glob(f"{working_folder}/temp_upload/{torrent_info['working_folder']}" + r"/*.torrent"):
+        for file in glob.glob(f"{WORKING_DIR.format(base_path=working_folder)}{torrent_info['working_folder']}" + r"/*.torrent"):
             if f"/{tracker}-" in file:
                 torrent_file = file
                 console.print(f"Identified .torrent file \t'{file}' for tracker as '{tracker}'")
@@ -460,7 +466,7 @@ def _post_mode_watch_folder(torrent_info, working_folder):
                         logging.info(f"[Utils] Creating Sub location '{move_locations['torrent']}{sub_folder}'.")
                         Path(f"{move_locations['torrent']}{sub_folder}").mkdir(parents=True, exist_ok=True)
                 # The user might have upload to a few sites so we need to move all files that end with .torrent to the new location
-                list_dot_torrent_files = glob.glob(f"{working_folder}/temp_upload/{torrent_info['working_folder']}*.torrent")
+                list_dot_torrent_files = glob.glob(f"{WORKING_DIR.format(base_path=working_folder)}{torrent_info['working_folder']}*.torrent")
                 for dot_torrent_file in list_dot_torrent_files:
                     # Move each .torrent file we find into the directory the user specified
                     logging.debug(f'[Utils] Moving {dot_torrent_file} to {move_locations["torrent"]}{sub_folder}')
