@@ -32,6 +32,7 @@ from pathlib import Path
 from datetime import datetime
 from imgurpython import ImgurClient
 import modules.env as Environment
+from modules.constants import IMAGE_HOST_URLS, UPLOADS_COMPLETE_MARKER_PATH, BB_CODE_IMAGES_PATH, URL_IMAGES_PATH, SCREENSHOTS_PATH, SCREENSHOTS_RESULT_FILE_PATH
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
@@ -149,7 +150,7 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
 
     elif img_host in ('imgbb', 'freeimage', 'imgfi', 'snappie'):
         # Get the correct image host url/json key
-        available_image_host_urls = json.load(open(f'{base_path}/parameters/image_host_urls.json'))
+        available_image_host_urls = json.load(open(IMAGE_HOST_URLS.format(base_path=base_path)))
 
         parent_key = 'data' if img_host == 'imgbb' else 'image'
 
@@ -311,7 +312,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     # if no image_hosts are left then we show the user an error that we will continue the upload with screenshots & return back to auto_upload.py
     # TODO: update this to work in line with the new json screenshot data
     if len(enabled_img_hosts_list) == 0:
-        with open(f"{base_path}/temp_upload/{hash_prefix}bbcode_images.txt", "w") as no_images, open(f"{base_path}/temp_upload/{hash_prefix}url_images.txt", "a") as append_url_txt:
+        with open(BB_CODE_IMAGES_PATH.format(base_path=base_path, sub_folder=hash_prefix), "w") as no_images, open(URL_IMAGES_PATH.format(base_path=base_path, sub_folder=hash_prefix), "a") as append_url_txt:
             no_images.write("[b][color=#FF0000][size=22]No Screenshots Available[/size][/color][/b]")
             append_url_txt.write("No Screenshots Available")
             append_url_txt.close()
@@ -329,15 +330,15 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     for ss_timestamp in track(_get_ss_range(duration=duration, num_of_screenshots=num_of_screenshots), description="Taking screenshots.."):
         # Save the ss_ts to the 'ss_timestamps_list' list
         ss_timestamps_list.append(ss_timestamp)
-        screenshots_to_upload_list.append(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
+        screenshots_to_upload_list.append(f'{SCREENSHOTS_PATH.format(base_path=base_path, sub_folder=hash_prefix)}{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
         # Now with each of those timestamps we can take a screenshot and update the progress bar
         # `-itsoffset -2` added for Frame accurate screenshot
-        if not Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png').is_file():
+        if not Path(f'{SCREENSHOTS_PATH.format(base_path=base_path, sub_folder=hash_prefix)}{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png').is_file():
             FFmpeg(inputs={upload_media_import: f'-loglevel panic -ss {ss_timestamp} -itsoffset -2'},
-                   outputs={f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png': '-frames:v 1 -q:v 10'}).run()
+                   outputs={f'{SCREENSHOTS_PATH.format(base_path=base_path, sub_folder=hash_prefix)}{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png': '-frames:v 1 -q:v 10'}).run()
         else:
             logging.info(f"[Screenshots] Continuing with existing screenshot instead of taking new one: {torrent_title_import} - ({ss_timestamp.replace(':', '.')}).png")
-        image_data_paths.append(f'{base_path}/temp_upload/{hash_prefix}screenshots/{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
+        image_data_paths.append(f'{SCREENSHOTS_PATH.format(base_path=base_path, sub_folder=hash_prefix)}{torrent_title_import} - ({ss_timestamp.replace(":", ".")}).png')
 
     console.print('Finished taking screenshots!\n', style='sea_green3')
     # log the list of screenshot timestamps
@@ -347,7 +348,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
     # if screenshots were not uploaded previously, then we'll upload them.
     # As of now partial uploads are not discounted for. During upload, all screenshots will be uploaded
 
-    if Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark').is_file():
+    if Path(UPLOADS_COMPLETE_MARKER_PATH.format(base_path=base_path, sub_folder=hash_prefix)).is_file():
         logging.info("[Screenshots] Noticed that all screenshots have been uploaded to image hosts. Skipping Uploads")
         console.print('Reusing previously uploaded screenshot urls!\n', style='sea_green3')
         return True # indicates that screenshots are available
@@ -386,14 +387,14 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
                     break
 
         logging.info('[Screenshots] Uploaded screenshots. Saving urls and bbcodes...')
-        with open(f"{base_path}/temp_upload/{hash_prefix}screenshots/screenshots_data.json", "a") as screenshots_file:
+        with open(SCREENSHOTS_RESULT_FILE_PATH.format(base_path=base_path, sub_folder=hash_prefix), "a") as screenshots_file:
             screenshots_file.write(json.dumps(images_data))
 
         # Depending on the image upload outcome we print a success or fail message showing the user what & how many images failed/succeeded
         if len(screenshots_to_upload_list) == successfully_uploaded_image_count:
             console.print(f'Uploaded {successfully_uploaded_image_count}/{len(screenshots_to_upload_list)} screenshots', style='sea_green3', highlight=False)
             logging.info(f'[Screenshots] Successfully uploaded {successfully_uploaded_image_count}/{len(screenshots_to_upload_list)} screenshots')
-            upload_marker = Path(f'{base_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark')
+            upload_marker = Path(UPLOADS_COMPLETE_MARKER_PATH.format(base_path=base_path, sub_folder=hash_prefix))
             with upload_marker.open("w", encoding="utf-8") as f:
                 f.write("ALL_SCREENSHOT_UPLOADED_SUCCESSFULLY")
                 logging.debug("[Screenshots] Marking that all screenshots have been uploaded successfully")

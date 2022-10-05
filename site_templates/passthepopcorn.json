@@ -1,9 +1,4 @@
 {
-    "doubts":[
-        "Blu-ray | WEB | HDTV => Supported sources currently [No full disk uploads]",
-        "check and what all information from ptp imdb auto fill can be obtained from tmdb => ptp imdb auto_fill.txt",
-        "NTSC and PAL resolutions are not supported"
-    ],
     "name": "PassThePopcorn",
     "url": "https://passthepopcorn.me/",
     "upload_form": "https://passthepopcorn.me/upload.php",

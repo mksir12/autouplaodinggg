@@ -471,7 +471,7 @@ def basic_get_missing_source(torrent_info, is_disc, auto_mode, missing_value):
         quit_log_reason(reason="auto_mode is enabled & we can't auto detect the source (e.g. bluray, webdl, dvd, etc). Upload form requires the Source", missing_value=missing_value)
 
 
-def basic_get_missing_mediainfo(torrent_info, parse_me, working_folder):
+def basic_get_missing_mediainfo(torrent_info, parse_me, mediainfo_file):
     logging.info("[BasicUtils] Generating mediainfo.txt")
     # If its not a bluray disc we can get mediainfo, otherwise we need BDInfo
     if "largest_playlist" not in torrent_info:
@@ -484,18 +484,18 @@ def basic_get_missing_mediainfo(torrent_info, parse_me, working_folder):
         # depending on if the user is uploading a folder or file we need for format it correctly so we replace the entire path with just media file/folder name
         logging.info(f"[BasicUtils] Using the following path in mediainfo.txt: {essential_path}")
         media_info_output = str(MediaInfo.parse(parse_me, output="text", full=False)).replace(parse_me, essential_path)
-        save_location = f'{working_folder}/temp_upload/{torrent_info["working_folder"]}mediainfo.txt'
-        logging.info(f'[BasicUtils] Saving mediainfo to: {save_location}')
+        logging.info(f'[BasicUtils] Saving mediainfo to: {mediainfo_file}')
         logging.debug(":::::::::::::::::::::::::::: MediaInfo Output ::::::::::::::::::::::::::::")
         logging.debug(f'\n{media_info_output}')
 
-        with open(save_location, 'w+') as f:
+        with open(mediainfo_file, 'w+') as f:
             f.write(media_info_output)
         # now save the mediainfo txt file location to the dict
         # torrent_info["mediainfo"] = save_location
-        return save_location
+        return mediainfo_file
     else:
-        pass  # this is a full disc and it needs bdinfo
+        # this is a full disc and it needs bdinfo
+        logging.info("[BasicUtils] This is a full disk upload. Skipping mediainfo generation...")
 
 
 def basic_get_mediainfo(raw_file):

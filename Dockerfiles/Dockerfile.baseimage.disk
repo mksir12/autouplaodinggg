@@ -71,7 +71,7 @@ RUN xbuild /property:Configuration=Release /property:OutDir=/usr/src/app/build/
 # - mktorrent to create torrents (mainly in debian)
 RUN \
 	apt update && \
-	apt install -y python3-pip ffmpeg mediainfo python3 mktorrent unrar
+	apt install -y libxml2-dev libxslt-dev python3-pip ffmpeg mediainfo python3 mktorrent unrar
 
 # setting bdinfocli as executable
 RUN \

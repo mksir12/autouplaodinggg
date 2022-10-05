@@ -62,7 +62,7 @@ def collect_custom_messages_from_user(custom_text_components_path):
     # creating the choices list for user
     list_of_num = _create_choice_list_for_user(custom_text_components)
 
-    console.rule("[bold red on white] :warning: Custom Torrent Descriptions! :warning: [/bold red on white]",style='bold red', align='center')
+    console.rule("[bold red] :warning: Custom Torrent Descriptions! :warning: [/bold red]",style='bold red', align='center')
     console.print(f"You can add custom messages and texts to the torrent description as various text components. These could be {components_choices}", justify='center')
     console.print("[bold red]:warning: Please note that only few trackers supports all these different types. :warning:[/bold red]", highlight=False, justify='center')
     console.print("If any tracker does not support one of the type, then it will be defaulted to 'PLAIN TEXT'", justify='center')

@@ -310,7 +310,7 @@ def test_get_tags(imdb_tags, tmdb_tags, expected):
     [
         pytest.param(
             APIResponse(None, text=None, url="https://passthepopcorn.me/torrents.php?id=1234567&torrentid=7654321"),
-            (True),
+            (True, "Successfully Uploaded to PTP"),
             id="ptp_successful_upload"
         ),
         pytest.param(

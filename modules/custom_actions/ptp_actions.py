@@ -407,4 +407,4 @@ def check_successful_upload(response):
         return False, f"Unexpected result. Couldn't detect torrent url:: {response.url}"
     else:
         logging.info(f"[CustomAction][PTP] Upload to PTP successful. Group ID :: {match[0]}, Torrent ID :: {match[1]}")
-    return True
+    return True, "Successfully Uploaded to PTP"

@@ -153,4 +153,6 @@ def test_search_for_dupes_api_api_key_based(site_template, imdb, tmdb, tvmaze, a
     #   `debug` to False
     #   `tracker_api` to TRACKER_API_DUMMY (tracker_api_key)
     mocker.patch("os.getenv", return_value=80)
-    assert search_for_dupes_api("ACRONYM", site_template, imdb, tmdb, tvmaze, torrent_info, tracker_api_key, working_folder, auto_mode) == expected
+    tracker_config = json.load(open(f'{working_folder}/site_templates/{site_template}.json', "r", encoding="utf-8"))
+
+    assert search_for_dupes_api("ACRONYM", site_template, imdb, tmdb, tvmaze, torrent_info, tracker_api_key, tracker_config, auto_mode) == expected
