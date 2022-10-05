@@ -272,6 +272,7 @@ docker run --rm -it \
     - [ ] GreatPosterWall
     - [X] PassThePopcorn
 - [ ] Get movie/tv youtube trailers
+- [X] JSONSchema for template validations
 - [X] Visor server module
 - [X] Introduced new 2FA module
 - [X] Updated banned groups for BLU
