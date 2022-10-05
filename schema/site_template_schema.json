@@ -1,0 +1,318 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "GG-Bot Uploader Site Templates Schema",
+    "definitions": {
+        "stringArray": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true,
+            "default": []
+        },
+        "keyValuePair":{
+            "type":"object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": {
+                "key":{
+                    "type":"string",
+                    "description": "The key for HTTP header."
+                },
+                "value":{
+                    "type":"string",
+                    "description": "The value for HTTP header."
+                }
+            }
+        },
+        "technicalJargons":{
+            "type":"object",
+            "description": "The technical details on how to interact with the trackers upload apis",
+            "additionalProperties": false,
+            "required": ["authentication_mode", "response_type", "payload_type"],
+            "properties": {
+                "authentication_mode":{
+                    "type":"string",
+                    "description": "The authentication method to be used to interact with the upload api",
+                    "enum": ["API_KEY", "API_KEY_PAYLOAD", "BEARER", "COOKIE", "HEADER"]
+                },
+                "response_type":{
+                    "type":"string",
+                    "description": "The type of response to be expected from the tracker upload api",
+                    "enum": ["JSON", "TEXT"]
+                },
+                "response_action":{
+                    "type":"string",
+                    "description": "The custom action to be applied to to get the upload status from TEXT based upload response."
+                },
+                "payload_type":{
+                    "type":"string",
+                    "description": "Indicates how the payload needs to be sent to tracker upload api",
+                    "enum": ["JSON", "MULTI-PART"]
+                },
+                "request_method":{
+                    "type":"string",
+                    "description": "The HTTP request method to be used to communicate with api",
+                    "enum": ["GET", "POST"],
+                    "default": "POST"
+                },
+                "cookie":{
+                    "type":"object",
+                    "optional":true,
+                    "additionalProperties": false,
+                    "properties": {
+                        "provider":{
+                            "type":"string",
+                            "description": "The cookie provider. Tells the uploader on how to get the cookie.",
+                            "enum": ["custom_action"]
+                        },
+                        "data":{
+                            "type":"string",
+                            "description": "The custom action that needs to be invoked to get cookie for the tracker."
+                        }
+                    }
+                },
+                "auth_payload_key":{
+                    "type":"string",
+                    "description": "The key against which the api key needs to be set in tracker payload"
+                },
+                "custom_actions":{
+                    "$ref": "#/definitions/stringArray"
+                },
+                "headers":{ "$ref": "#/definitions/authenticationHeaders" }
+            },
+            "allOf":[
+                {
+                    "if":{
+                        "properties":{ "response_type": { "const": "TEXT" } },
+                        "required": [ "response_type" ]
+                    },
+                    "then":{ "required": ["response_action"] }
+                },
+                {
+                    "if":{
+                        "properties":{ "authentication_mode": { "const": "COOKIE" } },
+                        "required": [ "authentication_mode" ]
+                    },
+                    "then":{ "required": ["cookie"] }
+                },
+                {
+                    "if":{
+                        "properties":{ "authentication_mode": { "const": "API_KEY_PAYLOAD"} },
+                        "required": [ "authentication_mode" ]
+                    },
+                    "then":{ "required": ["auth_payload_key"] }
+                },
+                {
+                    "if":{
+                        "properties":{ "authentication_mode": { "const": "HEADER" } },
+                        "required": [ "authentication_mode" ]
+                    },
+                    "then":{ "required": ["headers"] }
+                }
+            ]
+        },
+        "authenticationHeaders":{
+            "type": "array",
+            "items": { "$ref": "#/definitions/keyValuePair" }
+        }
+    },
+    "required": [
+        "name", "url", "upload_form", "torrents_search",
+        "source", "platform", "bbcode_line_break", "title_separator",
+        "torrent_title_format", "dupes", "Default", "Optional",
+        "Required", "translation", "hybrid_mappings"
+    ],
+    "type": ["object"],
+    "additionalProperties": true,
+    "properties": {
+        "name":{
+            "type":"string",
+            "description": "The full name of the tracker"
+        },
+        "url":{
+            "type":"string",
+            "format": "uri",
+            "description": "The url of the tracker"
+        },
+        "upload_form":{
+            "type":"string",
+            "format": "uri",
+            "description": "The url to which GG-BOT should send the upload payload"
+        },
+        "torrents_search":{
+            "type":"string",
+            "format": "uri",
+            "description": "The url from which GG-BOT can fetch torrents already on tracker to check for dupe before uploading"
+        },
+        "source":{
+            "type":"string",
+            "description": "The value for `source` tag in torrent metadata"
+        },
+        "platform":{
+            "type":"string",
+            "description": "The platform / codebase on which the tracker is built."
+        },
+        "bbcode_line_break":{
+            "type":"string",
+            "description": "The character that the tracker's bbcode engine uses for line breaks. [\\n, <br>]"
+        },
+        "title_separator":{
+            "type":"string",
+            "description": "The separator to be used while formatting torrent title for tracker. Eg: .(dot), (space), etc... "
+        },
+        "description_components":{
+            "type":"object",
+            "description": "The wrappers for various bbcode / html tags. Note that the starting and ending tags should be separated by a space.",
+            "additionalProperties": false,
+            "properties": {
+                "spoiler_code": {
+                    "type":"string",
+                    "description": "The bbcode / html wrapper to be used for creating 'Spoilers'."
+                },
+                "notes_code": {
+                    "type":"string",
+                    "description": "The bbcode / html wrapper to be used for creating 'Notes'."
+                },
+                "quote_code": {
+                    "type":"string",
+                    "description": "The bbcode / html wrapper to be used for creating 'Quotes'."
+                },
+                "alert_code": {
+                    "type":"string",
+                    "description": "The bbcode / html wrapper to be used for creating 'Alerts'."
+                },
+                "code_code": {
+                    "type":"string",
+                    "description": "The bbcode / html wrapper to be used for creating 'Codes'."
+                }
+            }
+        },
+        "technical_jargons": { "$ref": "#/definitions/technicalJargons" },
+        "hybrid_mappings":{
+            "type":"object",
+            "default":{}
+        },
+        "translation":{
+            "type":"object"
+        },
+        "Required":{
+            "type":"object"
+        },
+        "Optional":{
+            "type":"object",
+            "default":{}
+        },
+        "Default":{
+            "type":"object",
+            "default":{}
+        },
+        "dupes":{
+            "type":"object",
+            "properties": {
+                "technical_jargons": { "$ref": "#/definitions/technicalJargons" },
+                "url_format": {
+                    "type": "string",
+                    "description": "The URL formatting to be applied to create the search url"
+                },
+                "strip_text":{
+                    "type": "boolean",
+                    "description": "Indicates whether the tt in imdb needs to be removed or not",
+                    "default" : false
+                },
+                "parse_json":{
+                    "type":"object",
+                    "description": "Tells the uploader on how to parse the dupe check response from tracker",
+                    "required": ["is_needed"],
+                    "properties": {
+                        "is_needed":{
+                            "type":"boolean",
+                            "default":false,
+                            "description": "Indicates whether the uploader needs to apply any parsing to the dupe check response from tracker"
+                        },
+                        "top_lvl":{
+                            "type":"string",
+                            "description": "Mentions the first attribute in the response json which contains the list of object. (each object is a torrent in the tracker)"
+                        },
+                        "second_level":{
+                            "type":"string",
+                            "description": "If top_lvl item is an object, and the torrent items is present in a key in this object, it can be fetched by this attribute."
+                        },
+                        "torrent_details":{
+                            "type":"string",
+                            "description": "If the top_lvl item is an array, and the torrent object is under another attribute in this object, then it can be fetched by this attribute."
+                        },
+                        "torrent_name":{
+                            "type":"string",
+                            "description": "The attribute in the torrent object which contains the name of the torrent.",
+                            "default": "name"
+                        },
+                        "combine_fields":{
+                            "type":"boolean",
+                            "description": "Indicates whether the uploader needs to concatenate multiple attribute to create the torrent tile."
+                        },
+                        "fields": { "$ref": "#/definitions/stringArray" }
+                    },
+                    "allOf": [
+                        {
+                            "if":{
+                                "required": ["is_needed"],
+                                "properties": {
+                                    "is_needed":{ "const": true }
+                                }
+                            },
+                            "then":{
+                                "required": ["top_lvl"]
+                            }
+                        },
+                        {
+                            "if":{
+                                "required": ["combine_fields"],
+                                "properties": {
+                                    "combine_fields":{ "const": true }
+                                }
+                            },
+                            "then":{
+                                "required": ["fields"]
+                            }
+                        }
+                    ]
+                },
+                "payload":{
+                    "type":"string",
+                    "description": "If the technical_jargons.request_method is POST, then the payload to be send needs to be provided here. This must be a valid json string. Contents to be replaced must be enclosed with <>"
+                }
+            },
+            "allOf": [
+                {
+                    "if":{
+                        "properties": {
+                            "technical_jargons":{
+                                "properties": {
+                                    "request_method":{
+                                        "const": "POST"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "then":{
+                        "required": ["payload"]
+                    }
+                }
+            ]
+        },
+        "torrent_title_format":{
+            "type":"object",
+            "additionalProperties": false,
+            "properties":{
+                "movie":{
+                    "type":"object"
+                },
+                "episode":{
+                    "type":"object"
+                }
+            }
+        },
+        "banned_groups": { "$ref": "#/definitions/stringArray" }
+    }
+}

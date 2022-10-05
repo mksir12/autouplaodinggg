@@ -368,14 +368,10 @@
         "technical_jargons": {
             "authentication_mode": "BEARER",
             "payload_type": "MULTI-PART",
-            "request_method": "POST"
+            "request_method": "POST",
+            "response_type": "JSON"
         },
         "strip_text": true,
-        "_comments": {
-            "payload": "payload is the json data that needs to be sent to tracker",
-            "_payload": "payload must be a valid json",
-            "formatting": "content to be replaced must be enclosed with <>"
-        },
         "payload": "{\"search\":\"<imdb>\"}",
         "parse_json": {
             "is_needed": false

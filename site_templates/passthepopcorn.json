@@ -280,7 +280,8 @@
                 }
             ],
             "payload_type": "MULTI-PART",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
 
         "url_format": "{search_url}?imdb={imdb}",

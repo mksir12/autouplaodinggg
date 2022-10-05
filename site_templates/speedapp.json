@@ -294,7 +294,8 @@
         "technical_jargons": {
             "authentication_mode": "BEARER",
             "payload_type": "JSON",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
         "url_format": "{search_url}?imdbId={imdb}",
         "strip_text": true,
