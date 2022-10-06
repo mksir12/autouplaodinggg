@@ -271,7 +271,10 @@ docker run --rm -it \
 - [ ] Add Support for new platforms (Only for Upload Assistant)
     - [ ] GreatPosterWall
     - [X] PassThePopcorn
+- [X] New Image Hosts
+    - [X] Lensdump
 - [ ] Get movie/tv youtube trailers
+- [ ] Support for providing external tracker templates
 - [X] JSONSchema for template validations
 - [X] Visor server module
 - [X] Introduced new 2FA module
