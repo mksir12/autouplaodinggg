@@ -165,9 +165,11 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
                 if img_host == "lensdump":
                     # lensdump needs api key in headers and have a different multipart format
                     data["format"] = "json"
-                    # headers = {"X-API-Key": Environment.get_image_host_api_key(img_host)}
-
-                files = {'source': open(image_path, 'rb')}
+                    data['source'] = base64.b64encode(open(image_path, "rb").read())
+                    headers = {"X-API-Key": Environment.get_image_host_api_key(img_host)}
+                    files = {}
+                else:
+                    files = {'source': open(image_path, 'rb')}
                 img_upload_request = requests.post(url=image_host_url, data=data, files=files, headers=headers)
             else:
                 data['image'] = base64.b64encode(open(image_path, "rb").read())
