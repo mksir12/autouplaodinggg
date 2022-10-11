@@ -82,10 +82,9 @@ logging.basicConfig(filename=REUPLOADER_LOG.format(base_path=working_folder), fi
 # Load the .env file that stores info like the tracker/image host API Keys & other info needed to upload
 load_dotenv(REUPLOADER_CONFIG.format(base_path=working_folder))
 
-# Getting the keys present in the config.env.sample
-# These keys are then used to compare with the env variable keys provided during runtime.
-# Presently we just displays any missing keys, TODO in the future do something more useful with this information
-utils.validate_env_file(REUPLOADER_SAMPLE_CONFIG.format(base_path=working_folder))
+# By default we load the templates from site_templates/ path
+# If user has provided load_external_templates argument then we'll update this path to a different one
+site_templates_path = SITE_TEMPLATES_DIR.format(base_path=working_folder)
 
 # Used to correctly select json file
 # the value in this dictionay must correspond to the file name of the site template
@@ -107,6 +106,7 @@ uncommon_args.add_argument('-mkt', '--use_mktorrent', action='store_true', help=
 uncommon_args.add_argument('-fpm', '--force_pymediainfo', action='store_true', help="Force use PyMediaInfo to extract video codec over regex extraction from file name")
 uncommon_args.add_argument('-ss', '--skip_screenshots', action='store_true', help="Skip screenshot generation and upload for a run (overrides config.env)")
 uncommon_args.add_argument('-disc', action='store_true',help="Unsupported for AutoReuploader. Added for compatibility with upload assistant")
+uncommon_args.add_argument('-let', '--load_external_templates', action='store_true',help="When enabled uploader will load external site templates from ./external/site_templates location")
 
 # args for Internal uploads
 internal_args = parser.add_argument_group('Internal Upload Arguments')
@@ -131,25 +131,26 @@ if args.debug:
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
     logging.debug(f"Arguments provided by user for reupload: {args}")
 
+# Disabling the logs from cinemagoer
+logging.getLogger("imdbpy").disabled = True
+logging.getLogger("imdbpy.parser").disabled = True
+logging.getLogger("imdbpy.parser.http").disabled = True
+logging.getLogger("imdbpy.parser.http.piculet").disabled = True
+logging.getLogger("imdbpy.parser.http.build_person").disabled = True
+
 # the `prepare_tracker_api_keys_dict` prepares the api_keys_dict and also does mandatory property validations
 api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict('./parameters/tracker/api_keys.json')
-
-# getting the list of trackers that the user wants to upload to.
-# If there are any configuration errors for a particular tracker, then they'll not be used
-upload_to_trackers = utils.get_and_validate_configured_trackers(args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys())
-
-def restrict_ptp_uploads(upload_to_trackers):
-    if "PTP" in upload_to_trackers:
-        upload_to_trackers.remove("PTP")
-        console.print("[red bold] Uploading to [yellow]PTP[/yellow] not supported in GGBOT Auto ReUploader")
-        if len(upload_to_trackers) < 1:
-            raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
 
 restrict_ptp_uploads(upload_to_trackers)
 
 console.line(count=2)
 utils.display_banner("  Auto  ReUploader  ")
 console.line(count=1)
+
+# Getting the keys present in the config.env.sample
+# These keys are then used to compare with the env variable keys provided during runtime.
+# Presently we just displays any missing keys, TODO in the future do something more useful with this information
+utils.validate_env_file(REUPLOADER_SAMPLE_CONFIG.format(base_path=working_folder))
 
 console.line(count=2)
 console.rule("Establishing Connections", style='red', align='center')
@@ -177,6 +178,39 @@ cache = cache_client_factory.create(CacheVendor[Environment.get_cache_type()])
 cache.hello()
 logging.info("[Main] Successfully established connection to the cache server configured")
 
+
+# creating the schema validator for validating all the template files
+template_validator = TemplateSchemaValidator(TEMPLATE_SCHEMA_LOCATION.format(base_path=working_folder))
+# we are going to validate all the built-in templates
+valid_templates = utils.validate_templates_in_path(site_templates_path, template_validator)
+# copy all the valid templates to workdir.
+utils.copy_template(valid_templates, site_templates_path, VALIDATED_SITE_TEMPLATES_DIR.format(base_path=working_folder))
+# now we set the site templates path to the new temp dir
+site_templates_path = VALIDATED_SITE_TEMPLATES_DIR.format(base_path=working_folder)
+
+if args.load_external_templates:
+    logging.info("[Main] User wants to load external site templates. Attempting to load and validate these templates...")
+    # Here we validate the external templates and copy all default and external templates to a differnet folder.
+    # The method will modify the `api_keys_dict` and `acronym_to_tracker` to include the external trackers as well.
+    valid_ext_templates, ext_api_keys_dict, ext_acronyms = utils.validate_and_load_external_templates(template_validator, working_folder)
+    if len(valid_ext_templates) > 0:
+        valid_templates.extend(valid_ext_templates)
+        api_keys_dict.update(ext_api_keys_dict)
+        acronym_to_tracker.update(ext_acronyms)
+
+
+# getting the list of trackers that the user wants to upload to.
+# If there are any configuration errors for a particular tracker, then they'll not be used
+upload_to_trackers = utils.get_and_validate_configured_trackers(args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys())
+
+def restrict_ptp_uploads(upload_to_trackers):
+    if "PTP" in upload_to_trackers:
+        upload_to_trackers.remove("PTP")
+        console.print("[red bold] Uploading to [yellow]PTP[/yellow] not supported in GGBOT Auto ReUploader")
+        if len(upload_to_trackers) < 1:
+            raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
+
+
 # now that we have verified that the client and cache connections have been created successfully
 #  - we can optionally start gg-bot visor server
 #  - we can start the reupload job (At the end of this file xD)
@@ -186,7 +220,6 @@ if Environment.is_visor_server_enabled():
     server.start(detached=True)
     console.print("[cyan]Started GG-BOT Visor server...[/cyan]")
     logging.info("[Main] GG-BOT Visor server started successfully")
-
 
 
 # ---------------------------------------------------------------------- #
@@ -202,7 +235,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
         Returns False => No dupes present in the tracker and upload can continue
     """
     # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-    config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
+    config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
     # -------- format the torrent title --------
     torrent_info["torrent_title"] = translation_utilities.format_title(config, torrent_info)
@@ -1028,7 +1061,7 @@ def reupload_job():
             tracker_settings.clear()
 
             # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-            config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
+            config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
             # -------- format the torrent title --------
             torrent_info["torrent_title"] = translation_utilities.format_title(config, torrent_info)
