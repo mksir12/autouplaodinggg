@@ -221,11 +221,6 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
 def get_ptp_type(torrent_info, tracker_settings, tracker_config):
     # TODO: get the type from PTP
     # TODO: multi audio being identified even when its not multi audio.
-    # if "?groupid=" in tracker_config["upload_form"]: # if release already existst then we'll get a group id from cusotm action `check_for_existing_group`
-    #     logging.info("[CustomActions][PTP] GroupID already exists in PTP. No need to send type info")
-    #     tracker_settings.pop("type", None)
-    #     return
-
     # TODO: check cases when we don't get imdb id.
     tracker_settings["type"] = None
     logging.info("[CustomActions][PTP] Attempting to identify the type applicable to PTP")
