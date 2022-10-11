@@ -292,7 +292,11 @@ def test_validate_and_load_external_templates(mocker):
     }
     acronyms = {v:k for k,v in {"sample":"smpl", "sample1": "smpl1"}.items()}
 
-    assert utils.validate_and_load_external_templates(template_validator, f"{working_folder}{temp_working_dir}") == (["sample", "sample1"], api_key_dict_expected, acronyms)
+    valid_templates, api_key_dict, acronym_obtained = utils.validate_and_load_external_templates(template_validator, f"{working_folder}{temp_working_dir}")
+    difference = set(valid_templates) ^ set(["sample1", "sample"])
+    assert not difference
+    assert api_key_dict == api_key_dict_expected
+    assert acronym_obtained == acronyms
     total_number_templates = len(list(filter(lambda entry: entry.is_file() and entry.suffix == ".json", Path(f"{working_folder}{temp_working_dir}/validated/site_templates/").glob('**/*'))))
     assert total_number_templates == 2
 
