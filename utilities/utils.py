@@ -33,7 +33,7 @@ from rich.console import Console
 
 from modules.torrent_client import Clients, TorrentClientFactory
 import modules.env as Environment
-from modules.constants import WORKING_DIR, SCREENSHOTS_PATH
+from modules.constants import WORKING_DIR, SCREENSHOTS_PATH, VALIDATED_SITE_TEMPLATES_DIR, EXTERNAL_SITE_TEMPLATES_DIR, SITE_TEMPLATES_DIR, EXTERNAL_TRACKER_ACRONYM_MAPPING
 
 
 console = Console()
@@ -640,3 +640,107 @@ def _can_upload_to_ptp():
         return False
 
     return True
+
+
+def validate_templates_in_path(template_dir, template_validator):
+    valid_templates = list(
+        map(lambda entry: entry.name.replace(".json", ""),
+            filter(lambda entry: template_validator.is_valid(entry), # validating the template against the site_templates json schema.
+            filter(
+                lambda entry: entry.is_file() and entry.suffix == ".json", # we are only interested in .json files
+                Path(template_dir).glob('**/*')) # getting all the files in the provided directory
+            )
+        )
+    )
+    return valid_templates
+
+
+def copy_template(valid_templates, source_dir, target_dir):
+    # creating the target dir if it does't exist
+    Path(target_dir).mkdir(parents=True, exist_ok=True)
+    for template in valid_templates:
+        shutil.copy(str(Path(f"{source_dir}{template}.json")), str(Path(f"{target_dir}{template}.json")))
+
+
+def validate_and_load_external_templates(template_validator, working_folder):
+    """
+        The first this we need to do is check whether there are any external templates availalbe.
+        If there are some custom templates, we'll validate them using the `schema/site_template_schema.json` file.
+
+        If there are any validation errors, then we log them to file and display it to the user via console.
+
+        If there are any external templates that pass the validations, then we need to check whether the environment variables
+        have been set or not.
+        THe api keys and the corresponding values need to be saved in `api_keys_dict`.
+
+        If api key validations are also successful, then we need to copy those templates to VALIDATED_SITE_TEMPLATES_DIR
+        and we return the value for VALIDATED_SITE_TEMPLATES_DIR
+
+        Before we copy we need to ensure that the VALIDATED_SITE_TEMPLATES_DIR exists and all the templates in that folder has been deleted
+
+    """
+    external_templates_dir = EXTERNAL_SITE_TEMPLATES_DIR.format(base_path=working_folder)
+    external_trackers_acronym = EXTERNAL_TRACKER_ACRONYM_MAPPING.format(base_path=working_folder)
+
+    # checking whether the external template directory is available or not
+    if not Path(external_templates_dir).is_dir():
+        logging.error("[Utils] User wants to load external templates, but external templates folder is not available.")
+        return [], {}, {}
+
+    if not Path(external_trackers_acronym).is_file():
+        logging.error("[Utils] User wants to load external templates, but external templates acronym mapping is not available.")
+        return [], {}, {}
+
+    # counting the total number of templates in the external folder.
+    total_number_templates = len(list(filter(lambda entry: entry.is_file() and entry.suffix == ".json", Path(external_templates_dir).glob('**/*'))))
+
+    if total_number_templates == 0:
+        logging.error("[Utils] User wants to load external templates, but couldn't find any site tempalates.")
+        return [], {}, {}
+
+    valid_templates = []
+    has_failed=False
+    # getting all the files in the external template directory
+    # here we are not going to resuse method `validate_templates_in_path` for logging purposes
+    for entry in Path(external_templates_dir).glob('**/*'):
+        if entry.is_file() and entry.suffix == ".json": # we are only interested in .json files
+            logging.info(f"[Utils] Validating custom template: {entry.name}")
+            # First lets check whether user is trying to override the configs on already available templates
+            if template_validator.is_valid(entry): # validating the external template against the site_templates json schema.
+                # TODO: should users be allowed to override the configs in built-in templates ???
+                # TODO: prevent users from overriding the config of built-in templates
+                valid_templates.append(entry.name.replace(".json", ""))
+            else:
+                has_failed=True
+                logging.error(f"[Utils] Template validation failed for file: {entry.name}")
+                console.print(f"[cyan bold] ❌ Validation failed for template: {entry.name} [/cyan bold]")
+
+    if len(valid_templates) > 0:
+        if has_failed:
+            console.print("Please see log for more deatils regarding template validaion failures...")
+
+        # now that we identified that the template is valid, we need to ensure that the user has provided
+        # valid configs for tracker name -> acronym mapping and that the api key is available in env.
+        tracker_to_acronym = json.load(open(external_trackers_acronym, "r"))
+        for tracker in valid_templates:
+            if tracker not in tracker_to_acronym:
+                valid_templates.remove(tracker)
+                logging.error(f"[Utils] A valid template tracker {tracker} doesn't have a valid tracker->acronym mapping provided. Ignoring this template...")
+
+        # now we have valid template and a proper acronym.
+        # now lets ensure that the api key and announce url have been set properly in environment variables.
+        api_key_dict = {}
+        for tracker in valid_templates:
+            api_key = Environment.get_property_or_default(f"{tracker_to_acronym[tracker].upper()}_API_KEY", "INVALID_API_KEY")
+            if api_key == "INVALID_API_KEY":
+                valid_templates.remove(tracker)
+                logging.error(f"[Utils] A valid template tracker {tracker} doesn't have its api key available in environment. Ignoring this template...")
+            else:
+                api_key_dict[f"{tracker_to_acronym[tracker]}_api_key"] = api_key
+
+        temp_template_dir = VALIDATED_SITE_TEMPLATES_DIR.format(base_path=working_folder)
+        # once we have got some valid templates, we need to copy them to a temporary working directory.
+        copy_template(valid_templates, external_templates_dir, temp_template_dir)
+        return valid_templates, api_key_dict, {v: k for k, v in tracker_to_acronym.items()}
+    else:
+        return [], {}, {}
