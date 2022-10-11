@@ -273,7 +273,7 @@ docker run --rm -it \
     - [X] PassThePopcorn
 - [X] New Image Hosts
     - [X] Lensdump
-- [ ] Get movie/tv youtube trailers
+- [X] Get movie/tv youtube trailers
 - [ ] Support for providing external tracker templates
 - [X] JSONSchema for template validations
 - [X] Visor server module

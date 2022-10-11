@@ -4,11 +4,13 @@
 /tests/working_folder
 /.idea/
 /.vscode
+/validated
 /dev_comments
 __pycache__/
 /POC/
 /coverage
 /cookies
+/external
 
 # Excluded file formats
 *.mkv
