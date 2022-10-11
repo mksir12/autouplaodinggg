@@ -69,26 +69,34 @@ def test_group_already_exists_in_ptp(mocker):
     mocker.patch("requests.get", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_group_exists.json"))))
 
     tracker_settings = {}
-    torrent_info = { "imdb" : "4947084", "imdb_with_tt" : "tt4947084"}
+    torrent_info = { "imdb" : "1630029", "imdb_with_tt" : "tt1630029"}
     new_tracker_config = copy.deepcopy(tracker_config)
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
-    assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php?groupid=138295"
+    assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php?groupid=276009"
     assert "groupid" in tracker_settings
-    assert tracker_settings["groupid"] == "138295"
+    assert tracker_settings["groupid"] == "276009"
 
 
 def test_new_group_custom_action(mocker):
+    metadata = json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_new_group.json"))
     mocker.patch("os.getenv", return_value="API_KEY")
-    mocker.patch("requests.get", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_new_group.json"))))
+    mocker.patch("requests.get", return_value=APIResponse(metadata))
+    metadata = metadata[0]
 
     tracker_settings = {}
-    torrent_info = { "imdb" : "4947084", "imdb_with_tt" : "tt4947084"}
+    torrent_info = { "title": None, "year": None, "imdb" : "4947084", "imdb_with_tt" : "tt4947084"}
     new_tracker_config = copy.deepcopy(tracker_config)
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
     assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php" # there should not be any change to upload url
     assert "groupid" not in tracker_settings
+    assert tracker_settings["title"] == metadata["title"]
+    assert tracker_settings["year"] == metadata["year"]
+    assert tracker_settings["image"] == metadata["art"]
+    assert tracker_settings["tags"] == metadata["tags"]
+    assert tracker_settings["album_desc"] == metadata["plot"]
+    assert tracker_settings["trailer"] == ""
 
 
 @pytest.mark.parametrize(
