@@ -74,6 +74,8 @@ def test_group_already_exists_in_ptp(mocker):
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
     assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php?groupid=138295"
+    assert "groupid" in tracker_settings
+    assert tracker_settings["groupid"] == "138295"
 
 
 def test_new_group_custom_action(mocker):
@@ -86,6 +88,7 @@ def test_new_group_custom_action(mocker):
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
     assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php" # there should not be any change to upload url
+    assert "groupid" not in tracker_settings
 
 
 @pytest.mark.parametrize(

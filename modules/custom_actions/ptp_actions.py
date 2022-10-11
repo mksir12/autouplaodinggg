@@ -98,13 +98,17 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
             tags = _get_tags(torrent_info["imdb_metadata"]["tags"], torrent_info["tmdb_metadata"]["tags"])
             logging.info(f"[CustomAction][PTP] Tags identified for this release: {tags}")
 
+            trailer = ""
+            if "trailer" in torrent_info["tmdb_metadata"] and len(torrent_info["tmdb_metadata"]["trailer"]) > 0:
+                trailer = torrent_info["tmdb_metadata"]["trailer"][0]
+
             metadata = {
                 "title": torrent_info["title"],
                 "year": torrent_info["year"],
                 "image": poster,
                 "tags": tags,
                 "album_desc": overview,
-                "trailer": "", # TODO: get this youtube trailer link
+                "trailer": trailer
             }
             tracker_settings.update(metadata)
         elif response.get('Page') == "Details": # group already exists
@@ -116,6 +120,8 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
             # to upload a release to an existing group, we need add group information to param
             # updating the `upload_form` url in tracker_config
             tracker_config["upload_form"] = f'{tracker_config["upload_form"]}?groupid={groupID}'
+            # along with this we also add the group to tracker settings
+            tracker_settings["groupid"] = groupID
     except Exception as ex:
         logging.exception("[CustomActions][PTP] Failed to check for existing groups.", exc_info=ex)
 
@@ -163,6 +169,7 @@ def rehost_screens_to_ptpimg(torrent_info, tracker_settings, tracker_config):
 
 
 def rewrite_description(torrent_info, tracker_settings, tracker_config):
+    # TODO: deal with custom descriptions how about jinja??
     # TODO: PTP needs mediainfo and one screenshot from each file.
     # currently we support only movies, hence there will only be one file and ignoring this for now
 
@@ -186,9 +193,12 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
 
 
 def get_ptp_type(torrent_info, tracker_settings, tracker_config):
-    if "?groupid=" in tracker_config["upload_form"]: # if release already existst then we'll get a group id from cusotm action `check_for_existing_group`
-        logging.info("[CustomActions][PTP] GroupID already exists in PTP. No need to send type info")
-        return
+    # TODO: get the type from PTP
+    # TODO: multi audio being identified even when its not multi audio.
+    # if "?groupid=" in tracker_config["upload_form"]: # if release already existst then we'll get a group id from cusotm action `check_for_existing_group`
+    #     logging.info("[CustomActions][PTP] GroupID already exists in PTP. No need to send type info")
+    #     tracker_settings.pop("type", None)
+    #     return
 
     # TODO: check cases when we don't get imdb id.
     tracker_settings["type"] = None

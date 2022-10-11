@@ -263,7 +263,8 @@
         "tags": "",
         "album_desc": "",
         "trailer": "",
-        "subtitles[]__": ""
+        "subtitles[]": "",
+        "groupid": ""
     },
 
     "dupes": {
