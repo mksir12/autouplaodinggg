@@ -274,7 +274,7 @@ docker run --rm -it \
 - [X] New Image Hosts
     - [X] Lensdump
 - [X] Get movie/tv youtube trailers
-- [ ] Support for providing external tracker templates
+- [X] Support for providing external tracker templates
 - [X] JSONSchema for template validations
 - [X] Visor server module
 - [X] Introduced new 2FA module
