@@ -659,6 +659,7 @@ def copy_template(valid_templates, source_dir, target_dir):
     # creating the target dir if it does't exist
     Path(target_dir).mkdir(parents=True, exist_ok=True)
     for template in valid_templates:
+        # if a template already exists, it'll be overwritten.
         shutil.copy(str(Path(f"{source_dir}{template}.json")), str(Path(f"{target_dir}{template}.json")))
 
 
