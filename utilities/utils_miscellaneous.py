@@ -235,8 +235,7 @@ def fill_dual_multi_and_commentary(original_language, audio_tracks):
 
     if multi == True:
         multiaudio = "Multi"
-
-    if english and original == True:
+    elif english and original == True:
         dualaudio = "Dual-Audio"
 
     return dualaudio, multiaudio, commentary
