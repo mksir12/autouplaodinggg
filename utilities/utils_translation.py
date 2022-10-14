@@ -159,6 +159,12 @@ def _get_hybrid_type(translation_value, tracker_settings, config, exit_program, 
             # all the categories match
             return key
 
+    if config["hybrid_mappings"][translation_value]["required"] is False:
+        # this hybrid mapping is optional. we can log this and return ""
+        logging.info("[HybridMapping] Returning '' since this is an optional mapping.")
+        logging.debug('------------------ Hybrid mapping Completed ------------------')
+        return ""
+
     logging.debug('------------------ Hybrid mapping Completed With ERRORS ------------------')
     # this means we either have 2 potential matches or no matches at all (this happens if the media does not fit any of the allowed parameters)
     logging.critical('[HybridMapping] Unable to find a suitable "hybrid mapping" match for this file')
