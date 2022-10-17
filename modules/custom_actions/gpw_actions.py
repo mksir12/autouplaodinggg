@@ -80,7 +80,6 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
                 elif auto_fill_metadata["Type"] == "Short":
                     tracker_settings["releasetype"] = "2" # Short film
 
-                # TODO: add fallback
                 tracker_settings["name"] = auto_fill_metadata.get("Title", torrent_info["title"])
                 if "SubTitle" in auto_fill_metadata: # chinese name
                     tracker_settings["subname"] = auto_fill_metadata["SubTitle"]
@@ -227,9 +226,6 @@ def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
     tracker_settings["subtitles[]"] = available_subtitles
 
 
-# TODO: add support for parsing the json response to detect whether the upload is successful or not
-# TODO: when creating the description from ptp actions, mediainfo is not needed as part of description
-
 def check_successful_upload(response):
     # GPW tracker returns a json response but it is slightly different, hence using a custom action to parse it
     response = response.json()
@@ -300,7 +296,6 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
     with open(gpw_description_file, "w") as gpw_description:
         # writing screenshots to description
         gpw_description.write("[align=center]..:: Screenshots ::..\n")
-        # TODO: implement a rehosting for gpw. Suppported hosts: pixhost, ptpimg or official gpw image hosting.
         for screenshot in tracker_settings["gpw_rehosted"]:
             gpw_description.write(f"[img]{screenshot}[/img]\n")
         gpw_description.write("\nUploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant[/align]")
