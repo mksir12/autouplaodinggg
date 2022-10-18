@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import uuid
 import json
 import requests
 import logging
@@ -238,7 +237,6 @@ def check_successful_upload(response):
 def _rehost_to_gpw(tracker_config, image_url_list):
     image_upload_url = f'{tracker_config["upload_form"].replace("{api_key}", Environment.get_property_or_default("GPW_API_KEY", "")).replace("&action=upload", "&action=imgupload")}'
     data = {
-        "name[]" : [f"{str(uuid.uuid4())}.png" for _ in image_url_list],
         "urls[]" : image_url_list
     }
     image_upload_response = requests.post(image_upload_url, data=data).json()
