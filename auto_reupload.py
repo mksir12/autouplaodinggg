@@ -60,6 +60,11 @@ from modules.torrent_client import Clients, TorrentClientFactory
 import modules.env as Environment
 from modules.constants import *
 
+# PTP is blacklisted for Reuploader since support for PTP is still a work in progress
+# GPW is blacklisted since the dupe check is pretty much a hit and miss since audio information
+# is not available from tracker
+blacklist_trackers = ["PTP", "GPW"]
+
 # Used for rich.traceback
 install()
 
@@ -141,7 +146,7 @@ logging.getLogger("imdbpy.parser.http.build_person").disabled = True
 # the `prepare_tracker_api_keys_dict` prepares the api_keys_dict and also does mandatory property validations
 api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict('./parameters/tracker/api_keys.json')
 
-restrict_ptp_uploads(upload_to_trackers)
+restrict_tracker_uploads(upload_to_trackers)
 
 console.line(count=2)
 utils.display_banner("  Auto  ReUploader  ")
@@ -203,12 +208,15 @@ if args.load_external_templates:
 # If there are any configuration errors for a particular tracker, then they'll not be used
 upload_to_trackers = utils.get_and_validate_configured_trackers(args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys())
 
-def restrict_ptp_uploads(upload_to_trackers):
-    if "PTP" in upload_to_trackers:
-        upload_to_trackers.remove("PTP")
-        console.print("[red bold] Uploading to [yellow]PTP[/yellow] not supported in GGBOT Auto ReUploader")
-        if len(upload_to_trackers) < 1:
-            raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
+
+def restrict_tracker_uploads(upload_to_trackers):
+    for tracker in blacklist_trackers:
+        if tracker in upload_to_trackers:
+            upload_to_trackers.remove(tracker)
+            console.print(f"[red bold] Uploading to [yellow]{tracker}[/yellow] not supported in GGBOT Auto ReUploader")
+
+    if len(upload_to_trackers) < 1:
+        raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
 
 
 # now that we have verified that the client and cache connections have been created successfully
@@ -908,7 +916,7 @@ def reupload_job():
             api_keys_dict=api_keys_dict,
             all_trackers_list=acronym_to_tracker.keys()
         )
-        restrict_ptp_uploads(upload_to_trackers_working)
+        restrict_tracker_uploads(upload_to_trackers_working)
 
         logging.info(f"[Main] Trackers this torrent needs to be uploaded to are {upload_to_trackers_working}")
 
