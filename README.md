@@ -206,6 +206,10 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td>8</td>
             <td>pixhost</td>
         </tr>
+        <tr>
+            <td>8</td>
+            <td>lensdump</td>
+        </tr>
     </tbody>
 </table>
 
