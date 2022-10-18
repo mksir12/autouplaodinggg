@@ -489,6 +489,9 @@ def metadata_compare_tmdb_data_local(torrent_info):
 
     # now we can check whether there are any youtube trailers that we can find for this release
     _fill_trailers_in_tmdb_metadata(content_type, torrent_info)
+    # if we couldn't get any trailer from tmdb, then we can try to get the same from imdb
+    # TODO: in most cases if tmdb does't have the trailer information, them imdb also won't have it.
+    # The trailer shown in imdb website would probably be a self hosted one. Which is of no use to us.
 
     # now that we've added TMDb metadata and TMDb keywords, we need to add the IMDb metadata to torrent info as well.
     # We'll add the data from IMDB API and Cinemagoer

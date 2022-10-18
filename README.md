@@ -268,8 +268,8 @@ docker run --rm -it \
 # Roadmap
 
 ### v3.0.4
-- [ ] Add Support for new platforms (Only for Upload Assistant)
-    - [ ] GreatPosterWall
+- [X] Add Support for new platforms (Only for Upload Assistant)
+    - [X] GreatPosterWall
     - [X] PassThePopcorn
 - [X] New Image Hosts
     - [X] Lensdump
