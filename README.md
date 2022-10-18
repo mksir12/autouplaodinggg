@@ -270,29 +270,13 @@ docker run --rm -it \
 <br>
 
 # Roadmap
-
-### v3.0.4
-- [X] Add Support for new platforms (Only for Upload Assistant)
-    - [X] GreatPosterWall
-    - [X] PassThePopcorn
-- [X] New Image Hosts
-    - [X] Lensdump
-- [X] Get movie/tv youtube trailers
-- [X] Support for providing external tracker templates
-- [X] JSONSchema for template validations
-- [X] Visor server module
-- [X] Introduced new 2FA module
-- [X] Updated banned groups for BLU
-- [X] Support for detecting and identifying subtitle information.
-- [X] New dry run mode to test uploader without uploading payload to trackers
-- [X] Support for tagging `Multi` audio releases for DT
-- [X] Issue#41: Incorrect channel count detected
-- [X] Issue#42: Support for Dual Audio Detection
-
 ### v3.0.5
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
+- [ ] Add support for adding primary language to title
+- [ ] Issue#79: Not able to cross-seed rared releases
+- [ ] Issue#80: DDH releases are not identified and is marked as no group
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
@@ -316,6 +300,34 @@ docker run --rm -it \
 <br>
 
 # Change Log
+
+## **3.0.4**
+    New Trackers (Only for Upload Assistant)
+        * PassThePopcorn
+        * GreatPosterWall
+
+    New Image Hosts
+        * Lensdump
+
+    New Features
+        * Get movie/tv youtube trailers
+        * Support for providing external tracker templates
+        * Updated banned groups for BLU
+        * New dry run mode to test uploader without uploading payload to trackers
+        * Support for tagging `Multi` audio releases for DT
+        * Support for tagging `Dual-Audio` for BLU and ATH
+
+    Underhood Changes
+        * JSONSchema for template validations
+        * Introduced new 2FA module
+        * Support for detecting and identifying subtitle information.
+        * Visor server module (ALPHA) (ReUploader)
+
+    Bug Fixes
+        * Issue#41: Incorrect channel count detected
+        * Issue#42: Support for Dual Audio Detection
+
+<br>
 
 ## **3.0.3**
     New Image Hosts

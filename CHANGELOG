@@ -1,3 +1,31 @@
+## **3.0.4**
+    New Trackers (Only for Upload Assistant)
+        * PassThePopcorn
+        * GreatPosterWall
+
+    New Image Hosts
+        * Lensdump
+
+    New Features
+        * Get movie/tv youtube trailers
+        * Support for providing external tracker templates
+        * Visor server module (ALPHA)
+        * Updated banned groups for BLU
+        * Support for detecting and identifying subtitle information.
+        * New dry run mode to test uploader without uploading payload to trackers
+        * Support for tagging `Multi` audio releases for DT
+        * Support for tagging `Dual-Audio` for BLU and ATH
+
+    Underhood Changes
+        * JSONSchema for template validations
+        * Introduced new 2FA module
+
+    Bug Fixes
+        * Issue#41: Incorrect channel count detected
+        * Issue#42: Support for Dual Audio Detection
+
+<br>
+
 ## **3.0.3**
     New Image Hosts
         * Pixhost
