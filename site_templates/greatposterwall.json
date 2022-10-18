@@ -1,14 +1,8 @@
 {
     "name": "GreatPosterWall",
-
-    "url": "https://7d68-2405-201-f01a-3824-74d4-aaf1-5afc-f6eb.in.ngrok.io",
-    "upload_form": "https://7d68-2405-201-f01a-3824-74d4-aaf1-5afc-f6eb.in.ngrok.io/api.php?api_key={api_key}&action=upload",
-    "torrents_search": "https://7d68-2405-201-f01a-3824-74d4-aaf1-5afc-f6eb.in.ngrok.io/api.php?api_key={api_key}&action=torrent&req=torrent",
-
-    "url2": "https://greatposterwall.com",
-    "upload_form2": "https://greatposterwall.com/api.php?api_key={api_key}&action=upload",
-    "torrents_search2": "https://greatposterwall.com/api.php?api_key={api_key}&action=torrent&req=torrent",
-
+    "url": "https://greatposterwall.com",
+    "upload_form": "https://greatposterwall.com/api.php?api_key={api_key}&action=upload",
+    "torrents_search": "https://greatposterwall.com/api.php?api_key={api_key}&action=torrent&req=torrent",
 
     "source": "GPW",
     "platform": "Gazelle",
@@ -152,7 +146,7 @@
         "hybrid_type_3": "codec",
         "hybrid_type_4": "container",
         "description": "release_desc",
-        "tags": "remaster_title_show",
+        "tags": "remaster_title",
         "imdb": "imdb",
         "scene": "scene",
 
@@ -255,37 +249,39 @@
         "bdinfo": "string",
         "mediainfo[]": "string",
 
-        "remaster_title_show": {
+        "remaster_title": {
             "type" : "string",
             "separator": " / ",
             "tags": [
-                "Director's Cut",
-                "Extended Edition",
-                "Theatrical Cut",
-                "Uncut",
-                "Rifftrax",
-                "10-bit",
-                "Unrated",
-                "Remaster",
-                "HDR10",
-                "HDR10+",
-                "DTS:X",
-                "Dolby Vision",
-                "Dolby Atmos",
-                "4K Restoration",
-                "4K Remaster",
-                "With Commentary",
-                "Dual Audio",
-                "2D/3D Edition",
-                "3D Anaglyph",
-                "3D Full SBS",
-                "3D Half OU",
-                "3D Half SBS",
-                "2-Disc Set",
-                "2in1",
-                "English Dub",
-                "Extras",
-                "Non English Dub"
+                "director_s_cut",
+                "masters_of_cinema",
+                "the_criterion_collection",
+                "warner_archive_collection",
+                "extended_edition",
+                "theatrical_cut",
+                "uncut",
+                "rifftrax",
+                "10_bit",
+                "unrated",
+                "remaster",
+                "hdr10",
+                "hdr10plus",
+                "dts_x",
+                "dolby_vision",
+                "dolby_atmos",
+                "4k_restoration",
+                "4k_remaster",
+                "with_commentary",
+                "dual_audio",
+                "2d_3d_edition",
+                "3d_anaglyph",
+                "3d_full_sbs",
+                "3d_half_ou",
+                "3d_half_sbs",
+                "2_disc_set",
+                "2_in_1",
+                "english_dub",
+                "extras"
             ]
         }
     },
@@ -328,7 +324,7 @@
             "top_lvl": "response",
             "torrent_name": "Name",
             "combine_fields": true,
-            "fields": [ "Name", "Year", "Resolution", "Source", "Processing", "Codec", "Container"]
+            "fields": [ "Name", "Year", "Resolution", "Source", "Processing", "RemasterTitle", "Codec", "Container"]
         }
     },
 
