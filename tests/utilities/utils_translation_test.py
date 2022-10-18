@@ -519,7 +519,7 @@ def __get_tag_grouping():
                 "source_type" : "bluray_remux",
                 "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
             },
-            sorted(["HDR", "HDR10", "Atmos", "Dolby Atmos", "Remux", "BlurayRemux", "Bluray-Remux", "remux"]),
+            sorted(["HDR", "HDR10", "hdr10", "Atmos", "Dolby Atmos", "dolby_atmos", "Remux", "BlurayRemux", "Bluray-Remux", "remux"]),
             id = "hdr_atmos_bluray_remux"
         ),
         pytest.param(
@@ -529,7 +529,7 @@ def __get_tag_grouping():
                 "source_type" : "webdl",
                 "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
             },
-            sorted(["Atmos", "Dolby Atmos", "WEBDL", "WEB-DL", "Dolby Vision", "DV", "DoVi", "Do-Vi", "webdl"]),
+            sorted(["Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "webdl"]),
             id = "dv_atmos_webdl"
         ),
         pytest.param(
@@ -540,7 +540,7 @@ def __get_tag_grouping():
                 "source_type" : "webdl",
                 "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
             },
-            sorted(["Atmos", "Dolby Atmos", "WEBDL", "WEB-DL", "webdl", "Dolby Vision", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
+            sorted(["Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "webdl", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
             id = "edition"
         )
     ]
