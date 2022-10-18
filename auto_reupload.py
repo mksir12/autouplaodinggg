@@ -63,6 +63,7 @@ from modules.constants import *
 # PTP is blacklisted for Reuploader since support for PTP is still a work in progress
 # GPW is blacklisted since the dupe check is pretty much a hit and miss since audio information
 # is not available from tracker
+# TODO: move this to a parameter and possibly with these message as reason and show them to user???
 blacklist_trackers = ["PTP", "GPW"]
 
 # Used for rich.traceback
