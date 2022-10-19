@@ -7,6 +7,8 @@
     "platform": "UNIT3D",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
+    "screenshot_type": "bbcode_images",
+    
 
     "description_components":{
         "code_code": "[code][/code]",

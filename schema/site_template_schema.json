@@ -160,6 +160,10 @@
             "type":"string",
             "description": "The separator to be used while formatting torrent title for tracker. Eg: .(dot), (space), etc... "
         },
+        "screenshot_type":{
+            "type":"string",
+            "description": "Denotes that kind of screenshot needs to be added to torrent description. Eg: [bbcode_images, bbcode_thumb_nothumb, etc] "
+        },
         "description_components":{
             "type":"object",
             "description": "The wrappers for various bbcode / html tags. Note that the starting and ending tags should be separated by a space.",

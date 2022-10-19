@@ -113,7 +113,8 @@ def write_cutsom_user_inputs_to_description(torrent_info, description_file_path,
 
 
 def add_bbcode_images_to_description(torrent_info, config, description_file_path, bbcode_line_break):
-    if "bbcode_images" in torrent_info and "url_images" not in config["translation"]:
+    screenshot_type = config["screenshot_type"] if "screenshot_type" in config else None
+    if screenshot_type is not None and screenshot_type in torrent_info:
         # Screenshots will be added to description only if no custom screenshot payload method is provided.
         # Possible payload mechanisms for screenshot are 1. bbcode, 2. url, 3. post data
         # TODO implement proper screenshot payload mechanism. [under technical_jargons?????]
@@ -129,7 +130,7 @@ def add_bbcode_images_to_description(torrent_info, config, description_file_path
             description.write(
                 f'{bbcode_line_break}[center] ---------------------- [size=22]Screenshots[/size] ---------------------- {bbcode_line_break}{bbcode_line_break}')
             # Now write in the actual screenshot bbcode
-            description.write(torrent_info["bbcode_images"])
+            description.write(torrent_info[screenshot_type])
             description.write("[/center]")
 
 

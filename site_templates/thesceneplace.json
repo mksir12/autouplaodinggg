@@ -7,6 +7,8 @@
     "platform": "XBTIT",
     "bbcode_line_break": "\n",
     "title_separator": " ",
+    "screenshot_type": "bbcode_images",
+    
     "technical_jargons": {
         "authentication_mode": "API_KEY",
         "response_type": "JSON",
