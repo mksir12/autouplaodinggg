@@ -201,7 +201,7 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
     logging.info("[CustomActions][PTP] Preparing description in template needed for PTP")
     ptp_description_file = torrent_info["description"].replace("description.txt", "ptp_description.txt")
 
-     # writing custom_descriptions
+    # writing custom_descriptions
     if "custom_user_inputs" in torrent_info and torrent_info["custom_user_inputs"] is not None:
         write_cutsom_user_inputs_to_description(
             torrent_info=torrent_info,

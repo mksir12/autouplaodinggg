@@ -287,11 +287,21 @@ def rehost_screens(torrent_info, tracker_settings, tracker_config):
 
 
 def rewrite_description(torrent_info, tracker_settings, tracker_config):
-    # TODO: deal with custom descriptions how about jinja??
     logging.info("[CustomActions][GPW] Preparing description in template needed for GPW")
     gpw_description_file = torrent_info["description"].replace("description.txt", "gpw_description.txt")
 
-    with open(gpw_description_file, "w") as gpw_description:
+    # writing custom_descriptions
+    if "custom_user_inputs" in torrent_info and torrent_info["custom_user_inputs"] is not None:
+        write_cutsom_user_inputs_to_description(
+            torrent_info=torrent_info,
+            description_file_path=gpw_description_file,
+            config=tracker_config,
+            tracker="GPW",
+            bbcode_line_break=tracker_config['bbcode_line_break'],
+            debug=True
+        )
+
+    with open(gpw_description_file, "a") as gpw_description:
         # writing screenshots to description
         gpw_description.write("[align=center]..:: Screenshots ::..\n")
         for screenshot in tracker_settings["gpw_rehosted"]:
