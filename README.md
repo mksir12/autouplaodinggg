@@ -326,6 +326,7 @@ docker run --rm -it \
     Bug Fixes
         * Issue#41: Incorrect channel count detected
         * Issue#42: Support for Dual Audio Detection
+        * Issue#82: Thumbnail for BHD screenshots
 
 <br>
 
