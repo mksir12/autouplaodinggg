@@ -57,7 +57,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
 * Automatically move .torrent and media to specified folders after upload
 * Customizable uploader signature for torrent descriptions
 * Automatic upload to torrent client: Immediate cross-seeding
-* Auto Re-Uploader flavour for uploading gods
+* Auto Re-Uploader flavour for uploading gods and tracker owners
 
 <br>
 
@@ -623,5 +623,5 @@ docker run --rm -it \
 ### [Automatic re-uploading (autodl)](https://gitlab.com/NoobMaster669/gg-bot-upload-assistant/-/wikis/autodl-irssi-automatic-re-uploading)
 ### [Docker: Run Command Examples](https://gitlab.com/NoobMaster669/gg-bot-upload-assistant/-/wikis/Docker-Run-Command-Examples)
 ### [Docker: Noob Friendly Setup Guide](https://gitlab.com/NoobMaster669/gg-bot-upload-assistant/-/wikis/Noob-Friendly-Setup-Guide)
-
+### [Support For New Trackers](https://gitlab.com/NoobMaster669/gg-bot-upload-assistant/-/wikis/Support-For-New-Trackers)
 <br>
