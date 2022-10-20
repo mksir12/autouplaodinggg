@@ -147,8 +147,6 @@ logging.getLogger("imdbpy.parser.http.build_person").disabled = True
 # the `prepare_tracker_api_keys_dict` prepares the api_keys_dict and also does mandatory property validations
 api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict('./parameters/tracker/api_keys.json')
 
-restrict_tracker_uploads(upload_to_trackers)
-
 console.line(count=2)
 utils.display_banner("  Auto  ReUploader  ")
 console.line(count=1)
@@ -208,16 +206,13 @@ if args.load_external_templates:
 # getting the list of trackers that the user wants to upload to.
 # If there are any configuration errors for a particular tracker, then they'll not be used
 upload_to_trackers = utils.get_and_validate_configured_trackers(args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys())
+for tracker in blacklist_trackers:
+    if tracker in upload_to_trackers:
+        upload_to_trackers.remove(tracker)
+        console.print(f"[red bold] Uploading to [yellow]{tracker}[/yellow] not supported in GGBOT Auto ReUploader")
 
-
-def restrict_tracker_uploads(upload_to_trackers):
-    for tracker in blacklist_trackers:
-        if tracker in upload_to_trackers:
-            upload_to_trackers.remove(tracker)
-            console.print(f"[red bold] Uploading to [yellow]{tracker}[/yellow] not supported in GGBOT Auto ReUploader")
-
-    if len(upload_to_trackers) < 1:
-        raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
+if len(upload_to_trackers) < 1:
+    raise AssertionError("Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)")
 
 
 # now that we have verified that the client and cache connections have been created successfully

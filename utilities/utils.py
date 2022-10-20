@@ -33,7 +33,7 @@ from rich.console import Console
 
 from modules.torrent_client import Clients, TorrentClientFactory
 import modules.env as Environment
-from modules.constants import WORKING_DIR, SCREENSHOTS_PATH, VALIDATED_SITE_TEMPLATES_DIR, EXTERNAL_SITE_TEMPLATES_DIR, SITE_TEMPLATES_DIR, EXTERNAL_TRACKER_ACRONYM_MAPPING
+from modules.constants import WORKING_DIR, SCREENSHOTS_PATH, VALIDATED_SITE_TEMPLATES_DIR, EXTERNAL_SITE_TEMPLATES_DIR, EXTERNAL_TRACKER_ACRONYM_MAPPING
 
 
 console = Console()
@@ -646,7 +646,7 @@ def _can_upload_to_ptp():
 def validate_templates_in_path(template_dir, template_validator):
     valid_templates = list(
         map(lambda entry: entry.name.replace(".json", ""),
-            filter(lambda entry: template_validator.is_valid(entry), # validating the template against the site_templates json schema.
+            filter(template_validator.is_valid, # validating the template against the site_templates json schema.
             filter(
                 lambda entry: entry.is_file() and entry.suffix == ".json", # we are only interested in .json files
                 Path(template_dir).glob('**/*')) # getting all the files in the provided directory

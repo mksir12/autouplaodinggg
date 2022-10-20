@@ -244,6 +244,7 @@ def get_ptp_type(torrent_info, tracker_settings, tracker_config):
     if movie_details is not None:
         # we we can get the `kind` from IMDb we can use that to find the PTP type.
         kind = movie_details.get('kind', 'movie').lower()
+        # TODO: this doesn't seem to work always. Find another way to get this working
         if kind in ("movie", "tv movie"):
             # if this is a movie, then we need to compare the runtimes to decide between Feature and Short Films
             if int(movie_details.get('runtimes', ['0'])[0]) >= 45:

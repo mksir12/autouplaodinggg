@@ -18,7 +18,6 @@ import json
 import requests
 import logging
 
-from rich.prompt import Prompt
 from rich.console import Console
 import modules.env as Environment
 
