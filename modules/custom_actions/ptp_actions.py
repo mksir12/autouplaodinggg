@@ -29,7 +29,7 @@ from rich.console import Console
 import modules.env as Environment
 
 from modules.tfa.tfa import get_totp_token
-from utilities.utils import prepare_headers_for_tracker
+from utilities.utils import prepare_headers_for_tracker, write_cutsom_user_inputs_to_description
 
 
 console = Console()
@@ -193,7 +193,6 @@ def rehost_screens_to_ptpimg(torrent_info, tracker_settings, tracker_config):
 
 
 def rewrite_description(torrent_info, tracker_settings, tracker_config):
-    # TODO: deal with custom descriptions how about jinja??
     # TODO: PTP needs mediainfo and on e screenshot from each file.
     # currently we support only movies, hence there will only be one file and ignoring this for now
 
@@ -202,7 +201,18 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
     logging.info("[CustomActions][PTP] Preparing description in template needed for PTP")
     ptp_description_file = torrent_info["description"].replace("description.txt", "ptp_description.txt")
 
-    with open(ptp_description_file, "w") as ptp_description:
+     # writing custom_descriptions
+    if "custom_user_inputs" in torrent_info and torrent_info["custom_user_inputs"] is not None:
+        write_cutsom_user_inputs_to_description(
+            torrent_info=torrent_info,
+            description_file_path=ptp_description_file,
+            config=tracker_config,
+            tracker="PTP",
+            bbcode_line_break=tracker_config['bbcode_line_break'],
+            debug=True
+        )
+
+    with open(ptp_description_file, "a") as ptp_description:
         # writing mediainfo to description
         mediainfo = open(torrent_info["mediainfo"], "r").read()
         ptp_description.write(f"[mediainfo]{mediainfo}[/mediainfo]\n")
