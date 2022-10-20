@@ -54,6 +54,29 @@ def _create_choice_list_for_user(custom_text_components):
     return list_of_num
 
 
+def add_item_to_custom_texts(custom_text_components_path, user_custom_texts, item, text="", header=""):
+    if text == "" and header == "":
+        return user_custom_texts
+
+    if user_custom_texts is None:
+        user_custom_texts = []
+
+    custom_text_components, _ = _load_components(custom_text_components_path)
+    component = list(filter(lambda component: item == component["key"], custom_text_components))
+    if len(component) != 1:
+        return user_custom_texts
+
+    component = component[0]
+    title = header if component["title"] else None
+
+    user_custom_texts.append({
+        "key": component['tracker_reference_key'],
+        "value": text,
+        "title": title
+    })
+    return user_custom_texts
+
+
 def collect_custom_messages_from_user(custom_text_components_path):
     logging.debug("[CustomUserInputs] Starting to collect custom messages from user for torrent description")
 

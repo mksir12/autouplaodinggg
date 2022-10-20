@@ -795,8 +795,9 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # ------ WEB streaming service stuff here ------ #
     if torrent_info["source"] == "Web":
         # TODO check whether None needs to be set as `web_source`
-        torrent_info["web_source"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
-            STREAMING_SERVICES_MAP.format(base_path=working_folder), torrent_info["raw_file_name"], guess_it_result)
+        torrent_info["web_source"], torrent_info["web_source_name"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
+            STREAMING_SERVICES_MAP.format(base_path=working_folder), STREAMING_SERVICES_REVERSE_MAP.format(base_path=working_folder),
+            torrent_info["raw_file_name"], guess_it_result)
 
     # --- Custom & extra info --- #
     # some torrents have 'extra' info in the title like 'repack', 'DV', 'UHD', 'Atmos', 'remux', etc

@@ -45,7 +45,7 @@ from rich.prompt import Prompt, Confirm
 # utility methods
 # Method that will read and accept text components for torrent description
 # This is used to take screenshots and eventually upload them to either imgbox, imgbb, ptpimg or freeimage
-from utilities.utils_user_input import collect_custom_messages_from_user
+from utilities.utils_user_input import collect_custom_messages_from_user, add_item_to_custom_texts
 from utilities.utils_screenshots import take_upload_screens
 # Method that will search for dupes in trackers.
 from modules.template_schema_validator import TemplateSchemaValidator
@@ -507,8 +507,9 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # ------ WEB streaming service stuff here ------ #
     if torrent_info["source"] == "Web":
         # TODO check whether None needs to be set as `web_source`
-        torrent_info["web_source"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
-            STREAMING_SERVICES_MAP.format(base_path=working_folder), torrent_info["raw_file_name"], guess_it_result)
+        torrent_info["web_source"], torrent_info["web_source_name"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
+            STREAMING_SERVICES_MAP.format(base_path=working_folder), STREAMING_SERVICES_REVERSE_MAP.format(base_path=working_folder),
+            torrent_info["raw_file_name"], guess_it_result)
 
     # --- Custom & extra info --- #
     # some torrents have 'extra' info in the title like 'repack', 'DV', 'UHD', 'Atmos', 'remux', etc
@@ -1150,6 +1151,14 @@ for file in upload_queue:
         torrent_info["custom_user_inputs"] = collect_custom_messages_from_user(CUSTOM_TEXT_COMPONENTS.format(base_path=working_folder))
     else:
         logging.debug('[Main] User decided not to add custom text to torrent description or running in auto_mode')
+    # if the upload is a web-dl, then we'll have values for `web_source` and `web_source_name`
+    # In cases where we have value for `web_source_name`, we can add this to the description as
+    # This releases is sourced from `web_source_name`
+    # TODO: for now we are adding this only if user has not provided any custom descriptions
+    if "web_source_name" in torrent_info and torrent_info["web_source_name"] is not None and "custom_user_inputs" not in torrent_info:
+        torrent_info["custom_user_inputs"] = add_item_to_custom_texts(
+            CUSTOM_TEXT_COMPONENTS.format(base_path=working_folder), [], "CODE", f"This release is sourced from {torrent_info['web_source_name']}"
+        )
 
     # Fix some default naming styles
     translation_utilities.fix_default_naming_styles(torrent_info)

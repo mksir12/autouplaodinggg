@@ -194,7 +194,7 @@ def rehost_screens_to_ptpimg(torrent_info, tracker_settings, tracker_config):
 
 def rewrite_description(torrent_info, tracker_settings, tracker_config):
     # TODO: deal with custom descriptions how about jinja??
-    # TODO: PTP needs mediainfo and one screenshot from each file.
+    # TODO: PTP needs mediainfo and on e screenshot from each file.
     # currently we support only movies, hence there will only be one file and ignoring this for now
 
     # to set remaster = "on" if remaster_title is not empty (ie: some tags are present)

@@ -47,7 +47,7 @@ def get_hash(string):
 
 def write_cutsom_user_inputs_to_description(torrent_info, description_file_path, config, tracker, bbcode_line_break, debug=False):
     # -------- Add custom descriptions to description.txt --------
-    if "custom_user_inputs" in torrent_info:
+    if "custom_user_inputs" in torrent_info and torrent_info["custom_user_inputs"] is not None:
         # If the user is uploading to multiple sites we don't want to keep appending to the same description.txt file so remove it each time and write clean bbcode to it
         #  (Note, this doesn't delete bbcode_images.txt so you aren't uploading the same images multiple times)
         if os.path.isfile(description_file_path):

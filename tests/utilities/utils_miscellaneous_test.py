@@ -223,23 +223,19 @@ def test_miscellaneous_identify_repacks(input, expected):
 @pytest.mark.parametrize(
     ("raw_file_name", "guess_it_result", "expected"),
     [
-        pytest.param("", {"streaming_service": "HBO Max"}, "HMAX"),
-        pytest.param("", {"streaming_service": "Amazon Prime"}, "AMZN"),
-        pytest.param("", {"streaming_service": "AMZN"}, "AMZN"),
-        pytest.param("", {"streaming_service": ['Disney', 'CTV']}, "DSNP"),
-        pytest.param("Conversations.with.Friends.S01E01.2160p.HULU.WEB-DL.DDP.5.1.HEVC-MiON",
-                     {"streaming_service": ""}, "HULU"),
-        pytest.param(
-            "Conversations.with.Friends.S01E01.2160p.HULU.WEB-DL.DDP.5.1.HEVC-MiON", {}, "HULU"),
-        pytest.param(
-            "Conversations.with.Friends.S01E01.2160p.WEB-DL.DDP.5.1.HEVC-MiON", {}, None),
-        pytest.param(
-            "Conversations with Friends S01E01 2160p HULU WEB-DL DDP 5.1 HEVC-MiON", {}, "HULU"),
+        pytest.param("", {"streaming_service": "HBO Max"}, ('HMAX', 'HBO Max')),
+        pytest.param("", {"streaming_service": "Amazon Prime"}, ('AMZN', 'Amazon Prime')),
+        pytest.param("", {"streaming_service": "AMZN"}, ('AMZN', 'Amazon Prime')),
+        pytest.param("", {"streaming_service": ['Disney', 'CTV']}, ('DSNP', 'Disney+')),
+        pytest.param("Conversations.with.Friends.S01E01.2160p.HULU.WEB-DL.DDP.5.1.HEVC-MiON", {"streaming_service": ""}, ('HULU', 'Hulu')),
+        pytest.param("Conversations.with.Friends.S01E01.2160p.HULU.WEB-DL.DDP.5.1.HEVC-MiON", {}, ('HULU', 'Hulu')),
+        pytest.param("Conversations.with.Friends.S01E01.2160p.WEB-DL.DDP.5.1.HEVC-MiON", {}, (None, None)),
+        pytest.param("Conversations with Friends S01E01 2160p HULU WEB-DL DDP 5.1 HEVC-MiON", {}, ('HULU', 'Hulu')),
     ]
 )
 def test_miscellaneous_identify_web_streaming_source(raw_file_name, guess_it_result, expected):
     assert miscellaneous_identify_web_streaming_source(
-        f'{working_folder}/parameters/streaming_services.json', raw_file_name, guess_it_result) == expected
+        f'{working_folder}/parameters/streaming_services.json', f'{working_folder}/parameters/streaming_services_reverse.json', raw_file_name, guess_it_result) == expected
 
 
 @pytest.mark.parametrize(
