@@ -1087,7 +1087,8 @@ def reupload_job():
             utils.write_uploader_signature_to_description(
                 description_file_path=DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
                 tracker=tracker,
-                bbcode_line_break=bbcode_line_break
+                bbcode_line_break=bbcode_line_break,
+                release_group=torrent_info["release_group"]
             )
 
             # Add the finished file to the 'torrent_info' dict

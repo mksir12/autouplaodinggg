@@ -220,7 +220,10 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
         ptp_description.write("[align=center]..:: Screenshots ::..\n")
         for screenshot in tracker_settings["ptp_rehosted"]:
             ptp_description.write(f"[img]{screenshot}[/img]\n")
-        ptp_description.write("Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant[/align]")
+        if torrent_info["release_group"] == "DrDooFenShMiRtZ":
+            ptp_description.write("Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistantinator[/align]")
+        else:
+            ptp_description.write("Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant[/align]")
 
     tracker_settings["release_desc"] = ptp_description_file
     logging.info("[CustomActions][PTP] Finished creating descrption for PTP")

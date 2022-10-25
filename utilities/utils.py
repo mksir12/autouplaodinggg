@@ -134,7 +134,7 @@ def add_bbcode_images_to_description(torrent_info, config, description_file_path
             description.write("[/center]")
 
 
-def write_uploader_signature_to_description(description_file_path, tracker, bbcode_line_break):
+def write_uploader_signature_to_description(description_file_path, tracker, bbcode_line_break, release_group):
     # TODO what will happen if custom_user_inputs and bbcode_images are not present
     # will then open throw some errors???
     with open(description_file_path, 'a') as description:
@@ -150,8 +150,12 @@ def write_uploader_signature_to_description(description_file_path, tracker, bbco
             description.write(f'{bbcode_line_break}{bbcode_line_break}{uploader_signature}')
         else:
             logging.debug('[Utils] User has not provided any custom uploader signature to use. Using default signature')
-            description.write(
-                f'{bbcode_line_break}{bbcode_line_break}[center] Uploaded with [color=red]{"<3" if str(tracker).upper() in ("BHD", "BHDTV") or os.name == "nt" else "❤"}[/color] using GG-BOT Upload Assistant[/center]')
+            if release_group == "DrDooFenShMiRtZ":
+                description.write(
+                    f'{bbcode_line_break}{bbcode_line_break}[center] Uploaded with [color=red]{"<3" if str(tracker).upper() in ("BHD", "BHDTV") or os.name == "nt" else "❤"}[/color] using GG-BOT Upload Assistantinator[/center]')
+            else:
+                description.write(
+                    f'{bbcode_line_break}{bbcode_line_break}[center] Uploaded with [color=red]{"<3" if str(tracker).upper() in ("BHD", "BHDTV") or os.name == "nt" else "❤"}[/color] using GG-BOT Upload Assistant[/center]')
 
 
 def has_user_provided_type(user_type):
