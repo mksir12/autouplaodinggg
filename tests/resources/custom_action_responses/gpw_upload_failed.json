@@ -1,0 +1,6 @@
+{
+    "status": 400,
+    "response":{
+        "error": "Usually a meaningful error"
+    }
+}

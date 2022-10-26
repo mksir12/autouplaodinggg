@@ -1,0 +1,9 @@
+{
+    "status": "failure",
+    "error": "Group not found",
+    "response": [],
+    "info": {
+        "source": "GPW DEV",
+        "version": 1
+    }
+}

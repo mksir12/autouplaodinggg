@@ -209,7 +209,7 @@ def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
 
     for subtitle in torrent_info["subtitles"]:
         for lang, subtitleId in subtitle_mapping.items():
-            if subtitle["language_code"] in lang or ( "title" in subtitle and subtitle["title"] in lang ) and subtitleId not in available_subtitles:
+            if ( subtitle["language_code"] in lang or ( "title" in subtitle and subtitle["title"] in lang ) ) and subtitleId not in available_subtitles:
                 available_subtitles.append(subtitleId)
 
     if len(torrent_info["subtitles"]) < 1:
