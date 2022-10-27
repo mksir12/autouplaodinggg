@@ -1,11 +1,11 @@
 {
     "hdr_format": {
-        "hdr": ["HDR", "HDR10"],
+        "hdr": ["HDR", "HDR10", "hdr10"],
         "pq10": ["HDR", "PQ10"],
         "hlg": ["HDR", "HLG"],
         "wcg": ["HDR", "WCG"],
-        "hdr10+": ["HDR10+", "HDR10Plus"],
-        "dv": ["DV", "DoVi", "Do-Vi", "Dolby Vision"]
+        "hdr10+": ["HDR10+", "HDR10Plus", "hdr10plus"],
+        "dv": ["DV", "DoVi", "Do-Vi", "Dolby Vision", "dolby_vision"]
     },
 
     "edition": {
@@ -13,14 +13,14 @@
         "criterion collection":["Criterion", "Criterion Collection"],
         "criterion edition":["Criterion", "Criterion Edition"],
 
-        "uncut":["Uncut"],
-        "unrated":["Unrated"],
+        "uncut":["Uncut", "uncut"],
+        "unrated":["Unrated", "unrated"],
         "4kremaster":["4KRemaster"],
 
         "extended":["Extended"],
         "extended cut":["Extended", "Extended Cut", "Extended-Cut"],
         "extended version":["Extended", "Extended Version", "Extended-Version"],
-        "extended edition":["Extended", "Extended Edition", "Extended-Edition"],
+        "extended edition":["Extended", "Extended Edition", "Extended-Edition", "extended_edition"],
 
         "ultimate":["Ultimate"],
         "ultimate cut":["Ultimate", "Ultimate Cut", "Ultimate-Cut"],
@@ -33,12 +33,12 @@
         "international edition":["International", "International Edition", "International-Edition"],
 
         "theatrical":["Theatrical"],
-        "theatrical cut":["Theatrical", "Theatrical Cut", "Theatrical-Cut"],
+        "theatrical cut":["Theatrical", "Theatrical Cut", "Theatrical-Cut", "theatrical_cut"],
         "theatrical version":["Theatrical", "Theatrical Version", "Theatrical-Version"],
         "theatrical edition":["Theatrical", "Theatrical Edition", "Theatrical-Edition"],
 
         "director": ["Directors"],
-        "directors cut": ["Directors", "Director's Cut", "Directors Cut", "Director's-Cut", "Directors-Cut"],
+        "directors cut": ["Directors", "Director's Cut", "Directors Cut", "Director's-Cut", "Directors-Cut", "director_s_cut"],
         "directors version": ["Directors", "Director's Version", "Directors Version", "Director's-Version", "Directors-Version"],
         "directors edition": ["Directors", "Director's Edition", "Directors Edition", "Director's-Edition", "Directors-Edition"],
 
@@ -49,10 +49,10 @@
     },
 
     "audio": {
-        "commentary": ["Commentary", "Commentary Track", "With Commentary"],
-        "dualaudio": ["DualAudio", "DUAL", "Dual-Audio", "Dual Audio"],
+        "commentary": ["Commentary", "Commentary Track", "With Commentary", "with_commentary"],
+        "dualaudio": ["DualAudio", "DUAL", "Dual-Audio", "Dual Audio", "dual_audio"],
         "multiaudio": ["MultiAudio", "Multi", "Multi-Audio"],
-        "atmos": ["Atmos", "Dolby Atmos"]
+        "atmos": ["Atmos", "Dolby Atmos", "dolby_atmos"]
     },
 
     "source_type": {
@@ -69,6 +69,22 @@
     "__no_mappings_yet": [
         "Extras",
         "DTS:X",
+        "dts_x",
+        "2d_3d_edition",
+        "3d_anaglyph",
+        "3d_full_sbs",
+        "3d_half_ou",
+        "3d_half_sbs",
+        "2_disc_set",
+        "2_in_1",
+        "4k_restoration",
+        "4k_remaster",
+        "remaster",
+        "english_dub",
+        "extras",
+        "warner_archive_collection",
+        "masters_of_cinema",
+        "the_criterion_collection",
         "DigitalExtras",
         "Scene",
         "Hybrid",

@@ -7,6 +7,8 @@
     "platform": "XBTIT",
     "bbcode_line_break": "\n",
     "title_separator": " ",
+    "screenshot_type": "bbcode_images",
+    
     "technical_jargons": {
         "authentication_mode": "API_KEY",
         "response_type": "JSON",
@@ -132,7 +134,8 @@
         "technical_jargons": {
             "authentication_mode": "API_KEY",
             "payload_type": "MULTI-PART",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
         "url_format": "{search_url}&filter={title}",
         "strip_text": false,
@@ -189,16 +192,6 @@
         "ViSION",
         "WAF",
         "x0r",
-        "YIFY",
-        "Leffe",
-        "MeGusta",
-        "mHD",
-        "mSD",
-        "nHD",
-        "nikt0",
-        "nSD",
-        "NhaNc3",
-        "PRODJi",
-        "RDN"
+        "YIFY"
     ]
 }

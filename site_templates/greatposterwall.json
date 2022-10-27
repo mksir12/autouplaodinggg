@@ -3,6 +3,7 @@
     "url": "https://greatposterwall.com",
     "upload_form": "https://greatposterwall.com/api.php?api_key={api_key}&action=upload",
     "torrents_search": "https://greatposterwall.com/api.php?api_key={api_key}&action=torrent&req=torrent",
+
     "source": "GPW",
     "platform": "Gazelle",
     "bbcode_line_break": "\n",
@@ -10,26 +11,53 @@
 
     "description_components":{
         "code_code": "[code][/code]",
-        "spoiler_code":"[hide=TITLE_PLACEHOLDER][/hide]",
         "quote_code":"[quote][/quote]"
     },
 
     "technical_jargons": {
         "authentication_mode": "API_KEY",
-        "response_type": "JSON",
         "payload_type": "MULTI-PART",
+        "response_type": "TEXT",
+        "response_action": "modules.custom_actions.gpw_actions.check_successful_upload",
         "custom_actions": [
             "modules.custom_actions.gpw_actions.check_for_existing_group",
-            "modules.custom_actions.gpw_actions.rehost_screens_to_ptpimg",
-            "modules.custom_actions.gpw_actions.get_ptp_type",
+            "modules.custom_actions.gpw_actions.rehost_screens",
             "modules.custom_actions.gpw_actions.rewrite_description",
             "modules.custom_actions.gpw_actions.add_subtitle_information",
-            "modules.custom_actions.gpw_actions.mark_scene_release_if_applicable",
-            "modules.custom_actions.gpw_actions.fix_other_resolution"
+            "modules.custom_actions.ptp_actions.mark_scene_release_if_applicable"
         ]
     },
 
     "hybrid_mappings": {
+        "processing":{
+            "required": false,
+            "prerequisite": [
+                "source"
+            ],
+            "mapping":{
+                "Encode":{
+                    "source":{
+                        "data_source": "tracker",
+                        "values": ["Blu-ray"]
+                    },
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["3"]
+                    }
+
+                },
+                "Remux":{
+                    "source":{
+                        "data_source": "tracker",
+                        "values": ["Blu-ray"]
+                    },
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["2"]
+                    }
+                }
+            }
+        },
         "source": {
             "required": true,
             "prerequisite": [
@@ -59,20 +87,71 @@
                     }
                 }
             }
+        },
+        "container":{
+            "required":true,
+            "prerequisite":[],
+            "mapping":{
+                "MKV":{
+                    "container":{
+                        "data_source": "torrent",
+                        "values":[".mkv"]
+                    }
+                },
+                "MP4":{
+                    "container":{
+                        "data_source": "torrent",
+                        "values":[".mp4"]
+                    }
+                }
+            }
+        },
+        "codec":{
+            "required":true,
+            "prerequisite":[],
+            "mapping":{
+                "H.264":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["AVC", "H.264"]
+                    }
+                },
+                "x264":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["x264"]
+                    }
+                },
+                "H.265":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["HEVC", "H.265"]
+                    }
+                },
+                "x265":{
+                    "pymediainfo_video_codec":{
+                        "data_source": "torrent",
+                        "values":["x265"]
+                    }
+                }
+            }
         }
     },
 
     "translation": {
         "dot_torrent": "file_input",
         "hybrid_type_1": "source",
+        "hybrid_type_2": "processing",
+        "hybrid_type_3": "codec",
+        "hybrid_type_4": "container",
         "description": "release_desc",
         "tags": "remaster_title",
         "imdb": "imdb",
         "scene": "scene",
 
         "torrent_title": "name",
-        "mediainfo": "mediainfo",
-        "bdinfo": "bdinfo",
+        "mediainfo": "mediainfo[]",
+        "bdinfo": "mediainfo[]",
         "type": "category_id",
         "source": "type_id",
         "resolution": "resolution",
@@ -86,6 +165,8 @@
         "file_input": "file",
         "release_desc": "string",
         "source": "hybrid_type",
+        "codec": "hybrid_type",
+        "container": "hybrid_type",
 
         "name": "string",
         "anonymous": "string",
@@ -159,38 +240,47 @@
     "Optional": {
         "nfo_text": "string",
         "scene": "string",
+        "processing": "hybrid_type",
 
         "season_number": "string",
         "episode_number": "string",
 
         "bdinfo": "string",
-        "mediainfo": "string",
+        "mediainfo[]": "string",
 
         "remaster_title": {
             "type" : "string",
             "separator": " / ",
             "tags": [
-                "Director's Cut",
-                "Extended Cut",
-                "Theatrical Cut",
-                "Uncut",
-                "Unrated",
-                "Remastered",
-                "Special Edition",
-                "Remux",
-                "HDR10",
-                "HDR10+",
-                "DTS:X",
-                "Dolby Vision",
-                "Dolby Atmos",
-                "4K Restoration",
-                "With Commentary",
-                "Dual Audio",
-                "English Dub",
-                "Extras",
-                "Hybrid",
-                "Non English Dub",
-                "Workprint"
+                "director_s_cut",
+                "masters_of_cinema",
+                "the_criterion_collection",
+                "warner_archive_collection",
+                "extended_edition",
+                "theatrical_cut",
+                "uncut",
+                "rifftrax",
+                "10_bit",
+                "unrated",
+                "remaster",
+                "hdr10",
+                "hdr10plus",
+                "dts_x",
+                "dolby_vision",
+                "dolby_atmos",
+                "4k_restoration",
+                "4k_remaster",
+                "with_commentary",
+                "dual_audio",
+                "2d_3d_edition",
+                "3d_anaglyph",
+                "3d_full_sbs",
+                "3d_half_ou",
+                "3d_half_sbs",
+                "2_disc_set",
+                "2_in_1",
+                "english_dub",
+                "extras"
             ]
         }
     },
@@ -198,14 +288,31 @@
     "Default":{
         "submit" : "true",
         "remaster_year": "",
-        "remaster": ""
+        "movie_edition_information": "",
+        "scene": "",
+        "releasetype" : "",
+        "subname" : "",
+        "image" : "",
+        "year" : "",
+        "tags" : "",
+        "maindesc" : "",
+        "desc" : "",
+        "artist_ids[]" : "",
+        "artists[]" : "",
+        "artists_sub[]" : "",
+        "importance[]" : "",
+        "name" : "",
+        "groupid" : "",
+        "subtitle_type": "",
+        "subtitles[]": ""
     },
 
     "dupes": {
         "technical_jargons": {
             "authentication_mode": "API_KEY",
             "payload_type": "MULTI-PART",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
 
         "url_format": "{search_url}&imdbID={imdb}",
@@ -216,7 +323,7 @@
             "top_lvl": "response",
             "torrent_name": "Name",
             "combine_fields": true,
-            "fields": [ "Name", "Year", "Resolution", "Source", "Processing", "Codec", "Container"]
+            "fields": [ "Name", "Year", "Resolution", "Source", "Processing", "RemasterTitle", "Codec", "Container"]
         }
     },
 

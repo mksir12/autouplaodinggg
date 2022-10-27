@@ -1,0 +1,48 @@
+{
+    "status": 200,
+    "response": {
+        "status": "success",
+        "response": {
+            "Title": "Ant-Man and the Wasp: Quantumania",
+            "MainPlot": "Scott Lang and Hope Van Dyne, along with Hank Pym and Janet Van Dyne, explore the Quantum Realm, where they interact with strange creatures and embark on an adventure that goes beyond the limits of what they thought was possible.",
+            "Year": "2023",
+            "Genre": "action,adventure,comedy",
+            "Type": "Movie",
+            "Directors": {
+                "nm0715636": "Peyton Reed"
+            },
+            "Writters": {
+                "nm0456158": "Jack Kirby",
+                "nm3278218": "Jeff Loveness"
+            },
+            "Casts": {
+                "nm0748620": "Paul Rudd",
+                "nm1431940": "Evangeline Lilly",
+                "nm3718007": "Jonathan Majors",
+                "nm1105980": "Kathryn Newton",
+                "nm0000201": "Michelle Pfeiffer",
+                "nm0000195": "Bill Murray",
+                "nm0000140": "Michael Douglas",
+                "nm1320827": "Randall Park",
+                "nm1015684": "Corey Stoll",
+                "nm10054154": "Leonardo Taiwo",
+                "nm11395022": "Mike Wood",
+                "nm3432428": "David Bertucci",
+                "nm13148405": "Paul Fairlie"
+            },
+            "RestCasts": {
+                "nm11105476": "Tony McCarthy"
+            },
+            "Producers": {
+                "nm0068416": "Mitchell Bell",
+                "nm0112780": "Stephen Broussard",
+                "nm0209326": "Kevin de la Noy",
+                "nm0270559": "Kevin Feige"
+            },
+            "Composers": {
+                "nm0065100": "Christophe Beck"
+            },
+            "SubName": []
+        }
+    }
+}

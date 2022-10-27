@@ -1,20 +1,18 @@
-"""
-    GG Bot Upload Assistant
-    Copyright (C) 2022  Noob Master669
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published
-    by the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
 import json
@@ -31,7 +29,7 @@ from rich.console import Console
 import modules.env as Environment
 
 from modules.tfa.tfa import get_totp_token
-from utilities.utils import prepare_headers_for_tracker
+from utilities.utils import prepare_headers_for_tracker, write_cutsom_user_inputs_to_description
 
 
 console = Console()
@@ -54,68 +52,100 @@ def _get_tags(imdb_tags, tmdb_tags):
 
 
 def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
-    group_check_url = tracker_config["dupes"]["url_format"].format(search_url=str(tracker_config["torrents_search"]), imdb=torrent_info["imdb"])
+    # group_check_url = tracker_config["dupes"]["url_format"].format(search_url=str(tracker_config["torrents_search"]), imdb=torrent_info["imdb"])
+    group_check_url = f"https://passthepopcorn.me/ajax.php?imdb={torrent_info['imdb_with_tt']}&action=torrent_info&fast=1"
 
     headers = prepare_headers_for_tracker(tracker_config["dupes"]["technical_jargons"], "PTP", Environment.get_property_or_default("PTP_API_KEY", ""))
     try:
-        response = requests.get(url=group_check_url, headers=headers).json()
-        if response.get("Page") == "Browse": # no group present
-            # if no group is present in ptp then we'll need to send more details to the tracker.
-            # these details are fetched here and added to `tracker_settings`
-            logging.info(f"[CustomActions][PTP] Failed to match IMDb id {torrent_info['imdb_with_tt']} to any groups.")
-            logging.info("[CustomActions][PTP] Filling details required for a new group upload.")
-
-            poster = ""
-            if len(torrent_info["tmdb_metadata"]["poster"]) > 0:
-                poster = torrent_info["tmdb_metadata"]["poster"]
-            elif len(torrent_info["imdb_metadata"]["poster"]) > 0:
-                poster = torrent_info["imdb_metadata"]["poster"]
-            else:
-                console.print("[red]We couldn't find any [cyan]poster[/cyan] for this show.[/red]")
-                while poster == "":
-                    poster_url = console.input("Please provide a poster url manually. Supported formats => jpg / png\n")
-                    if "ptpimg" in poster_url:
-                        poster = poster_url
-                    elif poster_url.endswith(('.jpg', '.png')):
-                        poster = _rehost_to_ptpimg(poster_url)
-                    else:
-                        console.print("Please enter a valid poster url. Note that this should be a direct link to the poster image")
-            logging.debug(f"[CustomAction][PTP] Movie poster url :: {poster}")
-            if "ptpimg" not in poster:
-                logging.info("[CustomAction][PTP] Movie poster is not hosted in ptpimg. Rehosting to ptpimg.")
-                poster = _rehost_to_ptpimg([poster])[0]
-
-            overview = ""
-            if len(torrent_info["tmdb_metadata"]["overview"]) > 0:
-                overview = torrent_info["tmdb_metadata"]["overview"]
-            elif len(torrent_info["imdb_metadata"]["overview"]) > 0:
-                overview = torrent_info["imdb_metadata"]["overview"]
-            else:
-                console.print("[red]We couldn't find any [cyan]Plot / Overview[/cyan] for this show.[/red]")
-                while overview == "":
-                    user_overview = console.input(f"Please provide the plot / overview of {torrent_info['title']}\n")
-                    overview = user_overview if len(user_overview) > 0 else overview
-            tags = _get_tags(torrent_info["imdb_metadata"]["tags"], torrent_info["tmdb_metadata"]["tags"])
-            logging.info(f"[CustomAction][PTP] Tags identified for this release: {tags}")
-
-            metadata = {
-                "title": torrent_info["title"],
-                "year": torrent_info["year"],
-                "image": poster,
-                "tags": tags,
-                "album_desc": overview,
-                "trailer": "", # TODO: get this youtube trailer link
-            }
-            tracker_settings.update(metadata)
-        elif response.get('Page') == "Details": # group already exists
-            # group already exists on ptp. we don't need to send metadata regarding the movie
-            groupID = response.get('GroupId')
+        response = requests.get(url=group_check_url, headers=headers).json()[0]
+        if "groupid" in response:
+            # group alredy exists on tracker
+            logging.info("CustomActions][PTP] Identified a group for this upload in PTP.")
+            groupID = response.get('groupid')
             logging.info(f"[CustomActions][PTP] Matched IMDb id {torrent_info['imdb_with_tt']} to group with id {groupID}")
-            console.print(f"[bold cyan]Matched IMDb: [yellow]{torrent_info['imdb_with_tt']}[/yellow] to Group ID: [yellow]{groupID}[/yellow] [/bold cyan]")
-            console.print(f"[bold cyan]Title: [yellow]{response.get('Name')}[/yellow] ([yellow]{response.get('Year')}[/bold cyan])")
+            console.print(f"[bold cyan] * Matched IMDb: [yellow]{torrent_info['imdb_with_tt']}[/yellow] to Group ID: [yellow]{groupID}[/yellow] [/bold cyan]")
+            console.print(f"[bold cyan] * Title: [yellow]{response.get('title')}[/yellow] ([yellow]{response.get('year')}[/bold cyan])")
             # to upload a release to an existing group, we need add group information to param
             # updating the `upload_form` url in tracker_config
             tracker_config["upload_form"] = f'{tracker_config["upload_form"]}?groupid={groupID}'
+            # along with this we also add the group to tracker settings
+            tracker_settings["groupid"] = groupID
+        else:
+            # if no group is present in ptp then we'll need to send more details to the tracker.
+            # these details are fetched here and added to `tracker_settings`
+            logging.info(f"[CustomActions][PTP] Failed to match IMDb id {torrent_info['imdb_with_tt']} to any groups on PTP")
+            logging.info("[CustomActions][PTP] Filling details required for a new group upload.")
+            # we try to use the data we got from PTP to fill the metadata.
+            # for any missing values, we use the data that we have obtained from tmdb and imdb.
+            # ------- Poster -------
+            poster = response.get("art", "")
+            if poster == "":
+                logging.info("CustomActions][PTP] Could not get poster from PTP. Trying to use the poster from IMDB / TMDB.")
+                # we couldn't get poster information from ptp for some reason. Lets get that metadata from imdb / tmdb
+                if len(torrent_info["tmdb_metadata"]["poster"]) > 0:
+                    poster = torrent_info["tmdb_metadata"]["poster"]
+                elif len(torrent_info["imdb_metadata"]["poster"]) > 0:
+                    poster = torrent_info["imdb_metadata"]["poster"]
+                else:
+                    console.print("[red]We couldn't find any [cyan]poster[/cyan] for this show.[/red]")
+                    while poster == "":
+                        poster_url = console.input("Please provide a poster url manually. Supported formats => jpg / png\n")
+                        if "ptpimg" in poster_url:
+                            poster = poster_url
+                        elif poster_url.endswith(('.jpg', '.png')):
+                            poster = _rehost_to_ptpimg(poster_url)
+                        else:
+                            console.print("Please enter a valid poster url. Note that this should be a direct link to the poster image")
+            else:
+                # we got a poster from PTP. lets now reupload it to ptpimg and use it
+                logging.info("[CustomActions][PTP] Rehosting poster from PTP to ptpimg.")
+                try:
+                    poster = _rehost_to_ptpimg(poster)
+                except Exception as ex:
+                    # in case of any failures we'll use the image that ptp has returned
+                    logging.exception("[CustomActions][PTP] Error occured while trying to reupload poster iamge to ptpimg", exc_info=ex)
+            # ------- Poster -------
+
+            # ------- Tags -------
+            tags = response.get("tags", "")
+            if tags == "":
+                tags = _get_tags(torrent_info["imdb_metadata"]["tags"], torrent_info["tmdb_metadata"]["tags"])
+                logging.info(f"[CustomAction][PTP] Tags identified for this release: {tags}")
+            else:
+                logging.info(f"[CustomAction][PTP] Tags obtained from PTP for this release: {tags}")
+            # ------- Tags -------
+
+            # ------- Overview -------
+            overview = response.get("plot", "")
+            if overview == "":
+                if len(torrent_info["tmdb_metadata"]["overview"]) > 0:
+                    overview = torrent_info["tmdb_metadata"]["overview"]
+                elif len(torrent_info["imdb_metadata"]["overview"]) > 0:
+                    overview = torrent_info["imdb_metadata"]["overview"]
+                else:
+                    console.print("[red]We couldn't find any [cyan]Plot / Overview[/cyan] for this show.[/red]")
+                    while overview == "":
+                        user_overview = console.input(f"Please provide the plot / overview of {torrent_info['title']}\n")
+                        overview = user_overview if len(user_overview) > 0 else overview
+            else:
+                logging.info(f"[CustomAction][PTP] Overview obtained from PTP for this release: {overview}")
+            # ------- Overview -------
+
+            # ------- Trailer -------
+            trailer = ""
+            if "tmdb_metadata" in torrent_info and "trailer" in torrent_info["tmdb_metadata"] and len(torrent_info["tmdb_metadata"]["trailer"]) > 0:
+                trailer = torrent_info["tmdb_metadata"]["trailer"][0]
+            # ------- Trailer -------
+
+            metadata = {
+                "title": response.get("title", torrent_info["title"]),
+                "year": response.get("year", torrent_info["year"]),
+                "image": poster,
+                "tags": tags,
+                "album_desc": overview,
+                "trailer": trailer
+            }
+            tracker_settings.update(metadata)
     except Exception as ex:
         logging.exception("[CustomActions][PTP] Failed to check for existing groups.", exc_info=ex)
 
@@ -163,7 +193,7 @@ def rehost_screens_to_ptpimg(torrent_info, tracker_settings, tracker_config):
 
 
 def rewrite_description(torrent_info, tracker_settings, tracker_config):
-    # TODO: PTP needs mediainfo and one screenshot from each file.
+    # TODO: PTP needs mediainfo and on e screenshot from each file.
     # currently we support only movies, hence there will only be one file and ignoring this for now
 
     # to set remaster = "on" if remaster_title is not empty (ie: some tags are present)
@@ -171,7 +201,18 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
     logging.info("[CustomActions][PTP] Preparing description in template needed for PTP")
     ptp_description_file = torrent_info["description"].replace("description.txt", "ptp_description.txt")
 
-    with open(ptp_description_file, "w") as ptp_description:
+    # writing custom_descriptions
+    if "custom_user_inputs" in torrent_info and torrent_info["custom_user_inputs"] is not None:
+        write_cutsom_user_inputs_to_description(
+            torrent_info=torrent_info,
+            description_file_path=ptp_description_file,
+            config=tracker_config,
+            tracker="PTP",
+            bbcode_line_break=tracker_config['bbcode_line_break'],
+            debug=True
+        )
+
+    with open(ptp_description_file, "a") as ptp_description:
         # writing mediainfo to description
         mediainfo = open(torrent_info["mediainfo"], "r").read()
         ptp_description.write(f"[mediainfo]{mediainfo}[/mediainfo]\n")
@@ -179,17 +220,18 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
         ptp_description.write("[align=center]..:: Screenshots ::..\n")
         for screenshot in tracker_settings["ptp_rehosted"]:
             ptp_description.write(f"[img]{screenshot}[/img]\n")
-        ptp_description.write("Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant[/align]")
+        if torrent_info["release_group"] == "DrDooFenShMiRtZ":
+            ptp_description.write("Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistantinator[/align]")
+        else:
+            ptp_description.write("Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant[/align]")
 
     tracker_settings["release_desc"] = ptp_description_file
     logging.info("[CustomActions][PTP] Finished creating descrption for PTP")
 
 
 def get_ptp_type(torrent_info, tracker_settings, tracker_config):
-    if "?groupid=" in tracker_config["upload_form"]: # if release already existst then we'll get a group id from cusotm action `check_for_existing_group`
-        logging.info("[CustomActions][PTP] GroupID already exists in PTP. No need to send type info")
-        return
-
+    # TODO: get the type from PTP
+    # TODO: multi audio being identified even when its not multi audio.
     # TODO: check cases when we don't get imdb id.
     tracker_settings["type"] = None
     logging.info("[CustomActions][PTP] Attempting to identify the type applicable to PTP")
@@ -205,6 +247,7 @@ def get_ptp_type(torrent_info, tracker_settings, tracker_config):
     if movie_details is not None:
         # we we can get the `kind` from IMDb we can use that to find the PTP type.
         kind = movie_details.get('kind', 'movie').lower()
+        # TODO: this doesn't seem to work always. Find another way to get this working
         if kind in ("movie", "tv movie"):
             # if this is a movie, then we need to compare the runtimes to decide between Feature and Short Films
             if int(movie_details.get('runtimes', ['0'])[0]) >= 45:

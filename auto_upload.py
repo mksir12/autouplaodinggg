@@ -45,9 +45,10 @@ from rich.prompt import Prompt, Confirm
 # utility methods
 # Method that will read and accept text components for torrent description
 # This is used to take screenshots and eventually upload them to either imgbox, imgbb, ptpimg or freeimage
-from utilities.utils_user_input import collect_custom_messages_from_user
+from utilities.utils_user_input import collect_custom_messages_from_user, add_item_to_custom_texts
 from utilities.utils_screenshots import take_upload_screens
 # Method that will search for dupes in trackers.
+from modules.template_schema_validator import TemplateSchemaValidator
 import utilities.utils_miscellaneous as miscellaneous_utilities
 import utilities.utils_translation as translation_utilities
 import utilities.utils_metadata as metadata_utilities
@@ -81,10 +82,9 @@ logging.basicConfig(filename=ASSISTANT_LOG.format(base_path=working_folder), fil
 # Load the .env file that stores info like the tracker/image host API Keys & other info needed to upload
 load_dotenv(ASSISTANT_CONFIG.format(base_path=working_folder))
 
-# Getting the keys present in the config.env.sample
-# These keys are then used to compare with the env variable keys provided during runtime.
-# Presently we just displays any missing keys, in the future do something more useful with this information
-utils.validate_env_file(ASSISTANT_SAMPLE_CONFIG.format(base_path=working_folder))
+# By default we load the templates from site_templates/ path
+# If user has provided load_external_templates argument then we'll update this path to a different one
+site_templates_path = SITE_TEMPLATES_DIR.format(base_path=working_folder)
 
 # Used to correctly select json file
 # the value in this dictionay must correspond to the file name of the site template
@@ -132,6 +132,7 @@ uncommon_args.add_argument('-r', '--resume', action='store_true', help="Resume p
 uncommon_args.add_argument('-3d', action='store_true',help="Mark the upload as 3D content")
 uncommon_args.add_argument('-foreign', action='store_true',help="Mark the upload as foreign content [Non-English]")
 uncommon_args.add_argument('-amf', '--allow_multiple_files', action='store_true',help="Override the default behavior and allow multiple files to be added in one torrent")
+uncommon_args.add_argument('-let', '--load_external_templates', action='store_true',help="When enabled uploader will load external site templates from ./external/site_templates location")
 
 # args for Internal uploads
 internal_args = parser.add_argument_group('Internal Upload Arguments')
@@ -158,7 +159,7 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
         Returns False => No dupes present in the tracker and upload can continue
     """
     # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-    config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
+    config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
     # If the user provides this arg with the title right after in double quotes then we automatically use that
     # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title
@@ -506,8 +507,9 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     # ------ WEB streaming service stuff here ------ #
     if torrent_info["source"] == "Web":
         # TODO check whether None needs to be set as `web_source`
-        torrent_info["web_source"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
-            STREAMING_SERVICES_MAP.format(base_path=working_folder), torrent_info["raw_file_name"], guess_it_result)
+        torrent_info["web_source"], torrent_info["web_source_name"] = miscellaneous_utilities.miscellaneous_identify_web_streaming_source(
+            STREAMING_SERVICES_MAP.format(base_path=working_folder), STREAMING_SERVICES_REVERSE_MAP.format(base_path=working_folder),
+            torrent_info["raw_file_name"], guess_it_result)
 
     # --- Custom & extra info --- #
     # some torrents have 'extra' info in the title like 'repack', 'DV', 'UHD', 'Atmos', 'remux', etc
@@ -885,13 +887,19 @@ def upload_to_site(upload_to, tracker_api_key):
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
 script_start_time = time.perf_counter()
-starting_new_upload = f" {'-' * 24} Starting new upload {'-' * 24} "
 
 console.line(count=2)
 utils.display_banner("  Upload  Assistant  ")
 console.line(count=1)
 
-logging.info(starting_new_upload)
+
+# Getting the keys present in the config.env.sample
+# These keys are then used to compare with the env variable keys provided during runtime.
+# Presently we just displays any missing keys, in the future do something more useful with this information
+utils.validate_env_file(ASSISTANT_SAMPLE_CONFIG.format(base_path=working_folder))
+
+
+logging.info(f" {'-' * 24} Starting new upload {'-' * 24} ")
 
 if args.tripleup and args.doubleup:
     logging.error("[Main] User tried to pass tripleup and doubleup together. Stopping torrent upload process")
@@ -951,13 +959,38 @@ if args.disc and Environment.is_containerized() and not Environment.is_full_disk
     console.print("[bold red on white] ---------------------------- :warning: Unsupported Operation :warning: ---------------------------- [/bold red on white]")
     sys.exit(console.print("\nQuiting upload process since Full Disk uploads are not allowed in this image.\n",style="bold red", highlight=False))
 
-torrent_client = utils.get_torrent_client_if_needed()
 
 # Set the value of args.path to a variable that we can overwrite with a path translation later (if needed)
 user_supplied_paths = args.path
 
+# the torrent client instance for cross-seeding
+torrent_client = utils.get_torrent_client_if_needed()
+
+# creating the schema validator for validating all the template files
+template_validator = TemplateSchemaValidator(TEMPLATE_SCHEMA_LOCATION.format(base_path=working_folder))
+# we are going to validate all the built-in templates
+valid_templates = utils.validate_templates_in_path(site_templates_path, template_validator)
+# copy all the valid templates to workdir.
+utils.copy_template(valid_templates, site_templates_path, VALIDATED_SITE_TEMPLATES_DIR.format(base_path=working_folder))
+# now we set the site templates path to the new temp dir
+site_templates_path = VALIDATED_SITE_TEMPLATES_DIR.format(base_path=working_folder)
+
+
+if args.load_external_templates:
+    logging.info("[Main] User wants to load external site templates. Attempting to load and validate these templates...")
+    # Here we validate the external templates and copy all default and external templates to a differnet folder.
+    # The method will modify the `api_keys_dict` and `acronym_to_tracker` to include the external trackers as well.
+    valid_ext_templates, ext_api_keys_dict, ext_acronyms = utils.validate_and_load_external_templates(template_validator, working_folder)
+    if len(valid_ext_templates) > 0:
+        valid_templates.extend(valid_ext_templates)
+        api_keys_dict.update(ext_api_keys_dict)
+        acronym_to_tracker.update(ext_acronyms)
+
+
 # Verify we support the tracker specified
 logging.debug(f"[Main] Trackers provided by user {args.trackers}")
+
+
 upload_to_trackers = utils.get_and_validate_configured_trackers(args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys())
 
 # Show the user what sites we will upload to
@@ -970,7 +1003,7 @@ for upload_to_tracker in ["Acronym", "Site", "URL", "Platform"]:
     upload_to_trackers_overview.add_column(f"{upload_to_tracker}", justify='center', style='#38ACEC')
 
 for tracker in upload_to_trackers:
-    config = json.load(open(f"{SITE_TEMPLATES_DIR.format(base_path=working_folder)}{str(acronym_to_tracker.get(str(tracker).lower()))}.json", "r", encoding="utf-8"))
+    config = json.load(open(f"{site_templates_path}{str(acronym_to_tracker.get(str(tracker).lower()))}.json", "r", encoding="utf-8"))
     # Add tracker data to each row & show the user an overview
     upload_to_trackers_overview.add_row(tracker, config["name"], config["url"], config["platform"])
 
@@ -1118,6 +1151,14 @@ for file in upload_queue:
         torrent_info["custom_user_inputs"] = collect_custom_messages_from_user(CUSTOM_TEXT_COMPONENTS.format(base_path=working_folder))
     else:
         logging.debug('[Main] User decided not to add custom text to torrent description or running in auto_mode')
+    # if the upload is a web-dl, then we'll have values for `web_source` and `web_source_name`
+    # In cases where we have value for `web_source_name`, we can add this to the description as
+    # This releases is sourced from `web_source_name`
+    # TODO: for now we are adding this only if user has not provided any custom descriptions
+    if "web_source_name" in torrent_info and torrent_info["web_source_name"] is not None and "custom_user_inputs" not in torrent_info:
+        torrent_info["custom_user_inputs"] = add_item_to_custom_texts(
+            CUSTOM_TEXT_COMPONENTS.format(base_path=working_folder), [], "CODE", f"This release is sourced from {torrent_info['web_source_name']}"
+        )
 
     # Fix some default naming styles
     translation_utilities.fix_default_naming_styles(torrent_info)
@@ -1179,7 +1220,7 @@ for file in upload_queue:
         tracker_settings.clear()
 
         # Open the correct .json file since we now need things like announce URL, API Keys, and API info
-        config = json.load(open(SITE_TEMPLATES_DIR.format(base_path=working_folder) + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
+        config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
         # If the user provides this arg with the title right after in double quotes then we automatically use that
         # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title
@@ -1212,7 +1253,8 @@ for file in upload_queue:
         utils.write_uploader_signature_to_description(
             description_file_path=DESCRIPTION_FILE_PATH.format(base_path=working_folder, sub_folder=torrent_info["working_folder"]),
             tracker=tracker,
-            bbcode_line_break=bbcode_line_break
+            bbcode_line_break=bbcode_line_break,
+                release_group=torrent_info["release_group"]
         )
 
         # Add the finished file to the 'torrent_info' dict

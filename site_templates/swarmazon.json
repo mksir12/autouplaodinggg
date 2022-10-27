@@ -7,14 +7,18 @@
     "platform": "Swarmazon",
     "bbcode_line_break": "\n",
     "title_separator": " ",
+    "screenshot_type": "bbcode_images",
+
     "description_components": {
         "code_code": "<code></code>"
     },
+
     "technical_jargons": {
         "authentication_mode": "API_KEY",
         "response_type": "JSON",
         "payload_type": "MULTI-PART"
     },
+    
     "translation": {
         "dot_torrent": "torrent",
         "torrent_title": "name",
@@ -252,7 +256,8 @@
         "technical_jargons": {
             "authentication_mode": "API_KEY",
             "payload_type": "MULTI-PART",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
         "url_format": "{search_url}&media_ref={imdb}",
         "strip_text": false,

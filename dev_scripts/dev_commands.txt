@@ -30,6 +30,7 @@ PREPATE DEV ENVIRONMENT
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 sudo apt update
 sudo apt install unrar mediainfo ffmpeg mktorrent apache2-utils
+pip install -r requirements/requirements_test.txt
 
 
 NOTES

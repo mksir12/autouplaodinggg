@@ -14,10 +14,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import json
 import pytest
+import shutil
+
 from pathlib import Path
 from pytest_mock import mocker
+
 import utilities.utils as utils
+
+from modules.template_schema_validator import TemplateSchemaValidator
+from modules.constants import SITE_TEMPLATES_DIR, VALIDATED_SITE_TEMPLATES_DIR
+
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
 temp_working_dir = "/tests/working_folder"
@@ -30,6 +38,10 @@ def run_around_tests():
         ----------------------------------------------------------------------
         tests/
             - working_folder/
+                - empty_dir/
+                - external/site_templates/
+                    - sample.json
+                    - sample1.json
                 - resources/
                 - rar/
                 - torrent/
@@ -64,6 +76,19 @@ def run_around_tests():
 
     Path(f"{folder}/temp_upload/{utils.get_hash('some_name')}/screenshots").mkdir(parents=True, exist_ok=True)  # temp_upload folder
     Path(f"{folder}/nothing").mkdir(parents=True, exist_ok=True)  # temp_upload folder
+    Path(f"{folder}/external/site_templates/").mkdir(parents=True, exist_ok=True)  # external site templates folder
+    Path(f"{folder}/external/tracker/").mkdir(parents=True, exist_ok=True)  # external site acronym mapping location
+    Path(f"{folder}/empty_dir/").mkdir(parents=True, exist_ok=True)  # empty dir for any tests that needs it
+
+    # creating external dupe templates
+    shutil.copy(f"{working_folder}/site_templates/blutopia.json", f"{folder}/external/site_templates/sample.json")
+    shutil.copy(f"{working_folder}/site_templates/aither.json", f"{folder}/external/site_templates/sample1.json")
+    shutil.copy(f"{working_folder}/site_templates/aither.json", f"{folder}/external/site_templates/sample2.json")
+    # removing a mandatory field from sample2.json
+    sample2_json = json.load(open(f"{folder}/external/site_templates/sample2.json","r"))
+    sample2_json.pop("name", None)
+    json.dump(sample2_json, open(f"{folder}/external/site_templates/sample2.json","w"))
+    json.dump({"sample":"smpl", "sample1": "smpl1"}, open(f"{folder}/external/tracker/tracker_to_acronym.json","w"))
 
     # creating some random files inside `/tests/working_folder/temp_upload`
     touch(f'{folder}/temp_upload/{utils.get_hash("some_name")}/torrent1.torrent')
@@ -211,3 +236,71 @@ def test_create_temp_upload_itself():
 )
 def test_sanitize_release_group_from_guessit(torrent_info, expected):
     assert utils.sanitize_release_group_from_guessit(torrent_info) == expected
+
+
+def test_validate_builtin_templates():
+    all_available_templates = len(list(filter(lambda entry: entry.is_file() and entry.suffix == ".json",Path(f"{working_folder}/site_templates/").glob('**/*'))))
+    template_validator = TemplateSchemaValidator(f"{working_folder}/schema/site_template_schema.json")
+    valid_templates = utils.validate_templates_in_path(f"{working_folder}/site_templates/", template_validator)
+    assert len(valid_templates) == all_available_templates
+
+
+def test_copy_template():
+    valid_templates = ["blutopia", "passthepopcorn", "nebulance"]
+    source_dir = SITE_TEMPLATES_DIR.format(base_path=working_folder)
+    target_dir = f"{working_folder}{temp_working_dir}/validated_site_templates/".format(base_path=working_folder)
+
+    utils.copy_template(valid_templates, source_dir, target_dir)
+    for template in valid_templates:
+        assert Path(f"{target_dir}{template}.json").is_file()
+
+
+def test_copy_template_with_already_existing_data():
+    valid_templates = ["blutopia", "passthepopcorn", "nebulance"]
+    source_dir = SITE_TEMPLATES_DIR.format(base_path=working_folder)
+    target_dir = f"{working_folder}{temp_working_dir}/validated_site_templates/".format(base_path=working_folder)
+
+    # making target dir and copying the templates (with modifications)
+    Path(target_dir).mkdir(parents=True, exist_ok=True)
+    for template in valid_templates:
+        shutil.copy(str(Path(f"{source_dir}{template}.json")), str(Path(f"{target_dir}{template}.json")))
+
+        template_json_file = json.load(open(str(Path(f"{target_dir}{template}.json")), "r"))
+        template_json_file["name"] = "FAKE_NAME"
+        json.dump(template_json_file, open(str(Path(f"{target_dir}{template}.json")), "w"))
+
+    utils.copy_template(valid_templates, source_dir, target_dir)
+    for template in valid_templates:
+        assert Path(f"{target_dir}{template}.json").is_file()
+        assert json.load(open(str(Path(f"{target_dir}{template}.json"))))["name"] != "FAKE_NAME"
+
+
+def __external_tracker_api_keys(key, default=None):
+    if key == "SMPL_API_KEY":
+        return "smpl_api_key_value"
+    elif key == "SMPL1_API_KEY":
+        return "smpl1_api_key_value"
+    return default
+
+
+def test_validate_and_load_external_templates(mocker):
+    mocker.patch("os.getenv", side_effect=__external_tracker_api_keys)
+    template_validator = TemplateSchemaValidator(f"{working_folder}/schema/site_template_schema.json")
+    api_key_dict_expected = {
+        "smpl_api_key": "smpl_api_key_value",
+        "smpl1_api_key": "smpl1_api_key_value"
+    }
+    acronyms = {v:k for k,v in {"sample":"smpl", "sample1": "smpl1"}.items()}
+
+    valid_templates, api_key_dict, acronym_obtained = utils.validate_and_load_external_templates(template_validator, f"{working_folder}{temp_working_dir}")
+    difference = set(valid_templates) ^ set(["sample1", "sample"])
+    assert not difference
+    assert api_key_dict == api_key_dict_expected
+    assert acronym_obtained == acronyms
+    total_number_templates = len(list(filter(lambda entry: entry.is_file() and entry.suffix == ".json", Path(f"{working_folder}{temp_working_dir}/validated/site_templates/").glob('**/*'))))
+    assert total_number_templates == 2
+
+
+def test_validate_and_load_external_templates_no_dir():
+    template_validator = TemplateSchemaValidator(f"{working_folder}/schema/site_template_schema.json")
+    assert utils.validate_and_load_external_templates(template_validator, f"{working_folder}{temp_working_dir}/fake_dir") == ([], {}, {})

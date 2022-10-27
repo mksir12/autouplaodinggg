@@ -399,6 +399,45 @@ def _fill_imdb_metadata_to_torrent_info(torrent_info, imdb_response, datasource)
     # --------------------- _fill_imdb_metadata_to_torrent_info ---------------------
 
 
+def _fill_keywords_in_tmdb_metadata(content_type, torrent_info):
+    get_keywords_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/keywords?api_key={Environment.get_tmdb_api_key()}"
+    try:
+        logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/keywords?api_key=<REDACTED>")
+        keywords_info = requests.get(get_keywords_url).json()
+
+        if keywords_info is not None and "status_message" not in keywords_info:
+            # now that we got a proper response from tmdb, we need to store the keywords in torrent_info
+            # for movies, the keywords will be present in `keywords` and for tv shows it'll be in `results`
+            keywords_attribute = "results" if content_type == "tv" else "keywords"
+            torrent_info["tmdb_metadata"]["keywords"] = list(map(lambda keyword: keyword["name"].lower(), keywords_info[keywords_attribute]))
+            logging.info(f"[MetadataUtils] Obtained the following keywords from TMDb :: {torrent_info['tmdb_metadata']['keywords']}")
+        else:
+            logging.error("[MetadataUtils] Could not obtain keywords for the release from TMDb")
+    except Exception as e:
+        logging.exception("[MetadataUtils] Error occured while trying to fetch keywords for the relese.", exc_info=e)
+
+
+def _fill_trailers_in_tmdb_metadata(content_type, torrent_info):
+    get_trailers_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/videos?api_key={Environment.get_tmdb_api_key()}"
+    try:
+        logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/videos?api_key=<REDACTED>")
+        trailers_info = requests.get(get_trailers_url).json()
+
+        if trailers_info is not None and "status_message" not in trailers_info:
+            # now that we got a proper response from tmdb, we need to store the trailers in torrent_info
+            torrent_info["tmdb_metadata"]["trailer"] = list(
+                map(
+                    lambda trailer: f"https://youtube.com/watch?v={trailer['key']}",
+                    filter(lambda entry: entry["type"] == "Trailer" and entry["site"] == "YouTube", trailers_info["results"])
+                )
+            )
+            logging.info(f"[MetadataUtils] Obtained the following trailers from TMDb :: {torrent_info['tmdb_metadata']['trailer']}")
+        else:
+            logging.error("[MetadataUtils] Could not obtain trailers for the release from TMDb")
+    except Exception as e:
+        logging.exception("[MetadataUtils] Error occured while trying to fetch trailers for the relese.", exc_info=e)
+
+
 def metadata_compare_tmdb_data_local(torrent_info):
     # We need to use TMDB to make sure we set the correct title & year as well as correct punctuation so we don't get held up in torrent moderation queues
     # I've outlined some scenarios below that can trigger issues if we just try to copy and paste the file name as the title
@@ -446,21 +485,13 @@ def metadata_compare_tmdb_data_local(torrent_info):
         logging.info(f"[MetadataUtils] Using the year we got from TMDB: {year}")
 
     # now we'll also fetch and save the keywords from TMDB.
-    get_keywords_url = f"https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/keywords?api_key={Environment.get_tmdb_api_key()}"
-    try:
-        logging.info(f"[MetadataUtils] GET Request: https://api.themoviedb.org/3/{content_type}/{torrent_info['tmdb']}/keywords?api_key=<REDACTED>")
-        keywords_info = requests.get(get_keywords_url).json()
+    _fill_keywords_in_tmdb_metadata(content_type, torrent_info)
 
-        if keywords_info is not None and "status_message" not in keywords_info:
-            # now that we got a proper response from tmdb, we need to store the keywords in torrent_info
-            # for movies, the keywords will be present in `keywords` and for tv shows it'll be in `results`
-            keywords_attribute = "results" if content_type == "tv" else "keywords"
-            torrent_info["tmdb_metadata"]["keywords"] = list(map(lambda keyword: keyword["name"].lower(), keywords_info[keywords_attribute]))
-            logging.info(f"[MetadataUtils] Obtained the following keywords from TMDb :: {torrent_info['tmdb_metadata']['keywords']}")
-        else:
-            logging.error("[MetadataUtils] Could not obtain keywords for the release from TMDb")
-    except Exception as e:
-        logging.exception("[MetadataUtils] Error occured while trying to fetch keywords for the relese.", exc_info=e)
+    # now we can check whether there are any youtube trailers that we can find for this release
+    _fill_trailers_in_tmdb_metadata(content_type, torrent_info)
+    # if we couldn't get any trailer from tmdb, then we can try to get the same from imdb
+    # TODO: in most cases if tmdb does't have the trailer information, them imdb also won't have it.
+    # The trailer shown in imdb website would probably be a self hosted one. Which is of no use to us.
 
     # now that we've added TMDb metadata and TMDb keywords, we need to add the IMDb metadata to torrent info as well.
     # We'll add the data from IMDB API and Cinemagoer

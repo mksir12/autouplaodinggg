@@ -7,7 +7,8 @@
     "platform": "UNIT3D",
     "bbcode_line_break": "<br />",
     "title_separator": " ",
-    
+    "screenshot_type": "bbcode_images",
+
     "description_components": {
         "code_code": "[code][/code]",
         "spoiler_code": "[spoiler=TITLE_PLACEHOLDER][/spoiler]",
@@ -140,7 +141,8 @@
         "technical_jargons": {
             "authentication_mode": "API_KEY",
             "payload_type": "MULTI-PART",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
         "url_format": "{search_url}&imdbId={imdb}",
         "strip_text": true,

@@ -13,7 +13,6 @@
     },
 
     "technical_jargons": {
-        "_comment": "These are for the upload api",
         "authentication_mode": "API_KEY_PAYLOAD",
         "response_type": "JSON",
         "auth_payload_key":"api_key",
@@ -363,16 +362,11 @@
                 }
             ],
             "payload_type": "JSON",
-            "request_method": "POST"
+            "request_method": "POST",
+            "response_type": "JSON"
         },
 
         "strip_text": false,
-
-        "_comments" : {
-            "payload" : "payload is the json data that needs to be sent to tracker",
-            "_payload" : "payload must be a valid json",
-            "formatting" : "content to be replaced must be enclosed with <>"
-        },
 
         "payload":"{\"pageSize\": 100, \"search\": \"<imdb>\", \"searchType\": 4}",
 

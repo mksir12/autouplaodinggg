@@ -1,0 +1,301 @@
+{
+    "status": 200,
+    "response": {
+        "ID": 54321,
+        "Name": "Avatar: The Way of Water",
+        "Year": 2022,
+        "ReleaseTypeID": 1,
+        "ReleaseType": 1,
+        "Artists": {
+            "1": [
+                {
+                    "ArtistID": "1",
+                    "Name": "James Cameron",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0000116"
+                }
+            ],
+            "3": [
+                {
+                    "ArtistID": "1",
+                    "Name": "James Cameron",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0000116"
+                },
+                {
+                    "ArtistID": "2",
+                    "Name": "Jon Landau",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0484457"
+                },
+                {
+                    "ArtistID": "3",
+                    "Name": "Peter M. Tobyansen",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0865014"
+                },
+                {
+                    "ArtistID": "4",
+                    "Name": "David Valdes",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0883603"
+                },
+                {
+                    "ArtistID": "5",
+                    "Name": "Brigitte Yorke",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm1161760"
+                }
+            ],
+            "4": [
+                {
+                    "ArtistID": "6",
+                    "Name": "Simon Franglen",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0290788"
+                }
+            ],
+            "6": [
+                {
+                    "ArtistID": "7",
+                    "Name": "Zoe Saldana",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0757855-632af34f54b92.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0757855"
+                },
+                {
+                    "ArtistID": "8",
+                    "Name": "Michelle Yeoh",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0000706-632af34faa800.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0000706"
+                },
+                {
+                    "ArtistID": "9",
+                    "Name": "Kate Winslet",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0000701-632af35033203.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0000701"
+                },
+                {
+                    "ArtistID": "10",
+                    "Name": "Sam Worthington",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0941777-632af35109d26.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0941777"
+                },
+                {
+                    "ArtistID": "11",
+                    "Name": "Sigourney Weaver",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0000244-632af3516d97d.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0000244"
+                },
+                {
+                    "ArtistID": "12",
+                    "Name": "Oona Chaplin",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm2772105-632af351d2458.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm2772105"
+                },
+                {
+                    "ArtistID": "13",
+                    "Name": "Jemaine Clement",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm1318596-632af35258e97.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm1318596"
+                },
+                {
+                    "ArtistID": "14",
+                    "Name": "Stephen Lang",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0002332-632af352bf139.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0002332"
+                },
+                {
+                    "ArtistID": "15",
+                    "Name": "Giovanni Ribisi",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0000610-632af35346f31.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0000610"
+                },
+                {
+                    "ArtistID": "16",
+                    "Name": "Edie Falco",
+                    "Image": "http://localhost:9000/image/site/artist/imdb/nm0004908-632af353a611e.jpg",
+                    "SubName": "",
+                    "IMDBID": "nm0004908"
+                },
+                {
+                    "ArtistID": "17",
+                    "Name": "Cliff Curtis",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0193295"
+                },
+                {
+                    "ArtistID": "18",
+                    "Name": "Chloe Coleman",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm5668548"
+                },
+                {
+                    "ArtistID": "19",
+                    "Name": "CCH Pounder",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0001634"
+                },
+                {
+                    "ArtistID": "20",
+                    "Name": "Joel David Moore",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0601376"
+                },
+                {
+                    "ArtistID": "21",
+                    "Name": "Bailey Bass",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm3791148"
+                },
+                {
+                    "ArtistID": "22",
+                    "Name": "Jamie Flatters",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm7370588"
+                },
+                {
+                    "ArtistID": "23",
+                    "Name": "Keston John",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm1929609"
+                },
+                {
+                    "ArtistID": "24",
+                    "Name": "Matt Gerald",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0313902"
+                },
+                {
+                    "ArtistID": "25",
+                    "Name": "Jack Champion",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm5607823"
+                },
+                {
+                    "ArtistID": "26",
+                    "Name": "Brendan Cowell",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm0184698"
+                },
+                {
+                    "ArtistID": "27",
+                    "Name": "Filip Geljo",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm6914609"
+                },
+                {
+                    "ArtistID": "28",
+                    "Name": "Trinity Jo-Li Bliss",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm9304507"
+                },
+                {
+                    "ArtistID": "29",
+                    "Name": "Britain Dalton",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm6839875"
+                },
+                {
+                    "ArtistID": "30",
+                    "Name": "Johnny Alexander",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm4148067"
+                },
+                {
+                    "ArtistID": "31",
+                    "Name": "CJ Jones",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm1471085"
+                },
+                {
+                    "ArtistID": "32",
+                    "Name": "Scarlett Fernandez",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm7251898"
+                },
+                {
+                    "ArtistID": "33",
+                    "Name": "Duane Evans Jr.",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm4737604"
+                },
+                {
+                    "ArtistID": "34",
+                    "Name": "Jeremy Irwin",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm3914390"
+                },
+                {
+                    "ArtistID": "35",
+                    "Name": "Jake McLean",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm5684774"
+                },
+                {
+                    "ArtistID": "36",
+                    "Name": "Ben Antoine",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm7661064"
+                },
+                {
+                    "ArtistID": "37",
+                    "Name": "Michelle Byun",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm13666280"
+                },
+                {
+                    "ArtistID": "38",
+                    "Name": "Amanda MacLeod",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm8083553"
+                },
+                {
+                    "ArtistID": "39",
+                    "Name": "Christopher Troy",
+                    "Image": "",
+                    "SubName": "",
+                    "IMDBID": "nm1914877"
+                }
+            ]
+        },
+        "DisplayArtists": "James Cameron"
+    }
+}

@@ -83,6 +83,7 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
             f'[url=http://ggbot/img1][img]{"t.".join("http://ggbot/img1".rsplit(".", 1))}[/img][/url]',
             "http://ggbot/img1"
         ]
+
     elif img_host == 'pixhost':
         data = { "content_type": "0", "max_th_size": thumb_size }
         files = {'img': open(image_path, 'rb')}
@@ -148,7 +149,7 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
             console.print("\nptpimg upload failed. double check the [bold]ptpimg_api_key[/bold] in [bold]config.env[/bold]\n", style='Red', highlight=False)
             return False
 
-    elif img_host in ('imgbb', 'freeimage', 'imgfi', 'snappie'):
+    elif img_host in ('imgbb', 'freeimage', 'imgfi', 'snappie', 'lensdump'):
         # Get the correct image host url/json key
         available_image_host_urls = json.load(open(IMAGE_HOST_URLS.format(base_path=base_path)))
 
@@ -159,9 +160,17 @@ def _upload_screens(img_host, img_host_api, image_path, torrent_title, base_path
         try:
             img_upload_request = None
             data = { 'key': img_host_api }
-            if img_host in ('imgfi', 'snappie'):
-                files = {'source': open(image_path, 'rb')}
-                img_upload_request = requests.post(url=image_host_url, data=data, files=files)
+            if img_host in ('imgfi', 'snappie', 'lensdump'):
+                headers = {}
+                if img_host == "lensdump":
+                    # lensdump needs api key in headers and have a different multipart format
+                    data["format"] = "json"
+                    data['source'] = base64.b64encode(open(image_path, "rb").read())
+                    headers = {"X-API-Key": Environment.get_image_host_api_key(img_host)}
+                    files = {}
+                else:
+                    files = {'source': open(image_path, 'rb')}
+                img_upload_request = requests.post(url=image_host_url, data=data, files=files, headers=headers)
             else:
                 data['image'] = base64.b64encode(open(image_path, "rb").read())
                 img_upload_request = requests.post(url=image_host_url, data=data)
@@ -387,7 +396,7 @@ def take_upload_screens(duration, upload_media_import, torrent_title_import, bas
                     break
 
         logging.info('[Screenshots] Uploaded screenshots. Saving urls and bbcodes...')
-        with open(SCREENSHOTS_RESULT_FILE_PATH.format(base_path=base_path, sub_folder=hash_prefix), "a") as screenshots_file:
+        with open(SCREENSHOTS_RESULT_FILE_PATH.format(base_path=base_path, sub_folder=hash_prefix), "w") as screenshots_file:
             screenshots_file.write(json.dumps(images_data))
 
         # Depending on the image upload outcome we print a success or fail message showing the user what & how many images failed/succeeded

@@ -7,6 +7,7 @@
     "platform": "UNIT3D",
     "bbcode_line_break": "[br][/br]",
     "title_separator": " ",
+    "screenshot_type": "bbcode_thumb_nothumb",
 
     "description_components":{
         "code_code": "[code][/code]",
@@ -265,23 +266,13 @@
         "technical_jargons": {
             "authentication_mode": "API_KEY",
             "payload_type": "MULTI-PART",
-            "request_method": "POST"
+            "request_method": "POST",
+            "response_type": "JSON"
         },
 
         "strip_text": true,
 
-        "_comments" : {
-            "payload" : "payload is the json data that needs to be sent to tracker",
-            "_payload" : "payload must be a valid json with single quotes",
-            "formatting" : "content to be replaced must be enclosed with <>"
-        },
-
         "payload":"{\"action\" : \"search\", \"imdb_id\":\"<imdb>\"}",
-
-        "keys": {
-            "action": "search",
-            "imdb_id": "string"
-        },
 
         "parse_json": {
             "is_needed": true,
@@ -315,7 +306,6 @@
         "FGT",
         "d3g",
         "MeGusta",
-        "d3g",
         "YIFY",
         "tigole",
         "TEKNO3D",

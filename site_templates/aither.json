@@ -7,7 +7,8 @@
     "platform": "UNIT3D",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
-
+    "screenshot_type": "bbcode_images",
+    
     "description_components":{
         "code_code": "[code][/code]",
         "spoiler_code":"[spoiler=TITLE_PLACEHOLDER][/spoiler]",
@@ -154,7 +155,8 @@
         "technical_jargons": {
             "authentication_mode": "API_KEY",
             "payload_type": "MULTI-PART",
-            "request_method": "GET"
+            "request_method": "GET",
+            "response_type": "JSON"
         },
 
         "url_format": "{search_url}&imdbId={imdb}",
@@ -170,20 +172,20 @@
     "torrent_title_format": {
         "episode": {
             "bluray_disc": "{title} {year} {s00e00} {screen_size} {region} {source} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
-            "bluray_remux": "{title} {year} {s00e00} {repack} {screen_size} {uhd} {hybrid} {source} {remux} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
-            "bluray_encode": "{title} {year} {s00e00} {repack} {screen_size} {uhd} {hybrid} {source} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
-            "web": "{title} {year} {s00e00} {repack} {screen_size} {web_source} {web_type} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
-            "hdtv": "{title} {year} {s00e00} {repack} {screen_size} {hybrid} {source} {audio_codec} {audio_channels} {video_codec} {release_group}",
-            "dvd": "{title} {year} {s00e00} {edition} {repack} {screen_size} {region} {hybrid} {source} {video_codec} {remux} {audio_codec} {audio_channels} {atmos} {release_group}"
+            "bluray_remux": "{title} {year} {s00e00} {repack} {screen_size} {uhd} {hybrid} {source} {remux} {dv} {hdr} {video_codec} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {release_group}",
+            "bluray_encode": "{title} {year} {s00e00} {repack} {screen_size} {uhd} {hybrid} {source} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
+            "web": "{title} {year} {s00e00} {repack} {screen_size} {web_source} {web_type} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
+            "hdtv": "{title} {year} {s00e00} {repack} {screen_size} {hybrid} {source} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {video_codec} {release_group}",
+            "dvd": "{title} {year} {s00e00} {edition} {repack} {screen_size} {region} {hybrid} {source} {video_codec} {remux} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {release_group}"
         },
 
         "movie": {
             "bluray_disc": "{title} {year} {edition} {repack} {screen_size} {region} {source} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
-            "bluray_remux": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {remux} {dv} {hdr} {video_codec} {audio_codec} {audio_channels} {atmos} {release_group}",
-            "bluray_encode": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
-            "web": "{title} {year} {edition} {repack} {screen_size} {hybrid} {web_source} {web_type} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
-            "hdtv": "{title} {year} {edition} {repack} {screen_size} {hybrid} {source} {audio_codec} {audio_channels} {atmos} {video_codec} {release_group}",
-            "dvd": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {video_codec} {remux} {audio_codec} {audio_channels} {atmos} {release_group}"
+            "bluray_remux": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {remux} {dv} {hdr} {video_codec} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {release_group}",
+            "bluray_encode": "{title} {year} {edition} {repack} {screen_size} {uhd} {hybrid} {source} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
+            "web": "{title} {year} {edition} {repack} {screen_size} {hybrid} {web_source} {web_type} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {dv} {hdr} {video_codec} {release_group}",
+            "hdtv": "{title} {year} {edition} {repack} {screen_size} {hybrid} {source} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {video_codec} {release_group}",
+            "dvd": "{title} {year} {edition} {repack} {screen_size} {region} {hybrid} {source} {video_codec} {remux} {multiaudio} {dualaudio} {audio_codec} {audio_channels} {atmos} {release_group}"
         }
     },
     "banned_groups": [

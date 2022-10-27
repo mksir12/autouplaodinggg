@@ -115,7 +115,7 @@ def miscellaneous_identify_repacks(raw_file_name):
     return None
 
 
-def miscellaneous_identify_web_streaming_source(streaming_services, raw_file_name, guess_it_result):
+def miscellaneous_identify_web_streaming_source(streaming_services, streaming_services_reverse, raw_file_name, guess_it_result):
     """
         First priority is given to guessit
         If guessit can get the `streaming_service`, then we'll use that
@@ -127,24 +127,30 @@ def miscellaneous_identify_web_streaming_source(streaming_services, raw_file_nam
     # the keys are used to match the output from guessit
     streaming_sources = json.load(open(streaming_services))
     web_source = guess_it_result.get('streaming_service', '')
+    web_source_name = None
 
     if isinstance(web_source, list):
         logging.info(f"[MiscellaneousUtils] GuessIt identified multiple streaming services [{web_source}]. Proceeding with the first in the list.")
         web_source = web_source[0]
-    guessit_output = streaming_sources.get(web_source)
+    web_source = streaming_sources.get(web_source)
 
-    if guessit_output is not None:
-        logging.info(f'[MiscellaneousUtils] Used guessit to extract the WEB Source: {guessit_output}')
-        return guessit_output
-    else:
+    if web_source is None:
         source_regex = "[\.|\ ](" + "|".join(streaming_sources.values()) + ")[\.|\ ]"
         match_web_source = re.search(source_regex, raw_file_name.upper())
         if match_web_source is not None:
             logging.info(f'[MiscellaneousUtils] Used Regex to extract the WEB Source: {match_web_source.group().replace(".", "").strip()}')
-            return match_web_source.group().replace('.', '').strip()
+            web_source = match_web_source.group().replace('.', '').strip()
         else:
             logging.error("[MiscellaneousUtils] Not able to extract the web source information from REGEX and GUESSIT")
-    return None
+    else:
+        logging.info(f'[MiscellaneousUtils] Used guessit to extract the WEB Source: {web_source}')
+
+    if web_source is not None:
+        # if we have got a value for the web_source, let's also identify its full name
+        streaming_sources_reverse = json.load(open(streaming_services_reverse))
+        web_source_name = streaming_sources_reverse.get(web_source)
+
+    return web_source, web_source_name
 
 
 def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
@@ -235,8 +241,7 @@ def fill_dual_multi_and_commentary(original_language, audio_tracks):
 
     if multi == True:
         multiaudio = "Multi"
-
-    if english and original == True:
+    elif english and original == True:
         dualaudio = "Dual-Audio"
 
     return dualaudio, multiaudio, commentary

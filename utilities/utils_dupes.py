@@ -147,15 +147,15 @@ def _fill_hdr_format_types(hdr_format_types, torrent_title, torrent_title_split)
         hdr_format_types['hdr'].append(torrent_title)
 
     # DV
-    if any(x in torrent_title_split for x in ['dv', 'dovi', 'dolbyvision']):
+    if any(x in torrent_title_split for x in ['dv', 'dovi', 'dolbyvision', "dolby_vision"]):
         hdr_format_types['dv'].append(torrent_title)
 
     # Non-HDR
-    if all(x not in torrent_title_split for x in ['dv', 'dovi', 'dolbyvision', 'hdr', 'hdr10', 'hdr10+', 'hdr10plus', 'pq10', 'hlg', 'wcg']):
+    if all(x not in torrent_title_split for x in ['dv', 'dovi', 'dolbyvision', "dolby_vision", 'hdr', 'hdr10', 'hdr10+', 'hdr10plus', 'pq10', 'hlg', 'wcg']):
         hdr_format_types['normal'].append(torrent_title)
 
     # DV HDR
-    if any(x in torrent_title_split for x in ['dv', 'dovi', 'dolbyvision']) and any(x in torrent_title_split for x in ['hdr', 'hdr10', 'hdr10+', 'hdr10plus', 'pq10', 'hlg', 'wcg']):
+    if any(x in torrent_title_split for x in ['dv', 'dovi', 'dolbyvision', "dolby_vision"]) and any(x in torrent_title_split for x in ['hdr', 'hdr10', 'hdr10+', 'hdr10plus', 'pq10', 'hlg', 'wcg']):
         hdr_format_types['dv_hdr'].append(torrent_title)
     return hdr_format_types
 

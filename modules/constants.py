@@ -1,10 +1,14 @@
 # General constants
 COOKIES_DUMP_DIR = "{base_path}/cookies/"
 SITE_TEMPLATES_DIR = '{base_path}/site_templates/'
+VALIDATED_SITE_TEMPLATES_DIR = '{base_path}/validated/site_templates/'
+EXTERNAL_SITE_TEMPLATES_DIR = '{base_path}/external/site_templates/'
+EXTERNAL_TRACKER_ACRONYM_MAPPING = '{base_path}/external/tracker/tracker_to_acronym.json'
 
 IMAGE_HOST_URLS = '{base_path}/parameters/image_host_urls.json'
 TRACKER_ACRONYMS = '{base_path}/parameters/tracker/acronyms.json'
 TRACKER_API_KEYS = '{base_path}/parameters/tracker/api_keys.json'
+TEMPLATE_SCHEMA_LOCATION = '{base_path}/schema/site_template_schema.json'
 
 
 # Working dir paths
@@ -47,3 +51,4 @@ SCENE_GROUPS_MAP = '{base_path}/parameters/scene_groups.json'
 BLURAY_REGIONS_MAP = '{base_path}/parameters/bluray_regions.json'
 STREAMING_SERVICES_MAP = '{base_path}/parameters/streaming_services.json'
 CUSTOM_TEXT_COMPONENTS = '{base_path}/parameters/custom_text_components.json'
+STREAMING_SERVICES_REVERSE_MAP = '{base_path}/parameters/streaming_services_reverse.json'

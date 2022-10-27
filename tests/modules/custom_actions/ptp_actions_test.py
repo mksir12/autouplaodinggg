@@ -69,23 +69,71 @@ def test_group_already_exists_in_ptp(mocker):
     mocker.patch("requests.get", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_group_exists.json"))))
 
     tracker_settings = {}
-    torrent_info = { "imdb" : "4947084", "imdb_with_tt" : "tt4947084"}
+    torrent_info = { "imdb" : "1630029", "imdb_with_tt" : "tt1630029"}
     new_tracker_config = copy.deepcopy(tracker_config)
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
-    assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php?groupid=138295"
+    assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php?groupid=276009"
+    assert "groupid" in tracker_settings
+    assert tracker_settings["groupid"] == "276009"
 
 
-def test_new_group_custom_action(mocker):
+def test_new_group_custom_action_no_poster(mocker):
+    metadata = json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_new_group_no_poster.json"))
     mocker.patch("os.getenv", return_value="API_KEY")
-    mocker.patch("requests.get", return_value=APIResponse(json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_new_group.json"))))
+    mocker.patch("requests.get", return_value=APIResponse(metadata))
+    metadata = metadata[0]
+    # this art will be loaded from tmdb_metadata
+    metadata["art"] = "https://m.media-amazon.com/images/M/MV5BMWFmYmRiYzMtMTQ4YS00NjA5LTliYTgtMmM3OTc4OGY3MTFkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg"
 
     tracker_settings = {}
-    torrent_info = { "imdb" : "4947084", "imdb_with_tt" : "tt4947084"}
+    torrent_info = {
+        "title": None,
+        "year": None,
+        "imdb" : "4947084",
+        "imdb_with_tt" : "tt4947084",
+        "tmdb_metadata": {
+            "poster": "https://m.media-amazon.com/images/M/MV5BMWFmYmRiYzMtMTQ4YS00NjA5LTliYTgtMmM3OTc4OGY3MTFkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg"
+        }
+    }
     new_tracker_config = copy.deepcopy(tracker_config)
 
     ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
     assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php" # there should not be any change to upload url
+    assert "groupid" not in tracker_settings
+    assert tracker_settings["title"] == metadata["title"]
+    assert tracker_settings["year"] == metadata["year"]
+    assert tracker_settings["image"] == metadata["art"]
+    assert tracker_settings["tags"] == metadata["tags"]
+    assert tracker_settings["album_desc"] == metadata["plot"]
+    assert tracker_settings["trailer"] == ""
+
+
+
+def test_new_group_custom_action(mocker):
+    metadata = json.load(open(f"{working_folder}/tests/resources/custom_action_responses/ptp_new_group.json"))
+    mocker.patch("os.getenv", return_value="API_KEY")
+    mocker.patch("requests.get", return_value=APIResponse(metadata))
+    metadata = metadata[0]
+
+    tracker_settings = {}
+    torrent_info = {
+        "title": None,
+        "year": None,
+        "imdb" : "4947084",
+        "imdb_with_tt" : "tt4947084"
+    }
+    new_tracker_config = copy.deepcopy(tracker_config)
+
+    ptp_actions.check_for_existing_group(torrent_info, tracker_settings, new_tracker_config)
+    assert new_tracker_config["upload_form"] == "https://randomsite.com/page2.php" # there should not be any change to upload url
+    assert "groupid" not in tracker_settings
+    assert tracker_settings["title"] == metadata["title"]
+    assert tracker_settings["year"] == metadata["year"]
+    assert tracker_settings["image"] == metadata["art"]
+    assert tracker_settings["tags"] == metadata["tags"]
+    assert tracker_settings["album_desc"] == metadata["plot"]
+    assert tracker_settings["trailer"] == ""
 
 
 @pytest.mark.parametrize(
@@ -328,3 +376,139 @@ def test_get_tags(imdb_tags, tmdb_tags, expected):
 def test_check_successful_upload(response, expected, mocker):
     mocker.patch("os.getenv", return_value="ANNOUNCE_URL")
     assert ptp_actions.check_successful_upload(response) == expected
+
+
+@pytest.mark.parametrize(
+    ("torrent_info", "expected"),
+    [
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": ["concert"]
+                },
+                "content_type": "movie",
+                "duration": "4200000", # 70min * 60000
+                "imdb": ""
+            },
+            "Concert",
+            id="long_duration_concert"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": ["comedy", "stand-up-comedy"]
+                },
+                "content_type": "movie",
+                "duration": "4200000", # 70min * 60000
+                "imdb": ""
+            },
+            "Stand-up Comedy",
+            id="standup_comedy"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": ["short"]
+                },
+                "content_type": "movie",
+                "duration": "4200000", # 70min * 60000
+                "imdb": ""
+            },
+            "Short Film",
+            id="short_film"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": ["short", "miniseries", "short-film"]
+                },
+                "content_type": "movie",
+                "duration": "4200000", # 70min * 60000
+                "imdb": ""
+            },
+            "Short Film",
+            id="mini_series_short_film"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": ["miniseries"]
+                },
+                "content_type": "movie",
+                "duration": "4200000", # 70min * 60000
+                "imdb": ""
+            },
+            "Miniseries",
+            id="mini_series"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": []
+                },
+                "content_type": "movie",
+                "duration": "4200000", # 70min * 60000
+                "imdb": ""
+            },
+            "Feature Film",
+            id="feature_film"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": []
+                },
+                "content_type": "movie",
+                "duration": "1200000", # 20min * 60000
+                "imdb": ""
+            },
+            "Short Film",
+            id="short_film_by_duration"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": []
+                },
+                "content_type": "movie",
+                "duration": "1200000", # 20min * 60000
+                "imdb": "0020530"
+            },
+            "Short Film",
+            id="short_film_by_imdb"
+        ),
+        pytest.param(
+            {
+                "tmdb_metadata":{
+                    "keywords": []
+                },
+                "content_type": "movie",
+                "duration": "1200000", # 20min * 60000
+                "imdb": "0499549"
+            },
+            "Feature Film",
+            id="feature_film_by_imdb"
+        ),
+    ]
+)
+def test_get_ptp_type_for_movie(torrent_info, expected):
+    tracker_settings = {}
+    ptp_actions.get_ptp_type(torrent_info, tracker_settings, {})
+    assert "type" in tracker_settings
+    assert tracker_settings["type"] == expected
+
+
+def test_get_ptp_type_from_user(mocker):
+    tracker_settings = {}
+    torrent_info = {
+        "tmdb_metadata":{
+            "keywords": []
+        },
+        "content_type": "tv",
+        "duration": "1200000", # 20min * 60000
+        "imdb": ""
+    }
+    mocker.patch("rich.prompt.Prompt.ask", return_value="Miniseries")
+    ptp_actions.get_ptp_type(torrent_info, tracker_settings, {})
+    assert "type" in tracker_settings
+    assert tracker_settings["type"] == "Miniseries"
