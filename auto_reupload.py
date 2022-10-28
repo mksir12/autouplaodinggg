@@ -45,6 +45,7 @@ from rich.traceback import install
 from utilities.utils_screenshots import take_upload_screens
 from utilities.utils_dupes import search_for_dupes_api
 # Method that will search for dupes in trackers.
+from modules.template_schema_validator import TemplateSchemaValidator
 import utilities.utils_miscellaneous as miscellaneous_utilities
 import utilities.utils_translation as translation_utilities
 import utilities.utils_reupload as reupload_utilities
