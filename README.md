@@ -294,6 +294,7 @@ docker run --rm -it \
 - [ ] Add support for bitorrent v2 and v2 hybrid torrents
 - [ ] Add Support for new platforms
     - [ ] MoreThanTV
+    - [ ] PirateTheNet
     - [ ] DanishBytes
 - [ ] Add support for DVDs
 
