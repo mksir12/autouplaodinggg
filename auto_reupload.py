@@ -914,7 +914,6 @@ def reupload_job():
             api_keys_dict=api_keys_dict,
             all_trackers_list=acronym_to_tracker.keys()
         )
-        restrict_tracker_uploads(upload_to_trackers_working)
 
         logging.info(f"[Main] Trackers this torrent needs to be uploaded to are {upload_to_trackers_working}")
 

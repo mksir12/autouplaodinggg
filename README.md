@@ -207,7 +207,7 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td>pixhost</td>
         </tr>
         <tr>
-            <td>8</td>
+            <td>9</td>
             <td>lensdump</td>
         </tr>
     </tbody>
@@ -294,6 +294,7 @@ docker run --rm -it \
 - [ ] Add support for bitorrent v2 and v2 hybrid torrents
 - [ ] Add Support for new platforms
     - [ ] MoreThanTV
+    - [ ] PirateTheNet
     - [ ] DanishBytes
 - [ ] Add support for DVDs
 
