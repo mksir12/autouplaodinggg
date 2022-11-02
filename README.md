@@ -276,6 +276,7 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
+- [X] Skipping upload of banned groups
 - [X] Issue#80: DDH releases are not identified and is marked as no group
 - [X] Issue#84: Multi tag added to release with unknown audio
 ### Backlogs

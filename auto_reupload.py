@@ -1068,6 +1068,12 @@ def reupload_job():
             # Open the correct .json file since we now need things like announce URL, API Keys, and API info
             config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
 
+            # checking for banned groups. If this group is banned in this tracker, then we stop
+            if "banned_groups" in config and torrent_info["release_group"] in config["banned_groups"]:
+                logging.fatal(f"[Main] Release group {torrent_info['release_group']} is banned in this at {tracker}. Skipping upload...")
+                console.rule(f"[bold red] :warning: Group {torrent_info['release_group']} is banned on {tracker} :warning: [/bold red]", style="red")
+                continue
+
             # -------- format the torrent title --------
             torrent_info["torrent_title"] = translation_utilities.format_title(config, torrent_info)
 

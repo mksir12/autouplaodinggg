@@ -885,7 +885,6 @@ def upload_to_site(upload_to, tracker_api_key):
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 #  **START** This is the first code that executes when we run the script, we log that info and we start a timer so we can keep track of total script runtime **START** #
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
 script_start_time = time.perf_counter()
 
 console.line(count=2)
@@ -1221,6 +1220,13 @@ for file in upload_queue:
 
         # Open the correct .json file since we now need things like announce URL, API Keys, and API info
         config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
+
+        # checking for banned groups. If this group is banned in this tracker, then we stop
+        if "banned_groups" in config and torrent_info["release_group"] in config["banned_groups"]:
+            torrent_info[f"{tracker}_upload_status"] = False
+            logging.fatal(f"[Main] Release group {torrent_info['release_group']} is banned in this at {tracker}. Skipping upload...")
+            console.rule(f"[bold red] :warning: Group {torrent_info['release_group']} is banned on {tracker} :warning: [/bold red]", style="red")
+            continue
 
         # If the user provides this arg with the title right after in double quotes then we automatically use that
         # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title
