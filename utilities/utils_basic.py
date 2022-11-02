@@ -137,12 +137,15 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
     # If the regex didn't work and the code has reached this point, we will now try pymediainfo
     # If video codec is HEVC then depending on the specific source (web, bluray, etc) we might need to format that differently
     if "HEVC" in media_info_video_track.format:
+        logging.debug("[BasicUtils] Mediainfo says video track format is HEVC")
         # Removing the writing library based codec selection
         if media_info_video_track.writing_library is not None:
+            logging.debug("[BasicUtils] Writing library is present in track. Hence using x265 as codec")
             pymediainfo_video_codec = 'x265'
         # Possible video_codecs now are either H.265 or HEVC
         # If the source is WEB I think we should use H.265 & leave HEVC for bluray discs/remuxs (encodes would fall under x265)
-        elif "source" in torrent_info and torrent_info["source"] == "Web":
+        if "source" in torrent_info and torrent_info["source"] == "Web":
+            logging.debug("[BasicUtils] Video source is 'Web, Hence overriding video codec to H.265")
             pymediainfo_video_codec = 'H.265'
         # for everything else we can just default to 'HEVC' since it'll technically be accurate no matter what
         else:
@@ -150,11 +153,14 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
             pymediainfo_video_codec = 'HEVC'
     # Now check and assign AVC based codecs
     elif "AVC" in media_info_video_track.format:
+        logging.debug("[BasicUtils] Mediainfo says video track format is AVC")
         if media_info_video_track.writing_library is not None:
+            logging.debug("[BasicUtils] Writing library is present in track. Hence using x264 as codec")
             pymediainfo_video_codec = 'x264'
         # Possible video_codecs now are either H.264 or AVC
         # If the source is WEB we should use H.264 & leave AVC for bluray discs/remuxs (encodes would fall under x265)
-        elif "source" in torrent_info and torrent_info["source"] == "Web":
+        if "source" in torrent_info and torrent_info["source"] == "Web":
+            logging.debug("[BasicUtils] Video source is 'Web, Hence overriding video codec to H.264")
             pymediainfo_video_codec = 'H.264'
         # for everything else we can just default to 'AVC' since it'll technically be accurate no matter what
         else:
@@ -167,7 +173,8 @@ def basic_get_missing_video_codec(torrent_info, is_disc, auto_mode, media_info_v
     # Log it!
     logging.info(f"[BasicUtils] Regex identified the video_codec as: {regex_video_codec}")
     logging.info(f"[BasicUtils] Pymediainfo identified the video_codec as: {pymediainfo_video_codec}")
-    return dv, hdr, regex_video_codec, pymediainfo_video_codec
+    # If regex cannot identify a video codec then we go for pymediainfo codec
+    return dv, hdr, regex_video_codec if regex_video_codec is not None else pymediainfo_video_codec, pymediainfo_video_codec
 
 
 def __get_atmos_from_media_info(media_info_audio_track):

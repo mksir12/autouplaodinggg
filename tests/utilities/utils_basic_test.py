@@ -102,11 +102,12 @@ def _get_file_contents(raw_file_name):
     ("torrent_info", "is_disc", "media_info_video_track", "expected"),
     # expected format (dv, hdr, video_codec, pymediainfo_video_codec)
     [
+        # TODO: add some tests for x265 and x264 codecs
         pytest.param(
             __get_torrent_info(None, "Monsters.at.Work.S01E10.Its.Laughter.Theyre.After.2160p.WEB-DL.DDP5.1.HDR.H.265-FLUX.mkv", "Web"),
             False,  # is_disc
             _get_media_info_video_track(f"{working_folder}{mediainfo_xml}Monsters.at.Work.S01E10.Its.Laughter.Theyre.After.2160p.WEB-DL.DDP5.1.HDR.H.265-FLUX.xml"),
-            (None, "PQ10", "H.265", "x265"), id="PQ10_H.265_x265"
+            (None, "PQ10", "H.265", "H.265"), id="PQ10_H.265_H.265"
         ),
         pytest.param(
             __get_torrent_info(
