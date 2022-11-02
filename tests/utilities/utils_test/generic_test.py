@@ -232,6 +232,11 @@ def test_create_temp_upload_itself():
             "RELEASE_GROUP",
             id="group_from_guessit_with_space_in_title"
         ),
+        pytest.param(
+            { "release_group" : "640k-DDH", "upload_media" : "/data/Movies/Bhramam.2021.HQ.2160p.AMZN.WEB.DL.HEVC.DDP5.1.640k-DDH.mkv" },
+            "DDH",
+            id="release_group_with_audiobits_in_title"
+        ),
     ]
 )
 def test_sanitize_release_group_from_guessit(torrent_info, expected):
