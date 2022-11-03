@@ -755,3 +755,8 @@ def validate_and_load_external_templates(template_validator, working_folder):
         return valid_templates, api_key_dict, {v: k for k, v in tracker_to_acronym.items()}
     else:
         return [], {}, {}
+
+
+def add_argument_tags(argument_tags):
+    logging.info(f"[Utils] User provided tags from arguments: {argument_tags}")
+    return None if argument_tags is None or len(argument_tags) == 0 else sorted(list(set(argument_tags)))

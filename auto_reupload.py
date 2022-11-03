@@ -114,6 +114,7 @@ uncommon_args.add_argument('-fpm', '--force_pymediainfo', action='store_true', h
 uncommon_args.add_argument('-ss', '--skip_screenshots', action='store_true', help="Skip screenshot generation and upload for a run (overrides config.env)")
 uncommon_args.add_argument('-disc', action='store_true',help="Unsupported for AutoReuploader. Added for compatibility with upload assistant")
 uncommon_args.add_argument('-let', '--load_external_templates', action='store_true',help="When enabled uploader will load external site templates from ./external/site_templates location")
+uncommon_args.add_argument('-tag', '--tags', nargs='*', help="Send custom tags to all trackers")
 
 # args for Internal uploads
 internal_args = parser.add_argument_group('Internal Upload Arguments')
@@ -926,6 +927,7 @@ def reupload_job():
         # This list will contain tags that are applicable to the torrent being uploaded.
         # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
         torrent_info["tag_grouping"] = json.load(open(TAG_GROUPINGS.format(base_path=working_folder)))
+        torrent_info["argument_tags"] = utils.add_argument_tags(args.tags)
         torrent_info["tags"] = []
 
         # Remove all old temp_files & data from the previous upload

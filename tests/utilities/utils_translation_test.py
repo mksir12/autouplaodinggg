@@ -542,6 +542,18 @@ def __get_tag_grouping():
             },
             sorted(["Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "webdl", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
             id = "edition"
+        ),
+        pytest.param(
+            {
+                "atmos" : "Atmos",
+                "dv": "DV",
+                "edition": "International Cut",
+                "source_type" : "webdl",
+                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json")),
+                "argument_tags": ["argument_tag1", "another_tag_from_argument"]
+            },
+            sorted(["another_tag_from_argument", "argument_tag1", "Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "webdl", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
+            id = "edition_with_custom_argument_tags"
         )
     ]
 )

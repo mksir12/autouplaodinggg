@@ -121,7 +121,7 @@ uncommon_args.add_argument('-type', nargs=1, help="Use to manually specify 'movi
 uncommon_args.add_argument('-reupload', nargs='*', help="This is used in conjunction with autodl to automatically re-upload any filter matches")
 uncommon_args.add_argument('-batch', action='store_true',help="Pass this arg if you want to upload all the files/folder within the folder you specify with the '-p' arg")
 uncommon_args.add_argument('-disc', action='store_true',help="If you are uploading a raw dvd/bluray disc you need to pass this arg")
-uncommon_args.add_argument('-e', '--edition', nargs='*',help="Manually provide an 'edition' (e.g. Criterion Collection, Extended, Remastered, etc)")
+uncommon_args.add_argument('-e', '--edition', nargs='*', help="Manually provide an 'edition' (e.g. Criterion Collection, Extended, Remastered, etc)")
 uncommon_args.add_argument('-nfo', nargs=1, help="Use this to provide the path to an nfo file you want to upload")
 uncommon_args.add_argument('-d', '--debug', action='store_true',help="Used for debugging. Writes debug lines to log file")
 uncommon_args.add_argument('-dry', '--dry_run', action='store_true',help="Used for debugging. Writes debug lines to log and will also skip the upload")
@@ -133,6 +133,7 @@ uncommon_args.add_argument('-3d', action='store_true',help="Mark the upload as 3
 uncommon_args.add_argument('-foreign', action='store_true',help="Mark the upload as foreign content [Non-English]")
 uncommon_args.add_argument('-amf', '--allow_multiple_files', action='store_true',help="Override the default behavior and allow multiple files to be added in one torrent")
 uncommon_args.add_argument('-let', '--load_external_templates', action='store_true',help="When enabled uploader will load external site templates from ./external/site_templates location")
+uncommon_args.add_argument('-tag', '--tags', nargs='*', help="Send custom tags to all trackers")
 
 # args for Internal uploads
 internal_args = parser.add_argument_group('Internal Upload Arguments')
@@ -891,12 +892,10 @@ console.line(count=2)
 utils.display_banner("  Upload  Assistant  ")
 console.line(count=1)
 
-
 # Getting the keys present in the config.env.sample
 # These keys are then used to compare with the env variable keys provided during runtime.
 # Presently we just displays any missing keys, in the future do something more useful with this information
 utils.validate_env_file(ASSISTANT_SAMPLE_CONFIG.format(base_path=working_folder))
-
 
 logging.info(f" {'-' * 24} Starting new upload {'-' * 24} ")
 
@@ -1072,6 +1071,7 @@ for file in upload_queue:
     # This list will contain tags that are applicable to the torrent being uploaded.
     # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
     torrent_info["tag_grouping"] = json.load(open(TAG_GROUPINGS.format(base_path=working_folder)))
+    torrent_info["argument_tags"] = utils.add_argument_tags(args.tags)
     torrent_info["tags"] = []
 
     # the working_folder will container a hash value with succeeding /

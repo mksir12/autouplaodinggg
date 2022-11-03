@@ -669,4 +669,9 @@ def generate_all_applicable_tags(torrent_info):
     logging.debug("[Tags] Creating tags for edition")
     __add_applicable_tags(torrent_info, "edition", torrent_info["edition"] if "edition" in torrent_info else None)
 
+    if "argument_tags" in torrent_info and torrent_info["argument_tags"] is not None:
+        logging.info("[Tags] Adding any custom tags from argument to tags.")
+        torrent_info["tags"].extend(torrent_info["argument_tags"])
+        torrent_info["tags"] = sorted(torrent_info["tags"])
+
     logging.info(f"[Tags] Generated tags: {torrent_info['tags']}")
