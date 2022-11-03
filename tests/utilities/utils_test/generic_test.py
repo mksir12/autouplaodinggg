@@ -309,3 +309,43 @@ def test_validate_and_load_external_templates(mocker):
 def test_validate_and_load_external_templates_no_dir():
     template_validator = TemplateSchemaValidator(f"{working_folder}/schema/site_template_schema.json")
     assert utils.validate_and_load_external_templates(template_validator, f"{working_folder}{temp_working_dir}/fake_dir") == ([], {}, {})
+
+
+
+@pytest.mark.parametrize(
+    ("argument_tags", "expected"),
+    [
+        pytest.param(
+            None,
+            None,
+            id="tags_argument_not_provided"
+        ),
+        pytest.param(
+            [],
+            None,
+            id="tags_argument_provided_with_no_value"
+        ),
+        pytest.param(
+            ['tag1'],
+            ['tag1'],
+            id="one_tag_provided"
+        ),
+        pytest.param(
+            ['tag1', 'tag2'],
+            ['tag1', 'tag2'],
+            id="multiple_tags_provided"
+        ),
+        pytest.param(
+            ['tag1', 'tag2', 'tag1'],
+            ['tag1', 'tag2'],
+            id="dupes_in_tags"
+        ),
+        pytest.param(
+            ['tag3', 'tag2', 'tag1'],
+            ['tag1', 'tag2', 'tag3'],
+            id="checking_sort_for_custom_tags"
+        ),
+    ]
+)
+def test_add_argument_tags(argument_tags, expected):
+    assert utils.add_argument_tags(argument_tags) == expected
