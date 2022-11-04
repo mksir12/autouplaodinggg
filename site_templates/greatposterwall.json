@@ -10,7 +10,7 @@
     "title_separator" : " ",
 
     "description_components":{
-        "code_code": "[code][/code]",
+        "code_code": "[quote][/quote]",
         "quote_code":"[quote][/quote]"
     },
 
