@@ -9,7 +9,7 @@
     "title_separator" : " ",
 
     "description_components":{
-        "code_code": "[code][/code]",
+        "code_code": "[quote][/quote]",
         "spoiler_code":"[hide=TITLE_PLACEHOLDER][/hide]",
         "quote_code":"[quote][/quote]"
     },

@@ -121,7 +121,7 @@ uncommon_args.add_argument('-type', nargs=1, help="Use to manually specify 'movi
 uncommon_args.add_argument('-reupload', nargs='*', help="This is used in conjunction with autodl to automatically re-upload any filter matches")
 uncommon_args.add_argument('-batch', action='store_true',help="Pass this arg if you want to upload all the files/folder within the folder you specify with the '-p' arg")
 uncommon_args.add_argument('-disc', action='store_true',help="If you are uploading a raw dvd/bluray disc you need to pass this arg")
-uncommon_args.add_argument('-e', '--edition', nargs='*',help="Manually provide an 'edition' (e.g. Criterion Collection, Extended, Remastered, etc)")
+uncommon_args.add_argument('-e', '--edition', nargs='*', help="Manually provide an 'edition' (e.g. Criterion Collection, Extended, Remastered, etc)")
 uncommon_args.add_argument('-nfo', nargs=1, help="Use this to provide the path to an nfo file you want to upload")
 uncommon_args.add_argument('-d', '--debug', action='store_true',help="Used for debugging. Writes debug lines to log file")
 uncommon_args.add_argument('-dry', '--dry_run', action='store_true',help="Used for debugging. Writes debug lines to log and will also skip the upload")
@@ -133,6 +133,7 @@ uncommon_args.add_argument('-3d', action='store_true',help="Mark the upload as 3
 uncommon_args.add_argument('-foreign', action='store_true',help="Mark the upload as foreign content [Non-English]")
 uncommon_args.add_argument('-amf', '--allow_multiple_files', action='store_true',help="Override the default behavior and allow multiple files to be added in one torrent")
 uncommon_args.add_argument('-let', '--load_external_templates', action='store_true',help="When enabled uploader will load external site templates from ./external/site_templates location")
+uncommon_args.add_argument('-tag', '--tags', nargs='*', help="Send custom tags to all trackers")
 
 # args for Internal uploads
 internal_args = parser.add_argument_group('Internal Upload Arguments')
@@ -885,19 +886,16 @@ def upload_to_site(upload_to, tracker_api_key):
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 #  **START** This is the first code that executes when we run the script, we log that info and we start a timer so we can keep track of total script runtime **START** #
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
 script_start_time = time.perf_counter()
 
 console.line(count=2)
 utils.display_banner("  Upload  Assistant  ")
 console.line(count=1)
 
-
 # Getting the keys present in the config.env.sample
 # These keys are then used to compare with the env variable keys provided during runtime.
 # Presently we just displays any missing keys, in the future do something more useful with this information
 utils.validate_env_file(ASSISTANT_SAMPLE_CONFIG.format(base_path=working_folder))
-
 
 logging.info(f" {'-' * 24} Starting new upload {'-' * 24} ")
 
@@ -1073,6 +1071,7 @@ for file in upload_queue:
     # This list will contain tags that are applicable to the torrent being uploaded.
     # The tags that are generated will be based on the media properties and tag groupings from `tag_grouping.json`
     torrent_info["tag_grouping"] = json.load(open(TAG_GROUPINGS.format(base_path=working_folder)))
+    torrent_info["argument_tags"] = utils.add_argument_tags(args.tags)
     torrent_info["tags"] = []
 
     # the working_folder will container a hash value with succeeding /
@@ -1221,6 +1220,13 @@ for file in upload_queue:
 
         # Open the correct .json file since we now need things like announce URL, API Keys, and API info
         config = json.load(open(site_templates_path + str(acronym_to_tracker.get(str(tracker).lower())) + ".json", "r", encoding="utf-8"))
+
+        # checking for banned groups. If this group is banned in this tracker, then we stop
+        if "banned_groups" in config and torrent_info["release_group"] in config["banned_groups"]:
+            torrent_info[f"{tracker}_upload_status"] = False
+            logging.fatal(f"[Main] Release group {torrent_info['release_group']} is banned in this at {tracker}. Skipping upload...")
+            console.rule(f"[bold red] :warning: Group {torrent_info['release_group']} is banned on {tracker} :warning: [/bold red]", style="red")
+            continue
 
         # If the user provides this arg with the title right after in double quotes then we automatically use that
         # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title

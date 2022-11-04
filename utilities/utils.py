@@ -578,11 +578,16 @@ def sanitize_release_group_from_guessit(torrent_info):
                 # a special case where title ends with DTS-X-EPSILON and guess it extracts release group as X-EPSILON
                 logging.info(f'[Utils]Guessit identified release group as {torrent_info["release_group"]}. Since this starts with X- (probably from DTS-X-RELEASE_GROUP), overwriting release group as {torrent_info["release_group"][2:]}')
                 return torrent_info["release_group"][2:]
+        elif torrent_info['release_group'].endswith("k-DDH"):
+            # TODO: remove this condition once guessit identifies this pattern properly
+            # these guys adds audio bits to title and this messes with guessit result
+            logging.info("[Utils] Applying hotfix for 'DDH' release group.")
+            return "DDH"
         else:
-            logging.debug("[Utils]Release group could not be identified by guessit. Setting release group as NOGROUP")
+            logging.debug("[Utils] Release group could not be identified by guessit. Setting release group as NOGROUP")
             return "NOGROUP"
     else:
-        logging.debug("[Utils]Release group could not be identified by guessit. Setting release group as NOGROUP")
+        logging.debug("[Utils] Release group could not be identified by guessit. Setting release group as NOGROUP")
         return "NOGROUP"
     return torrent_info["release_group"]
 
@@ -750,3 +755,8 @@ def validate_and_load_external_templates(template_validator, working_folder):
         return valid_templates, api_key_dict, {v: k for k, v in tracker_to_acronym.items()}
     else:
         return [], {}, {}
+
+
+def add_argument_tags(argument_tags):
+    logging.info(f"[Utils] User provided tags from arguments: {argument_tags}")
+    return None if argument_tags is None or len(argument_tags) == 0 else sorted(list(set(argument_tags)))

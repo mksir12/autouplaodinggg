@@ -334,6 +334,12 @@ def test_miscellaneous_identify_source_type(raw_file_name, expected):
             _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}2001.A.Space.Odyssey.1968.Hybrid.2160p.UHD.BluRay.REMUX.DV.HDR10Plus.HEVC.DTS-HD.MA.5.1-RG.xml"),
             { "dual" : "", "multi" : "", "commentary" : True },
             id="commentary_only"
+        ),
+        pytest.param(
+            "ml",
+            _get_media_info_audio_tracks(f"{working_folder}{mediainfo_xml}In.Harihar.Nagar.1990.1080p.DSNP.WEB-DL.AAC2.0.x264-DRG.xml"),
+            { "dual" : "", "multi" : "", "commentary" : False },
+            id="nothing"
         )
     ]
 )

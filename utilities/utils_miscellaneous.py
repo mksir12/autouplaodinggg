@@ -209,39 +209,51 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
 
 
 def fill_dual_multi_and_commentary(original_language, audio_tracks):
+    chinese_variants = ['zh', 'cn', 'cmn']
+    norwegian_variants = ['no', 'nb']
     commentary = False
     dualaudio, multiaudio = "", ""
+    audio_lang_code = set()
 
-    english, original, multi = False, False, False
+    # the below flags indicate whether english tracker and original language tracks are present
+    english, original = False, False
     for audio_track in audio_tracks:
         audio_language = audio_track.language
 
         # checking for commentary tracks
         if "commentary" in (audio_track.title.lower() if audio_track.title is not None else ""):
             commentary = True
+        else: # we are not bothered about the commentary language
+            audio_lang_code.add(audio_language)
 
         if original_language != "en" and original_language != "":
             # check for english
-            if audio_language == "en" and "commentary" not in (audio_track.title.lower() if audio_track.title is not None else ""):
+            if not english and audio_language == "en" and "commentary" not in (audio_track.title.lower() if audio_track.title is not None else ""):
                 english = True
 
             # check for original
-            if audio_language == original_language and "commentary" not in (audio_track.title.lower() if audio_track.title is not None else ""):
-                original = True
+            if not original:
+                if audio_language == original_language and "commentary" not in (audio_track.title.lower() if audio_track.title is not None else ""):
+                    original = True
 
-            # catching chinese and norwegian variants
-            variants = ['zh', 'cn', 'cmn', 'no', 'nb']
-            if audio_language in variants and original_language in variants:
-                original = True
+                # catching chinese and norwegian variants
+                if audio_language in chinese_variants and original_language in chinese_variants:
+                    original = True
+                elif audio_language in norwegian_variants and original_language in norwegian_variants:
+                    original = True
 
-            # checking for additional tracks. This will add multi to upload
-            if audio_language != original_language and audio_language != "en":
-                if original_language not in variants and audio_language not in variants:
-                    multi = True
 
-    if multi == True:
+    if english and original:
+        # TODO: what about TrueHD tracks with a compatibility track??
+        expected_tracks = 3 if commentary else 2
+        if len(audio_tracks) == expected_tracks: # if there are
+            dualaudio = "Dual-Audio"
+        else:
+            multiaudio = "Multi"
+
+    # for multi audio tag, multiple tracks needs to be present and they should be of differnet language
+    # also if there are only two tracks and one of which is english, then we can treat it as Dual-Audio
+    if len(dualaudio) == 0 and len(audio_lang_code) > 1 and len(audio_tracks) > 1:
         multiaudio = "Multi"
-    elif english and original == True:
-        dualaudio = "Dual-Audio"
 
     return dualaudio, multiaudio, commentary

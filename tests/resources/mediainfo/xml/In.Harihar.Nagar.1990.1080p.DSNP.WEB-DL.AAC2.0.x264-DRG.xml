@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mediainfo version="22.09">
+<File>
+<track type="General">
+<Unique_ID>197532135510124379165360671490003166133 (0x949B4E33A8FC5A9084A22D9A9093E3B5)</Unique_ID>
+<Complete_name>In.Harihar.Nagar.1990.1080p.DSNP.WEB-DL.AAC2.0.x264-DRG.mkv</Complete_name>
+<Format>Matroska</Format>
+<Format_version>Version 4</Format_version>
+<File_size>3.73 GiB</File_size>
+<Duration>2 h 8 min</Duration>
+<Overall_bit_rate>4 151 kb/s</Overall_bit_rate>
+<Movie_name>DRG</Movie_name>
+<Encoded_date>UTC 2021-04-27 17:27:22</Encoded_date>
+<Writing_application>mkvmerge v11.0.0 (&apos;Alive&apos;) 64bit</Writing_application>
+<Writing_library>libebml v1.3.4 + libmatroska v1.4.5</Writing_library>
+</track>
+<track type="Video">
+<ID>1</ID>
+<Format>AVC</Format>
+<Format_Info>Advanced Video Codec</Format_Info>
+<Format_profile>Main@L4</Format_profile>
+<Format_settings>CABAC / 1 Ref Frames</Format_settings>
+<Format_settings__CABAC>Yes</Format_settings__CABAC>
+<Format_settings__Reference_frames>1 frame</Format_settings__Reference_frames>
+<Format_settings__GOP>M=1, N=25</Format_settings__GOP>
+<Codec_ID>V_MPEG4/ISO/AVC</Codec_ID>
+<Duration>2 h 8 min</Duration>
+<Bit_rate_mode>Constant</Bit_rate_mode>
+<Bit_rate>4 087 kb/s</Bit_rate>
+<Nominal_bit_rate>4 500 kb/s</Nominal_bit_rate>
+<Width>1 920 pixels</Width>
+<Height>1 080 pixels</Height>
+<Display_aspect_ratio>16:9</Display_aspect_ratio>
+<Frame_rate_mode>Constant</Frame_rate_mode>
+<Frame_rate>25.000 FPS</Frame_rate>
+<Color_space>YUV</Color_space>
+<Chroma_subsampling>4:2:0</Chroma_subsampling>
+<Bit_depth>8 bits</Bit_depth>
+<Scan_type>Progressive</Scan_type>
+<Bits__Pixel_Frame_>0.079</Bits__Pixel_Frame_>
+<Stream_size>3.68 GiB (98%)</Stream_size>
+<Default>Yes</Default>
+<Forced>No</Forced>
+</track>
+<track type="Audio">
+<ID>2</ID>
+<Format>AAC LC</Format>
+<Format_Info>Advanced Audio Codec Low Complexity</Format_Info>
+<Codec_ID>A_AAC-2</Codec_ID>
+<Duration>2 h 8 min</Duration>
+<Bit_rate>61.4 kb/s</Bit_rate>
+<Channel_s_>2 channels</Channel_s_>
+<Channel_layout>L R</Channel_layout>
+<Sampling_rate>48.0 kHz</Sampling_rate>
+
+<Frame_rate>46.875 FPS (1024 SPF)</Frame_rate>
+<Compression_mode>Lossy</Compression_mode>
+<Stream_size>56.5 MiB (1%)</Stream_size>
+<Default>Yes</Default>
+<Forced>No</Forced>
+</track>
+</File>
+</Mediainfo>
+
