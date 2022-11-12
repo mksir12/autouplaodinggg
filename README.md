@@ -275,6 +275,7 @@ docker run --rm -it \
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
+- [X] Issue#86: Application crash if srrdb api call fails
 - [ ] Issue#79: Not able to cross-seed rared releases
 - [X] Support for custom upload tags from argument
 - [X] Skipping upload of banned groups
