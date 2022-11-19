@@ -275,6 +275,8 @@ docker run --rm -it \
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
+- [X] Support for DVD and HD-DVD PTP uploads
+- [X] Issue#87: reuploading ptpimg and imgbox screens when uploading to gpw
 - [X] Issue#86: Application crash if srrdb api call fails
 - [ ] Issue#79: Not able to cross-seed rared releases
 - [X] Support for custom upload tags from argument
