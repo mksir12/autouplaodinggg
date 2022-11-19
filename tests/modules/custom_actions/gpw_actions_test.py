@@ -1,5 +1,6 @@
 import json
 import pytest
+import shutil
 
 from pathlib import Path
 from pytest_mock import mocker
@@ -8,7 +9,29 @@ import modules.custom_actions.gpw_actions as gpw_actions
 
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
+temp_working_dir = "/tests/working_folder/gpw_rehost/"
 
+
+@pytest.fixture(scope="function")
+def prepare_working_folder():
+    folder = f"{working_folder}{temp_working_dir}"
+
+    if Path(folder).is_dir():
+        clean_up(folder)
+
+    shutil.copytree(f"{working_folder}/tests/resources/custom_actions/gpw/rehost_data", f"{working_folder}{temp_working_dir}")
+    yield
+    clean_up(folder)
+
+
+def clean_up(pth):
+    pth = Path(pth)
+    for child in pth.iterdir():
+        if child.is_file():
+            child.unlink()
+        else:
+            clean_up(child)
+    pth.rmdir()
 
 class APIResponse:
     ok = None
@@ -138,3 +161,66 @@ def test_add_subtitle_information(subtitles, expected_type, expected_values):
     gpw_actions.add_subtitle_information(torrent_info, tracker_settings, {})
     assert tracker_settings["subtitle_type"] == expected_type
     assert tracker_settings["subtitles[]"] == expected_values
+
+
+def __get_torrent_info_for_rehost_test(test_id):
+    return {
+        **json.load(open(f"{working_folder}/tests/resources/custom_actions/gpw/rehost_data/{test_id}/torrent_info.json")),
+        "screenshots_data": f"{working_folder}{temp_working_dir}{test_id}/screenshots_data.json",
+    }
+
+def __get_expected_for_rehost_test(test_id):
+    return {
+        **json.load(open(f"{working_folder}/tests/resources/custom_actions/gpw/rehost_data/{test_id}/expected.json")),
+        "mock_return": f"{working_folder}{temp_working_dir}{test_id}/mock_upload_response.json",
+    }
+
+
+@pytest.mark.parametrize(
+    ("torrent_info", "expected"),
+    [
+        pytest.param(
+            __get_torrent_info_for_rehost_test(test_id=1),
+            __get_expected_for_rehost_test(test_id=1),
+            id="nothing_to_rehost"
+        ),
+        pytest.param(
+            __get_torrent_info_for_rehost_test(test_id=2),
+            __get_expected_for_rehost_test(test_id=2),
+            id="already_rehosted"
+        ),
+        pytest.param(
+            __get_torrent_info_for_rehost_test(test_id=3),
+            __get_expected_for_rehost_test(test_id=3),
+            id="something_to_rehost"
+        ),
+    ]
+)
+def test_rehost_screens(torrent_info, expected, mocker, prepare_working_folder):
+    tracker_settings = dict()
+    mocker.patch("requests.post", return_value=APIResponse(json.load(open(expected["mock_return"]))))
+
+    gpw_actions.rehost_screens(torrent_info, tracker_settings, { "upload_form": "https://url.com/upload.php?api_key={api_key}&action=upload" })
+
+    assert tracker_settings["gpw_rehosted"] == expected["gpw_rehosted"]
+    screenshots_data = json.load(open(torrent_info["screenshots_data"], "r"))
+    assert screenshots_data == expected["screenshots_data"]
+
+
+def test_rehost_screens_with_no_screenshots(prepare_working_folder):
+    assert gpw_actions.rehost_screens({}, {}, { "upload_form": "https://url.com/upload.php?api_key={api_key}&action=upload" }) is None
+
+
+def test_rehost_screens_with_exception_from_tracker(mocker, prepare_working_folder):
+    torrent_info= {
+        **json.load(open(f"{working_folder}/tests/resources/custom_actions/gpw/rehost_data/4/torrent_info.json")),
+        "screenshots_data": f"{working_folder}{temp_working_dir}4/screenshots_data.json",
+    }
+    expected = {
+        **json.load(open(f"{working_folder}/tests/resources/custom_actions/gpw/rehost_data/4/expected.json")),
+        "mock_return": f"{working_folder}{temp_working_dir}4/mock_upload_response.json",
+    }
+    mocker.patch("requests.post", return_value=APIResponse(json.load(open(expected["mock_return"]))))
+
+    with pytest.raises(Exception) as ex:
+        gpw_actions.rehost_screens(torrent_info, {}, { "upload_form": "https://url.com/upload.php?api_key={api_key}&action=upload" })
