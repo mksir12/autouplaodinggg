@@ -276,13 +276,14 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [X] Support for DVD and HD-DVD PTP uploads
-- [X] Issue#87: reuploading ptpimg and imgbox screens when uploading to gpw
-- [X] Issue#86: Application crash if srrdb api call fails
-- [ ] Issue#79: Not able to cross-seed rared releases
 - [X] Support for custom upload tags from argument
 - [X] Skipping upload of banned groups
+- [ ] Issue#79: Not able to cross-seed rared releases
 - [X] Issue#80: DDH releases are not identified and is marked as no group
 - [X] Issue#84: Multi tag added to release with unknown audio
+- [X] Issue#86: Application crash if srrdb api call fails
+- [X] Issue#87: reuploading ptpimg and imgbox screens when uploading to gpw
+- [X] Issue#90: Certain remuxes identified as full discs
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
 - [ ] EPIC: GGBOT P2P Network Relay

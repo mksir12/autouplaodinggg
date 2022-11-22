@@ -165,7 +165,7 @@ def miscellaneous_identify_web_streaming_source(streaming_services, streaming_se
 
 def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
     logging.debug('[MiscellaneousUtils] Source type is not available. Trying to identify source type')
-    match_source = re.search(r'(?P<bluray_remux>.*blu(.ray|ray).*remux.*)|'
+    match_source = re.search(r'(?P<bluray_remux>(.*blu(.ray|ray).*remux.*)|(.*remux.*blu(.ray|ray)))|'
                              r'(?P<bluray_disc>.*blu(.ray|ray)((?!x(264|265)|h.(265|264)|H.(265|264)|H(265|264)).)*$)|'
                              r'(?P<webrip>.*web(.rip|rip).*)|'
                              r'(?P<webdl>.*web(.dl|dl|).*)|'
@@ -214,7 +214,7 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
         console.print("Quitting now..")
         # and finally exit since this will affect all trackers we try and upload to, so it makes no sense to try the next tracker
         sys.exit()
-    logging.debug(f'[MiscellaneousUtils] Source type identified as {return_source_type}')
+    logging.debug(f"[MiscellaneousUtils] Source type identified as '{return_source_type}'")
     return return_source_type
 
 
