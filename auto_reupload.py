@@ -694,7 +694,7 @@ def analyze_video_file(missing_value, media_info):
         This method is being called in loop with mediainfo calculation all taking place multiple times.
         Optimize this code for better performance
     """
-    logging.debug(f"Trying to identify the {missing_value}...")
+    logging.debug(f"[Main] Trying to identify the {missing_value}...")
 
     # ffprobe/mediainfo need to access to video file not folder, set that here using the 'parse_me' variable
     parse_me = torrent_info["raw_video_file"] if "raw_video_file" in torrent_info else torrent_info["upload_media"]

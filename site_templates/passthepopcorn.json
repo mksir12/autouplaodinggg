@@ -111,6 +111,22 @@
                         "data_source": "tracker",
                         "values": ["6"]
                     }
+                },
+                "HD-DVD":{
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["2", "7"]
+                    },
+                    "resolution":{
+                        "data_source": "tracker",
+                        "values": ["1080p", "1080i"]
+                    }
+                },
+                "DVD":{
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["2", "7"]
+                    }
                 }
             }
         }
@@ -183,6 +199,9 @@
             },
             "6": {
                 "hdtv": 1
+            },
+            "7":{
+                "dvd": 1
             }
         },
 

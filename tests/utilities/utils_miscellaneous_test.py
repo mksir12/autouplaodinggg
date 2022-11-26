@@ -307,6 +307,8 @@ def test_miscellaneous_identify_web_streaming_source(raw_file_name, guess_it_res
         pytest.param("Jeopardy.2017.12.01.720p.HDTV.x264-NTb.mkv", "hdtv"),
         pytest.param(
             "The.Piano.Tuner.Of.Earthquakes.2005.720p.HDTV.x264-CBFM.mkv", "hdtv"),
+        pytest.param(
+            "Knives.Out.2019.REMUX.1080p.Blu-ray.AVC.Atmos.DTS-HD.MA.7.1-LEGi0N.mkv", "bluray_remux"),
     ]
 )
 def test_miscellaneous_identify_source_type(raw_file_name, expected):

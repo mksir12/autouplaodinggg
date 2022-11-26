@@ -1,0 +1,11 @@
+{
+    "status": 200,
+    "response":{
+        "error": "error_message_from_tracker",
+        "files":[
+            {
+                "name": "rehosted_url_from_tracker"
+            }
+        ]
+    }
+}

@@ -53,13 +53,23 @@ def miscellaneous_perform_scene_group_capitalization(scene_groups_path, torrent_
 
     # searching in pre.corrupt-net.org to check whether its a scene release or not.
     logging.info("[MiscellaneousUtils] Checking for scene release in 'pre.corrupt-net'")
-    precorrupt_response = requests.get(f"https://pre.corrupt-net.org/search.php?search={raw_file_name}", headers={"Accept-Language": "en-US,en;q=0.8"}, verify=False).text
+    try:
+        precorrupt_response = requests.get(f"https://pre.corrupt-net.org/search.php?search={raw_file_name}", headers={"Accept-Language": "en-US,en;q=0.8"}, verify=False).text
+    except Exception as ex:
+        logging.fatal(f"[MiscellaneousUtils] Error from pre corroupt db.", exc_info=ex)
+        precorrupt_response = f"Nothing found for: {raw_file_name}"
+
     if f"Nothing found for: {raw_file_name}" in precorrupt_response:
         # no results found in pre.corrupt-net.org. We can check srrdb api also just to be sure.
         logging.info("[MiscellaneousUtils] Could not match upload to a scene release in 'pre.corroupt-net'")
         logging.info("[MiscellaneousUtils] Checking for scene release in 'srrdb'")
 
-        srrdb_response = requests.get(f"https://api.srrdb.com/v1/search/r:{raw_file_name}").json()
+        try:
+            srrdb_response = requests.get(f"https://api.srrdb.com/v1/search/r:{raw_file_name}").json()
+        except Exception as ex:
+            logging.fatal(f"[MiscellaneousUtils] Error from srrdb.", exc_info=ex)
+            srrdb_response = {}
+
 
         if "results" not in srrdb_response or len(srrdb_response["results"]) < 1:
             logging.info("[MiscellaneousUtils] Could not match upload to a scene release in 'srrdb'")
@@ -155,7 +165,7 @@ def miscellaneous_identify_web_streaming_source(streaming_services, streaming_se
 
 def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
     logging.debug('[MiscellaneousUtils] Source type is not available. Trying to identify source type')
-    match_source = re.search(r'(?P<bluray_remux>.*blu(.ray|ray).*remux.*)|'
+    match_source = re.search(r'(?P<bluray_remux>(.*blu(.ray|ray).*remux.*)|(.*remux.*blu(.ray|ray)))|'
                              r'(?P<bluray_disc>.*blu(.ray|ray)((?!x(264|265)|h.(265|264)|H.(265|264)|H(265|264)).)*$)|'
                              r'(?P<webrip>.*web(.rip|rip).*)|'
                              r'(?P<webdl>.*web(.dl|dl|).*)|'
@@ -204,7 +214,7 @@ def miscellaneous_identify_source_type(raw_file_name, auto_mode, source):
         console.print("Quitting now..")
         # and finally exit since this will affect all trackers we try and upload to, so it makes no sense to try the next tracker
         sys.exit()
-    logging.debug(f'[MiscellaneousUtils] Source type identified as {return_source_type}')
+    logging.debug(f"[MiscellaneousUtils] Source type identified as '{return_source_type}'")
     return return_source_type
 
 
