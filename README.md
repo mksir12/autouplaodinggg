@@ -270,20 +270,15 @@ docker run --rm -it \
 <br>
 
 # Roadmap
-### v3.0.5
+### v3.0.6
+- [ ] Add Support for new platforms:
+    - [ ] PirateTheNet
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
-- [X] Support for DVD and HD-DVD PTP uploads
-- [X] Support for custom upload tags from argument
-- [X] Skipping upload of banned groups
 - [ ] Issue#79: Not able to cross-seed rared releases
-- [X] Issue#80: DDH releases are not identified and is marked as no group
-- [X] Issue#84: Multi tag added to release with unknown audio
-- [X] Issue#86: Application crash if srrdb api call fails
-- [X] Issue#87: reuploading ptpimg and imgbox screens when uploading to gpw
-- [X] Issue#90: Certain remuxes identified as full discs
+
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
 - [ ] EPIC: GGBOT P2P Network Relay
@@ -300,13 +295,26 @@ docker run --rm -it \
 - [ ] Add support for bitorrent v2 and v2 hybrid torrents
 - [ ] Add Support for new platforms
     - [ ] MoreThanTV
-    - [ ] PirateTheNet
     - [ ] DanishBytes
 - [ ] Add support for DVDs
 
 <br>
 
 # Change Log
+## **3.0.5**
+    New Features
+        * Support for DVD and HD-DVD PTP uploads
+        * Support for custom upload tags from argument
+        * Skipping upload of banned groups
+
+    Bug Fixes
+        * Issue#80: DDH releases are not identified and is marked as no group
+        * Issue#84: Multi tag added to release with unknown audio
+        * Issue#86: Application crash if srrdb api call fails
+        * Issue#87: reuploading ptpimg and imgbox screens when uploading to gpw
+        * Issue#90: Certain remuxes identified as full discs
+
+<br>
 
 ## **3.0.4**
     New Trackers (Only for Upload Assistant)
