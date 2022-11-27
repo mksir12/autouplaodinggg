@@ -273,6 +273,7 @@ docker run --rm -it \
 ### v3.0.6
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
+- [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config

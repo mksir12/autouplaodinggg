@@ -18,24 +18,24 @@ repos:
         language: system
         entry: poetry run pylint
         types: [python]
-      - id: codespell
-        name: check for misspellings
-        description: Check for common misspellings in text files
-        args:
-          [
-            --check-hidden,
-            --check-filenames,
-            --skip=*.po,
-            --builtin,
-            clear,
-            rare,
-            informal,
-            usage,
-            code,
-          ]
-        language: system
-        entry: poetry run codespell
-        types: [text]
+      # - id: codespell
+      #   name: check for misspellings
+      #   description: Check for common misspellings in text files
+      #   args:
+      #     [
+      #       --check-hidden,
+      #       --check-filenames,
+      #       --skip=*.po,
+      #       --builtin,
+      #       clear,
+      #       rare,
+      #       informal,
+      #       usage,
+      #       code,
+      #     ]
+      #   language: system
+      #   entry: poetry run codespell
+      #   types: [text]
       - id: black
         name: format python code
         description: Automatically format code to follow the black code style
