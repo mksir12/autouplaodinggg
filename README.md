@@ -273,6 +273,7 @@ docker run --rm -it \
 ### v3.0.6
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
+    - [ ] Retroflix
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
@@ -295,7 +296,6 @@ docker run --rm -it \
 - [ ] Add support for bitorrent v2 and v2 hybrid torrents
 - [ ] Add Support for new platforms
     - [ ] MoreThanTV
-    - [ ] DanishBytes
 - [ ] Add support for DVDs
 
 <br>
