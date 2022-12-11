@@ -1,0 +1,116 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# tells pip how to build your pypi webpage & what dependencies to install
+[project]
+name = "gg_bot_upload_assistant"
+dynamic = ["readme"]
+version = "3.0.5"
+authors = [{ name="NoobMaster69", email="NoobMaster669@protonmail.com" }]
+description = "Automated media uploader"
+dependencies = ["matplotlib", "numpy<1.23.0"]
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU License",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry]
+name = "gg_bot_upload_assistant"
+version = "3.0.5"
+description = "Automated media uploader"
+authors = ["NoobMaster69 <noobmaster669@protonmail.com>"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"]}
+
+[project.urls]
+"Homepage" = "https://gitlab.com/NoobMaster669/gg-bot-upload-assistant"
+"Bug Tracker" = "https://gitlab.com/NoobMaster669/gg-bot-upload-assistant/-/issues"
+"Documentation" = "https://gitlab.com/NoobMaster669/gg-bot-upload-assistant/-/wikis/home"
+
+[tool.black]
+line-length = 80
+target-version = ["py36", "py37", "py38", "py39", "py310"]
+include = '\\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+order_by_type = false
+
+[tool.mypy]
+files = "."
+exclude = "build/.*"
+strict = true
+
+# Overrides for currently untyped modules
+[[tool.mypy.overrides]]
+module = [
+    "docs.*",
+    "docs.ext.*",
+    "tests.unit.*",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.functional.*",
+    "tests.functional.api.*",
+    "tests.meta.*",
+    "tests.smoke.*",
+]
+disable_error_code = ["no-untyped-def"]
+
+[tool.semantic_release]
+branch = "main"
+version_variable = "gitlab/_version.py:__version__"
+commit_subject = "chore: release v{version}"
+commit_message = ""
+
+[tool.pylint.messages_control]
+max-line-length = 88
+jobs = 0  # Use auto-detected number of multiple processes to speed up Pylint.
+# TODO(jlvilla): Work on removing these disables over time.
+disable = [
+    "arguments-differ",
+    "arguments-renamed",
+    "broad-except",
+    "cyclic-import",
+    "duplicate-code",
+    "import-outside-toplevel",
+    "invalid-name",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "not-callable",
+    "protected-access",
+    "redefined-builtin",
+    "signature-differs",
+    "too-few-public-methods",
+    "too-many-ancestors",
+    "too-many-arguments",
+    "too-many-branches",
+    "too-many-instance-attributes",
+    "too-many-lines",
+    "too-many-locals",
+    "too-many-statements",
+    "unsubscriptable-object",
+    "line-too-long"
+]

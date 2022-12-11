@@ -273,12 +273,14 @@ docker run --rm -it \
 ### v3.0.6
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
+    - [ ] RetroFlix
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
+- [X] Fixed an issue where release groups was not identified for AV1 releases
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
