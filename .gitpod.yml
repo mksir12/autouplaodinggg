@@ -13,6 +13,7 @@ vscode:
     - tamasfe.even-better-toml
     - bierner.emojisense
     - eamodio.gitlens
+    - ms-vscode.live-server
     - GitLab.gitlab-workflow
     - ryanluker.vscode-coverage-gutters
     - ms-azuretools.vscode-docker
