@@ -279,6 +279,7 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
+- [X] Issue#92: Reuploader has issues with folders starting with [ ]
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
