@@ -1,0 +1,21 @@
+tasks:
+  - name: Installing application dependencies
+    before: sudo apt update
+    command: sudo apt install -y unrar mediainfo ffmpeg mktorrent apache2-utils
+  - name: Installing python requirements
+    command: pip install -r requirements/requirements_test.txt
+  - name: Installing python pre-commit dependencies
+    before: pip install pre-commit codespell black mypy poetry isort pyupgrade pydocstyle
+    command: pre-commit install
+
+vscode:
+  extensions:
+    - tamasfe.even-better-toml
+    - bierner.emojisense
+    - eamodio.gitlens
+    - ms-vscode.live-server
+    - GitLab.gitlab-workflow
+    - ryanluker.vscode-coverage-gutters
+    - ms-azuretools.vscode-docker
+    - jeff-hykin.better-dockerfile-syntax
+    - foxundermoon.shell-format
