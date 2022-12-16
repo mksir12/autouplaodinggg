@@ -1274,9 +1274,10 @@ def reupload_job():
             if len(args.fallback_source) != 2:
                 raise Exception(
                     "FallbackSource needs `source` and `source_type` as values")
-            torrent_info["fallback_source"]["source"] = args.fallback_source[0]
-            torrent_info["fallback_source"][
-                "source_type"] = args.fallback_source[1]
+            torrent_info["fallback_source"] = {
+                "source": args.fallback_source[0],
+                "source_type": args.fallback_source[1]
+            }
 
         console.print(
             f'Re-Uploading File/Folder: [bold][blue]{torrent_path}[/blue][/bold]'
