@@ -992,12 +992,12 @@ def analyze_video_file(missing_value, media_info):
             source = torrent_info["fallback_source"]["source"]
             source_type = torrent_info["fallback_source"]["source_type"]
         else:
-            # source, source_type, user_input_source = basic_utilities.basic_get_missing_source(torrent_info, args.disc, auto_mode, missing_value)
-            source, source_type, user_input_source = basic_utilities.basic_get_missing_source(
+            # source, source_type = basic_utilities.basic_get_missing_source(torrent_info, args.disc, auto_mode, missing_value)
+            source, source_type = basic_utilities.basic_get_missing_source(
                 torrent_info, False, auto_mode, missing_value)
         torrent_info["source"] = source
         torrent_info["source_type"] = source_type
-        return user_input_source
+        return source
 
     # ---------------- Video Resolution ---------------- #
     if missing_value == "screen_size":
