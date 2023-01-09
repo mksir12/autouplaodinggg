@@ -399,7 +399,7 @@ def search_for_dupes_api(tracker, search_site, imdb, tmdb, tvmaze, torrent_info,
             their_channels = their_title_guessit["audio_channels"]
             our_channels = torrent_info["audio_channels"]
             # 5.1 and 2.0 => comparing the channels
-            if int(our_channels[0]) > int(their_channels[0]):
+            if float(our_channels[0]) > float(their_channels[0]):
                 # if we have more channels than their release, then we can treat that as not a dupe.
                 existing_releases_count[their_title_type] -= 1
                 existing_release_types.pop(their_title)
