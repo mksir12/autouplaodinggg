@@ -115,8 +115,8 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong><a href="https://lst.gg">LST</a></strong></td>
         </tr>
         <tr style="text-align: center">
-            <td><strong>3EVILS</strong></td>
-            <td><strong><a href="https://3evils.net">3Evils</a></strong></td>
+            <td><strong>TDC</strong></td>
+            <td><strong><a href="https://thedarkcommunity.cc/">TheDarkCommunity</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td><strong>TELLY</strong></td>
