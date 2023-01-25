@@ -274,6 +274,7 @@ docker run --rm -it \
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
     - [ ] RetroFlix
+    - [X] TheDarkCommunity
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
