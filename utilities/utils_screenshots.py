@@ -41,6 +41,8 @@ from modules.constants import (
     URL_IMAGES_PATH,
 )
 
+from .utils import normalize_for_system_path
+
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
 
@@ -407,9 +409,7 @@ def take_upload_screens(
     logging.info(
         f"[Screenshots] Sanitizing the torrent title `{torrent_title_import}` since this is from TMDB"
     )
-    torrent_title_import = re.escape(
-        torrent_title_import.replace(" ", "").replace("\\", "").replace("/", "")
-    )
+    torrent_title_import = normalize_for_system_path(torrent_title_import)
     logging.info(
         f"[Screenshots] Using {upload_media_import} to generate screenshots"
     )

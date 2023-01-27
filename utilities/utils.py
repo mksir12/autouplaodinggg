@@ -20,9 +20,11 @@ import importlib
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import time
+import unicodedata
 from pathlib import Path
 from pprint import pformat
 
@@ -1146,3 +1148,14 @@ def add_argument_tags(argument_tags):
         if argument_tags is None or len(argument_tags) == 0
         else sorted(list(set(argument_tags)))
     )
+
+
+def normalize_for_system_path(file_path: str) -> str:
+    file_path = (
+        unicodedata.normalize("NFKD", str(file_path))
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
+    return re.sub(
+        r"[-\s]+", "_", re.sub(r"[^\w\s-]", "", file_path.lower())
+    ).strip("__")

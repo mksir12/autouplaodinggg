@@ -514,3 +514,32 @@ def test_validate_and_load_external_templates_no_dir():
 )
 def test_add_argument_tags(argument_tags, expected):
     assert utils.add_argument_tags(argument_tags) == expected
+
+
+@pytest.mark.parametrize(
+    ("file_path", "expected"),
+    [
+        pytest.param(
+            "Georgekutty C/O Georgekutty",
+            "georgekutty_co_georgekutty",
+            id="text_with_forward_slash",
+        ),
+        pytest.param(
+            "  Georgekutty CO Georgekutty.  ",
+            "georgekutty_co_georgekutty",
+            id="text_with_spaces",
+        ),
+        pytest.param(
+            "DT-Georgekutty C/O Georgekutty 1991 1080p AMZN WEB-DL DD+ 2.0 H.264-DTR",
+            "dt_georgekutty_co_georgekutty_1991_1080p_amzn_web_dl_dd_20_h264_dtr",
+            id="file_name",
+        ),
+        pytest.param(
+            'Georgekutty C/O Georgekutty -\\[]:""\\>?{?>} @#$%^&*() _ 2343 _+ __---',
+            "georgekutty_co_georgekutty___2343",
+            id="lots_of_symbols",
+        ),
+    ],
+)
+def test_normalize_for_system_path(file_path, expected):
+    assert utils.normalize_for_system_path(file_path) == expected
