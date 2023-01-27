@@ -115,8 +115,8 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong><a href="https://lst.gg">LST</a></strong></td>
         </tr>
         <tr style="text-align: center">
-            <td><strong>3EVILS</strong></td>
-            <td><strong><a href="https://3evils.net">3Evils</a></strong></td>
+            <td><strong>TDC</strong></td>
+            <td><strong><a href="https://thedarkcommunity.cc/">TheDarkCommunity</a></strong></td>
         </tr>
         <tr style="text-align: center">
             <td><strong>TELLY</strong></td>
@@ -271,8 +271,15 @@ docker run --rm -it \
 
 # Roadmap
 ### v3.0.6
+- [X] Add Support for new platforms:
+    - [X] TheDarkCommunity
+- [X] Support for Anamorphic videos and screenshots in display resolution
+- [X] Fixed an issue where release groups was not identified for AV1 releases
+
+### v3.0.7
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
+    - [ ] RetroFlix
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
