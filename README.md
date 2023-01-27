@@ -271,17 +271,21 @@ docker run --rm -it \
 
 # Roadmap
 ### v3.0.6
+- [X] Add Support for new platforms:
+    - [X] TheDarkCommunity
+- [X] Support for Anamorphic videos and screenshots in display resolution
+- [X] Fixed an issue where release groups was not identified for AV1 releases
+
+### v3.0.7
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
     - [ ] RetroFlix
-    - [X] TheDarkCommunity
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
-- [X] Fixed an issue where release groups was not identified for AV1 releases
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
