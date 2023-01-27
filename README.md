@@ -222,16 +222,16 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
 > It is recommended to checkout a tag and use it instead of using as the master branch, as there is a possibility for master branch to have bug / error / conflicts during merges.<br>
 > Checkout a tag using the command `git checkout tags/<TAG>`
 2. Checkout a release tag/version that you wish to use `git checkout tags/2.0`
-2. Install necessary packages ```pip install -r requirements.txt```
-3. Grand execute permission for user. `chmod u+x auto_upload.py`
-4. Copy `config.env` from `samples/assistant` folder to cloned project root.
-5. Fill out the required values in `config.env`
+3. Install necessary packages ```pip install -r requirements/requirements.txt```
+4. Grand execute permission for user. `chmod u+x auto_upload.py`
+5. Copy `config.env` from `samples/assistant` folder to cloned project root.
+6. Fill out the required values in `config.env`
 > Ensure that you have optional dependencies installed. <br>
 > - [MediaInfo](https://mediaarea.net/en/MediaInfo/Download/Ubuntu)
 > - [FFmpeg](https://ffmpeg.org/download.html)
 > - unrar
 > - [mktorrent](https://github.com/pobrn/mktorrent): Use --use_mktorrent flag. (Create .torrent using mktorrent instead of torf)
-6. Run the script using [Python3](https://www.python.org/downloads/) (If you're having issues or torf isn't installing, try python3.9)
+7. Run the script using [Python3](https://www.python.org/downloads/) (If you're having issues or torf isn't installing, try python3.9)
 > Run command template ```python3 auto_upload.py -t <TRACKERS> -p "<FILE_OR_FOLDER_TO_BE_UPLOADED>" [OPTIONAL ARGUMENTS 1] [OPTIONAL ARGUMENTS 2...]```
 > Please see Bare Metal Installation and Upgrade Wiki for details instructions.
 
@@ -270,12 +270,6 @@ docker run --rm -it \
 <br>
 
 # Roadmap
-### v3.0.6
-- [X] Add Support for new platforms:
-    - [X] TheDarkCommunity
-- [X] Support for Anamorphic videos and screenshots in display resolution
-- [X] Fixed an issue where release groups was not identified for AV1 releases
-
 ### v3.0.7
 - [ ] Add Support for new platforms:
     - [ ] PirateTheNet
@@ -286,7 +280,6 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
-- [X] Issue#92: Reuploader has issues with folders starting with [ ]
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
@@ -310,6 +303,20 @@ docker run --rm -it \
 <br>
 
 # Change Log
+## **3.0.6**
+    New Trackers
+        * TheDarkCommunity
+    
+    New Features
+        * Support for Anamorphic videos and screenshots in display resolution
+    
+    Bug Fixes
+        * Fixed an issue where release groups was not identified for AV1 releases
+        * Issue#67: Torf fails due to invalid characters in torrent title
+        * Issue#92: Reuploader has issues with folders starting with [ ]
+        
+<br>
+
 ## **3.0.5**
     New Features
         * Support for DVD and HD-DVD PTP uploads
