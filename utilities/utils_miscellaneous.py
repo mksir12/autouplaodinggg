@@ -68,7 +68,13 @@ def miscellaneous_perform_scene_group_capitalization(
         )
         precorrupt_response = f"Nothing found for: {raw_file_name}"
 
-    if f"Nothing found for: {raw_file_name}" in precorrupt_response:
+    logging.debug(
+        f"[MiscellaneousUtils] pre.corrupt-net response: {precorrupt_response} "
+    )
+    if (
+        f"Nothing found for: {raw_file_name.replace('+', ' ')}"
+        in precorrupt_response
+    ):
         # no results found in pre.corrupt-net.org. We can check srrdb api also just to be sure.
         logging.info(
             "[MiscellaneousUtils] Could not match upload to a scene release in 'pre.corroupt-net'"
