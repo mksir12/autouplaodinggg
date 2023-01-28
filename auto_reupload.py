@@ -1860,9 +1860,8 @@ def reupload_job():
                         logging.info(
                             f"[Main] `raw_video_file` is missing in torrent_info. Hence updating client save path to {save_path}"
                         )
-
                 torrent_client.upload_torrent(
-                    torrent=f'{WORKING_DIR.format(base_path=working_folder)}{torrent_info["working_folder"]}{tracker}-{torrent_info["torrent_title"]}.torrent',
+                    torrent=f'{WORKING_DIR.format(base_path=working_folder)}{torrent_info["working_folder"]}{tracker}-{utils.normalize_for_system_path(torrent_info["torrent_title"])}.torrent',
                     save_path=save_path,
                     use_auto_torrent_management=False,
                     is_skip_checking=True,
