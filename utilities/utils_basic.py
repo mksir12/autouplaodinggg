@@ -516,20 +516,17 @@ def basic_get_mediainfo(raw_file):
 
 def basic_get_raw_video_file(upload_media):
     raw_video_file = None
-    for individual_file in sorted(glob.glob(f"{upload_media}/*")):
-        found = False  # this is used to break out of the double nested loop
-        logging.info(f"[BasicUtils] Checking to see if {individual_file} is a video file")
-        if os.path.isfile(individual_file):
+    upload_media = f"{upload_media}/".replace("//", "/")
+    for root, _ , files in os.walk(upload_media, topdown=False):
+        for file_name in files:
+            individual_file = os.path.join(root, file_name)
+            logging.info(f"[BasicUtils] Checking to see if {individual_file} is a video file")
             logging.info(f"[BasicUtils] Using {individual_file} for mediainfo tests")
-            file_info = MediaInfo.parse(individual_file)
-            for track in file_info.tracks:
-                if track.track_type == "Video":
-                    logging.info(f"[BasicUtils] Identified a video track in {individual_file}")
-                    raw_video_file = individual_file
-                    found = True
-                    break
-            if found:
-                break
+            for track in MediaInfo.parse(individual_file).tracks:
+                if track.track_type != "Video":
+                    continue
+                logging.info(f"[BasicUtils] Identified a video track in {individual_file}")
+                return individual_file
     return raw_video_file
 
 

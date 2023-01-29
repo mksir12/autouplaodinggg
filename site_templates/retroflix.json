@@ -1,10 +1,10 @@
 {
-    "name": "Blutopia",
-    "url": "https://blutopia.cc",
-    "upload_form": "https://blutopia.cc/api/torrents/upload?api_token={api_key}",
-    "torrents_search": "https://blutopia.cc/api/torrents/filter?api_token={api_key}",
-    "source": "BLU",
-    "platform": "UNIT3D",
+    "name": "RetroFlix",
+    "url": "https://retroflix.club",
+    "upload_form": "https://retroflix.club/api/upload",
+    "torrents_search": "https://retroflix.club/api/torrent?page=1&itemsPerPage=100&sort=torrent.createdAt&direction=desc",
+    "source": "sunshine",
+    "platform": "Retroflix",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
     "screenshot_type": "bbcode_images",
@@ -27,17 +27,23 @@
     },
 
     "translation": {
-        "dot_torrent": "torrent",
+        "dot_torrent": "file",
         "torrent_title": "name",
         "description": "description",
-        "mediainfo": "mediainfo",
+        "imdb": "url",
+        "mediainfo": "mediaInfo",
+        "anon": "isAnonymous",
+        "url_images": "screenshots",
+
+        "something1": "descr",
+        "something2": "poster",
+        "something3": "type",
+
         "bdinfo": "bdinfo",
         "type": "category_id",
         "source": "type_id",
         "resolution": "resolution_id",
         "tmdb": "tmdb",
-        "imdb": "imdb",
-        "anon": "anonymous",
         "live": "live",
         "sd": "sd",
         "tvdb": "tvdb",
@@ -55,15 +61,17 @@
     },
 
     "Required": {
-        "torrent": "file",
+        "file": "file|base64",
         "name": "string",
         "description": "string",
-        "anonymous": "string",
+        "url": "url",
+        "isAnonymous": "boolean",
+        "screenshots": "file|string|array",
+
         "sd": "string",
         "stream": "string",
         "tvdb": "string",
         "tmdb": "string",
-        "imdb": "string",
         "mal": "string",
         "igdb": "string",
 
@@ -138,12 +146,12 @@
     },
 
     "Optional": {
-        "nfo_file": "file",
+        "nfo": "file|base64",
+        "mediaInfo": "string",
+
         "season_number": "string",
         "episode_number": "string",
-
-        "bdinfo": "string",
-        "mediainfo": "string"
+        "bdinfo": "string"
     },
 
     "Default":{},
@@ -151,19 +159,19 @@
     "dupes": {
 
         "technical_jargons": {
-            "authentication_mode": "API_KEY",
-            "payload_type": "MULTI-PART",
+            "authentication_mode": "BEARER",
+            "payload_type": "JSON",
             "request_method": "GET",
             "response_type": "JSON"
         },
 
         "url_format": "{search_url}&imdbId={imdb}",
-        "strip_text": true,
+        "strip_text": false,
 
         "parse_json": {
             "is_needed": true,
             "top_lvl": "data",
-            "torrent_details": "attributes"
+            "torrent_details": "name"
         }
     },
 
