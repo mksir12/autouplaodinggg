@@ -44,7 +44,6 @@ import utilities.utils_basic as basic_utilities
 import utilities.utils_metadata as metadata_utilities
 import utilities.utils_miscellaneous as miscellaneous_utilities
 import utilities.utils_reupload as reupload_utilities
-import utilities.utils_torrent as torrent_utilities
 import utilities.utils_translation as translation_utilities
 from modules.cache import CacheFactory, CacheVendor
 from modules.constants import *
@@ -61,6 +60,7 @@ from utilities.utils_dupes import search_for_dupes_api
 # Method that will search for dupes in trackers.
 # This is used to take screenshots and eventually upload them to either imgbox, imgbb, ptpimg or freeimage
 from utilities.utils_screenshots import take_upload_screens
+from utilities.utils_torrent import GGBotTorrentCreator
 
 # PTP is blacklisted for Reuploader since support for PTP is still a work in progress
 # GPW is blacklisted since the dupe check is pretty much a hit and miss since audio information
@@ -254,7 +254,6 @@ logging.info(
     f"[Main] Successfully established connection to the torrent client {Environment.get_client_type()}"
 )
 
-
 logging.info(
     "[Main] Going to establish connection to the cache server configured"
 )
@@ -270,7 +269,6 @@ cache.hello()
 logging.info(
     "[Main] Successfully established connection to the cache server configured"
 )
-
 
 # creating the schema validator for validating all the template files
 template_validator = TemplateSchemaValidator(
@@ -309,7 +307,6 @@ if args.load_external_templates:
         api_keys_dict.update(ext_api_keys_dict)
         acronym_to_tracker.update(ext_acronyms)
 
-
 # getting the list of trackers that the user wants to upload to.
 # If there are any configuration errors for a particular tracker, then they'll not be used
 upload_to_trackers = utils.get_and_validate_configured_trackers(
@@ -326,7 +323,6 @@ if len(upload_to_trackers) < 1:
     raise AssertionError(
         "Provide at least 1 tracker we can upload to (e.g. BHD, BLU, ACM)"
     )
-
 
 # now that we have verified that the client and cache connections have been created successfully
 #  - we can optionally start gg-bot visor server
@@ -1785,18 +1781,18 @@ def reupload_job():
             else:
                 torrent_media = torrent_info["upload_media"]
 
-            torrent_utilities.generate_dot_torrent(
+            GGBotTorrentCreator(
                 media=torrent_media,
-                announce=list(
+                announce_urls=[
                     Environment.get_tracker_announce_url(tracker).split(" ")
-                ),
+                ],
                 source=config["source"],
                 working_folder=working_folder,
                 hash_prefix=torrent_info["working_folder"],
                 use_mktorrent=args.use_mktorrent,
                 tracker=tracker,
                 torrent_title=torrent_info["torrent_title"],
-            )
+            ).generate_dot_torrent()
 
             # TAGS GENERATION. Generations all the tags that are applicable to this upload
             translation_utilities.generate_all_applicable_tags(torrent_info)

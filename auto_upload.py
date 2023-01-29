@@ -47,13 +47,13 @@ import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils_metadata as metadata_utilities
 import utilities.utils_miscellaneous as miscellaneous_utilities
-import utilities.utils_torrent as torrent_utilities
 import utilities.utils_translation as translation_utilities
 from modules.constants import *
 
 # Method that will search for dupes in trackers.
 from modules.template_schema_validator import TemplateSchemaValidator
 from utilities.utils_screenshots import take_upload_screens
+from utilities.utils_torrent import GGBotTorrentCreator
 
 # utility methods
 # Method that will read and accept text components for torrent description
@@ -1551,7 +1551,6 @@ if (
         )
     )
 
-
 # Set the value of args.path to a variable that we can overwrite with a path translation later (if needed)
 user_supplied_paths = args.path
 
@@ -1577,7 +1576,6 @@ site_templates_path = VALIDATED_SITE_TEMPLATES_DIR.format(
     base_path=working_folder
 )
 
-
 if args.load_external_templates:
     logging.info(
         "[Main] User wants to load external site templates. Attempting to load and validate these templates..."
@@ -1596,10 +1594,8 @@ if args.load_external_templates:
         api_keys_dict.update(ext_api_keys_dict)
         acronym_to_tracker.update(ext_acronyms)
 
-
 # Verify we support the tracker specified
 logging.debug(f"[Main] Trackers provided by user {args.trackers}")
-
 
 upload_to_trackers = utils.get_and_validate_configured_trackers(
     args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys()
@@ -1680,7 +1676,6 @@ if args.batch:
         )
         console.print("Exiting...\n", style="bright_red bold")
         sys.exit()
-
 
 # all files we upload (even if its 1) get added to this list
 upload_queue = []
@@ -2076,18 +2071,18 @@ for file in upload_queue:
         else:
             torrent_media = torrent_info["upload_media"]
 
-        torrent_utilities.generate_dot_torrent(
+        GGBotTorrentCreator(
             media=torrent_media,
-            announce=list(
+            announce_urls=[
                 Environment.get_tracker_announce_url(tracker).split(" ")
-            ),
+            ],
             source=config["source"],
             working_folder=working_folder,
             hash_prefix=torrent_info["working_folder"],
             use_mktorrent=args.use_mktorrent,
             tracker=tracker,
             torrent_title=torrent_info["torrent_title"],
-        )
+        ).generate_dot_torrent()
 
         # TAGS GENERATION. Generations all the tags that are applicable to this upload
         translation_utilities.generate_all_applicable_tags(torrent_info)
