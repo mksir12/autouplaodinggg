@@ -16,26 +16,34 @@
 
 import json
 import logging
-import fastjsonschema
 
+import fastjsonschema
 from fastjsonschema import JsonSchemaException
 
 
 class TemplateSchemaValidator:
-
     def __init__(self, schema_location):
-        logging.info(f"[TemplateSchemaValidator] Loading template schema: {schema_location}")
-        self.schema = fastjsonschema.compile(json.load(open(schema_location, "r")))
-
+        logging.info(
+            f"[TemplateSchemaValidator] Loading template schema: {schema_location}"
+        )
+        self.schema = fastjsonschema.compile(json.load(open(schema_location)))
 
     def is_valid(self, json_file):
         try:
-            self.schema(json.load(open(json_file, "r")))
+            self.schema(json.load(open(json_file)))
             return True
         except JsonSchemaException as json_exception:
-            logging.error(f"[TemplateSchemaValidator] Failed to validate template: {json_file}")
+            logging.error(
+                f"[TemplateSchemaValidator] Failed to validate template: {json_file}"
+            )
             logging.error(f"[TemplateSchemaValidator] Error: {json_exception}")
-            logging.error(f"[TemplateSchemaValidator] Validation failed data: {json_exception.value}")
-            logging.error(f"[TemplateSchemaValidator] Validation failed rule: {json_exception.rule}")
-            logging.error(f"[TemplateSchemaValidator] Validation failed rule definiton: {json_exception.rule_definition}")
+            logging.error(
+                f"[TemplateSchemaValidator] Validation failed data: {json_exception.value}"
+            )
+            logging.error(
+                f"[TemplateSchemaValidator] Validation failed rule: {json_exception.rule}"
+            )
+            logging.error(
+                f"[TemplateSchemaValidator] Validation failed rule definition: {json_exception.rule_definition}"
+            )
             return False

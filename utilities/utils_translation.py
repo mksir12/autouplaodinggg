@@ -439,7 +439,7 @@ def _validate_and_do_hybrid_mapping(
                 f"[HybridMapping] No 'prerequisite' required for '{translation_value}'"
             )
 
-        if delayed_mapping == True:
+        if delayed_mapping:
             return True, is_hybrid_translation_needed
 
         logging.info(
