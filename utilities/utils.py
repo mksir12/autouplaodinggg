@@ -290,7 +290,7 @@ def delete_leftover_files(working_folder, file, resume=False):
     else:
         os.mkdir(working_dir)
 
-    if Environment.is_readble_temp_data_needed():
+    if Environment.is_readable_temp_data_needed():
         files = (
             f"{file}/".replace("//", "/")
             .strip()

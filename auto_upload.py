@@ -52,7 +52,7 @@ from modules.constants import *
 
 # Method that will search for dupes in trackers.
 from modules.template_schema_validator import TemplateSchemaValidator
-from utilities.utils_screenshots import take_upload_screens
+from utilities.utils_screenshots import GGBotScreenshotManager
 from utilities.utils_torrent import GGBotTorrentCreator
 
 # utility methods
@@ -1899,16 +1899,19 @@ for file in upload_queue:
     ]
     # This is used to evenly space out timestamps for screenshots
     # Call function to actually take screenshots & upload them (different file)
-    is_screenshots_available = take_upload_screens(
-        duration=torrent_info["duration"],
-        upload_media_import=torrent_info["raw_video_file"]
+    upload_media_for_screenshot = (
+        torrent_info["raw_video_file"]
         if "raw_video_file" in torrent_info
-        else torrent_info["upload_media"],
-        torrent_title_import=torrent_info["title"],
+        else torrent_info["upload_media"]
+    )
+    is_screenshots_available = GGBotScreenshotManager(
+        duration=torrent_info["duration"],
+        torrent_title=torrent_info["title"],
+        upload_media=upload_media_for_screenshot,
         base_path=working_folder,
         hash_prefix=torrent_info["working_folder"],
         skip_screenshots=args.skip_screenshots,
-    )
+    ).generate_screenshots()
 
     if is_screenshots_available:
         screenshots_data = json.load(
