@@ -7,7 +7,6 @@ EXTERNAL_TRACKER_ACRONYM_MAPPING = (
     "{base_path}/external/tracker/tracker_to_acronym.json"
 )
 
-IMAGE_HOST_URLS = "{base_path}/parameters/image_host_urls.json"
 TRACKER_ACRONYMS = "{base_path}/parameters/tracker/acronyms.json"
 TRACKER_API_KEYS = "{base_path}/parameters/tracker/api_keys.json"
 TEMPLATE_SCHEMA_LOCATION = "{base_path}/schema/site_template_schema.json"
