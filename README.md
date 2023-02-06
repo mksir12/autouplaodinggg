@@ -280,6 +280,7 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
+- [X] Support for trumpable flags for PTP
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
@@ -306,15 +307,15 @@ docker run --rm -it \
 ## **3.0.6**
     New Trackers
         * TheDarkCommunity
-    
+
     New Features
         * Support for Anamorphic videos and screenshots in display resolution
-    
+
     Bug Fixes
         * Fixed an issue where release groups was not identified for AV1 releases
         * Issue#67: Torf fails due to invalid characters in torrent title
         * Issue#92: Reuploader has issues with folders starting with [ ]
-        
+
 <br>
 
 ## **3.0.5**

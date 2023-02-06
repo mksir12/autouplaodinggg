@@ -360,7 +360,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
 
     # ------------ Save obvious info we are almost guaranteed to get from guessit into torrent_info dict ------------ #
     # But we can immediately assign some values now like Title & Year
-    if not guess_it_result["title"]:
+    if "title" not in guess_it_result or not guess_it_result["title"]:
         raise AssertionError(
             "Guessit could not even extract the title, something is really wrong with this filename."
         )
