@@ -20,48 +20,64 @@ import functools
 from pymongo import MongoClient
 import modules.env as Environment
 
-class Mongo:
 
+def map_cursor_to_list(function):
+    @functools.wraps(function)
+    def decorator(*args, **kwargs):
+        return list(map(lambda d: d, function(*args, **kwargs)))
+
+    return decorator
+
+
+class Mongo:
     mongo_client = None
-    is_mongo_initalized = False
+    is_mongo_initialized = False
     database = None
 
     def __init__(self):
         """Method to initialize the connection to a redis database."""
+
+        if not self.is_mongo_initialized:
+            try:
+                self.mongo_client = self._get_mongo_client()
+                self.mongo_client.admin.command("ping")
+                self.is_mongo_initialized = True
+                self.database = self.mongo_client[
+                    Environment.get_cache_database()
+                ]
+            except Exception as ex:
+                logging.fatal(
+                    f"[Cache] Failed to connect to Mongo DB. Error: {ex}"
+                )
+                raise Exception(f"Failed to connect to Mongo DB. Error: {ex}")
+
+    @staticmethod
+    def _get_mongo_client():
         # Provide the mongodb atlas url to connect python to mongodb using pymongo
-        if Environment.get_cache_username() is not None and len(Environment.get_cache_username()) > 0:
+        if (
+            Environment.get_cache_username() is not None
+            and len(Environment.get_cache_username()) > 0
+        ):
             CONNECTION_STRING = f"mongodb://{Environment.get_cache_username()}:{Environment.get_cache_password()}@{Environment.get_cache_host()}:{Environment.get_cache_port()}/{Environment.get_cache_database()}"
         else:
             CONNECTION_STRING = f"mongodb://{Environment.get_cache_host()}:{Environment.get_cache_port()}/{Environment.get_cache_database()}"
 
-        if not self.is_mongo_initalized:
-            try:
-                self.mongo_client = MongoClient(CONNECTION_STRING)
-                self.mongo_client.admin.command('ping')
-                self.is_mongo_initalized = True
-                self.database = self.mongo_client[Environment.get_cache_database()]
-            except Exception as ex:
-                logging.fatal(f'[Cache] Failed to connect to Mongo DB. Error: {ex}')
-                raise Exception(f"Failed to connect to Mongo DB. Error: {ex}")
-
-    def map_cursor_to_list(function):
-        @functools.wraps(function)
-        def decorator(*args, **kwargs):
-            return list(map(lambda d: d, function(*args, **kwargs)))
-        return decorator
+        return MongoClient(CONNECTION_STRING)
 
     def hello(self):
-        if self.is_mongo_initalized:
-            # print("Initialzed connection to the redis server configured")
-            self.mongo_client.admin.command('ping')
+        if self.is_mongo_initialized:
+            # print("Initialized connection to the redis server configured")
+            self.mongo_client.admin.command("ping")
             # print("Successfully established the connection to the server")
-            print('Mongo Server Connection Established Successfully')
+            print("Mongo Server Connection Established Successfully")
         else:
             print("Failed to initialize connection to Mongo server")
 
     def __get_collection(self, key):
-        if not self.is_mongo_initalized:
-            raise Exception("Mongo client has not been initalized yet. Use the init() to initalize connection.")
+        if not self.is_mongo_initialized:
+            raise Exception(
+                "Mongo client has not been initialized yet. Use the init() to initialize connection."
+            )
         key = key.split("::")
         return self.database[key[0] + "_" + key[1]]
 
@@ -70,7 +86,7 @@ class Mongo:
         if "_id" not in data:
             collection.insert_one(data)
         else:
-            collection.replace_one({"_id": data['_id']}, data, upsert=True)
+            collection.replace_one({"_id": data["_id"]}, data, upsert=True)
 
     def delete(self, key, query=None):
         """Method to delete data from the cache stored against a key."""
@@ -79,7 +95,9 @@ class Mongo:
             # no hash provided in key. hence we need to use the user provided query
             # if user has not provided any query then we'll raise an exception
             if query is None:
-                raise Exception("No hash or query provided. Cannot delete document")
+                raise Exception(
+                    "No hash or query provided. Cannot delete document"
+                )
             # returns the number of documents deleted
             return collection.delete_many(query)
         else:
@@ -90,13 +108,22 @@ class Mongo:
     def get(self, key, filter=None):
         collection = self.__get_collection(key)
         # <=2 because keys are in the form of GROUP::COLLECTION::KEY
-        filter = ({} if filter is None else filter) if len(key.split("::")) <= 2 else {"hash": key.split("::")[2]}
+        filter = (
+            ({} if filter is None else filter)
+            if len(key.split("::")) <= 2
+            else {"hash": key.split("::")[2]}
+        )
         return collection.find(filter)
 
     @map_cursor_to_list
     def advanced_get(self, key, limit, page_number, sort_field, filter=None):
         collection = self.__get_collection(key)
-        return collection.find(filter if filter is not None else {}).skip((page_number - 1) * limit).limit(limit).sort(sort_field, -1)
+        return (
+            collection.find(filter if filter is not None else {})
+            .skip((page_number - 1) * limit)
+            .limit(limit)
+            .sort(sort_field, -1)
+        )
 
     def count(self, key, filter=None):
         collection = self.__get_collection(key)
@@ -104,9 +131,11 @@ class Mongo:
 
     def close(self):
         """
-            Method to close the connection to the redis server
-            This is a wrapper around the redis `hgetall` operation
+        Method to close the connection to the redis server
+        This is a wrapper around the redis `hgetall` operation
         """
-        if not self.is_mongo_initalized:
-            raise Exception("Redis client has not been initalized yet. Use the init() to initalize connection.")
+        if not self.is_mongo_initialized:
+            raise Exception(
+                "Redis client has not been initialized yet. Use the init() to initialize connection."
+            )
         self.mongo_client.close()
