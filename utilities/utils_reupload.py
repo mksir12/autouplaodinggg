@@ -76,7 +76,7 @@ class AutoReUploaderManager:
             TorrentStatus.PENDING,
         ]
 
-    def initialize_torrent_data(self, torrent):
+    def initialize_torrent(self, torrent):
         logging.debug(
             f'[AutoReUploaderManager::initialize_torrent_data] Initializing torrent data in cache for {torrent["name"]}'
         )
@@ -100,7 +100,7 @@ class AutoReUploaderManager:
         )
         return init_data  # adding return for testing
 
-    def should_upload_be_skipped(self, torrent):
+    def skip_reupload(self, torrent):
         logging.info(
             f'[ReUploadUtils] Updating upload attempt for torrent {torrent["name"]}'
         )
@@ -126,7 +126,7 @@ class AutoReUploaderManager:
         self.cache.save(f"{TORRENT_DB_KEY_PREFIX}::{info_hash}", existing_data)
         return existing_data  # returning data for testing
 
-    def update_field(self, info_hash, field, data, is_json):
+    def update_torrent_field(self, info_hash, field, data, is_json):
         # data will always be present
         existing_data = self.cache.get(f"{TORRENT_DB_KEY_PREFIX}::{info_hash}")[
             0
@@ -176,9 +176,7 @@ class AutoReUploaderManager:
         )
         return data[0] if data is not None and len(data) > 0 else None
 
-    def reupload_get_movie_db_from_cache(
-        self, cached_data, title, year, upload_type
-    ):
+    def cached_moviedb_details(self, cached_data, title, year, upload_type):
         movie_db = self._check_for_tmdb_cached_data(title, year, upload_type)
         logging.debug(
             f"[ReUploadUtils] MovieDB data obtained from cache: {pformat(movie_db)}"
@@ -193,7 +191,7 @@ class AutoReUploaderManager:
             return {}
         return movie_db
 
-    def reupload_persist_updated_moviedb_to_cache(
+    def cache_moviedb_data(
         self,
         movie_db,
         torrent_info,
@@ -226,7 +224,7 @@ class AutoReUploaderManager:
             backup_id = movie_db["_id"]
             del movie_db["_id"]
 
-        self.update_field(torrent_hash, "movie_db", movie_db, True)
+        self.update_torrent_field(torrent_hash, "movie_db", movie_db, True)
 
         if cache_tmdb_metadata:
             if backup_id is not None:
@@ -236,7 +234,7 @@ class AutoReUploaderManager:
         return movie_db
 
     @staticmethod
-    def reupload_get_external_id_based_on_priority(
+    def get_external_moviedb_id(
         movie_db, torrent_info, cached_data, required_id
     ):
         # in case of tmdb id, we need to give the highest priority to the golden data obtained from the user via
@@ -300,7 +298,7 @@ class AutoReUploaderManager:
         return torrents
 
     @staticmethod
-    def reupload_get_translated_torrent_path(torrent_path):
+    def translate_torrent_path(torrent_path):
         if Environment.is_translation_needed():
             logging.info(
                 '[ReUploadUtils] Translating paths... ("translation_needed" flag set to True in reupload.config.env) '
@@ -329,7 +327,7 @@ class AutoReUploaderManager:
             torrent_path = translated_path
         return torrent_path
 
-    def get_available_dynamic_trackers(
+    def get_trackers_dynamically(
         self,
         torrent,
         original_upload_to_trackers,
@@ -364,9 +362,7 @@ class AutoReUploaderManager:
         # well, no need to select trackers dynamically or no valid dynamic trackers (exception case)
         return original_upload_to_trackers
 
-    def update_success_status_for_torrent_upload(
-        self, torrent, tracker, upload_response
-    ):
+    def mark_successful_upload(self, torrent, tracker, upload_response):
         # getting the overall status of the torrent from cache
         torrent_status = self.get_torrent_status(torrent["hash"])
 
@@ -380,13 +376,13 @@ class AutoReUploaderManager:
             or torrent_status == TorrentStatus.READY_FOR_PROCESSING
         ):
             # updating the overall status of the torrent
-            self.update_field(
+            self.update_torrent_field(
                 torrent["hash"], "status", TorrentStatus.SUCCESS, False
             )
             return TorrentStatus.SUCCESS
         elif torrent_status == TorrentStatus.FAILED:
             # updating the overall status of the torrent
-            self.update_field(
+            self.update_torrent_field(
                 torrent["hash"],
                 "status",
                 TorrentStatus.PARTIALLY_SUCCESSFUL,
@@ -407,9 +403,7 @@ class AutoReUploaderManager:
         }
         self.insert_into_job_repo(job_repo_entry)
 
-    def update_failure_status_for_torrent_upload(
-        self, torrent, tracker, upload_response
-    ):
+    def mark_failed_upload(self, torrent, tracker, upload_response):
         # getting the overall status of the torrent from cache
         torrent_status = self.get_torrent_status(torrent["hash"])
 
@@ -424,13 +418,13 @@ class AutoReUploaderManager:
             or torrent_status == TorrentStatus.READY_FOR_PROCESSING
         ):
             # updating the overall status of the torrent
-            self.update_field(
+            self.update_torrent_field(
                 torrent["hash"], "status", TorrentStatus.FAILED, False
             )
             return TorrentStatus.FAILED
         elif torrent_status == TorrentStatus.SUCCESS:
             # updating the overall status of the torrent
-            self.update_field(
+            self.update_torrent_field(
                 torrent["hash"],
                 "status",
                 TorrentStatus.PARTIALLY_SUCCESSFUL,

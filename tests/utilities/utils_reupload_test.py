@@ -59,7 +59,7 @@ class TestAutoReUploaderManager:
             "status": TorrentStatus.PENDING,
         }
 
-        init_data = reupload_manager.initialize_torrent_data(input_data)
+        init_data = reupload_manager.initialize_torrent(input_data)
 
         assert init_data["id"] is not None
         assert init_data["hash"] == expected["hash"]
@@ -181,7 +181,7 @@ class TestAutoReUploaderManager:
         self, torrent, expected, reupload_manager, mocker
     ):
         mocker.patch("modules.cache.Cache.save", return_value=None)
-        assert reupload_manager.should_upload_be_skipped(torrent) == expected
+        assert reupload_manager.skip_reupload(torrent) == expected
 
     @pytest.mark.parametrize(
         ("return_data", "expected"),
@@ -255,7 +255,7 @@ class TestAutoReUploaderManager:
         mocker.patch("modules.cache.Cache.get", return_value=return_data)
         mocker.patch("modules.cache.Cache.save", return_value=None)
         assert (
-            reupload_manager.update_field(
+            reupload_manager.update_torrent_field(
                 "info_hash", "field", new_data, is_json
             )["field"]
             == expected
@@ -296,9 +296,7 @@ class TestAutoReUploaderManager:
     ):
         mocker.patch("modules.cache.Cache.get", return_value=movie_db)
         assert (
-            reupload_manager.reupload_get_movie_db_from_cache(
-                cached_data, "", "", ""
-            )
+            reupload_manager.cached_moviedb_details(cached_data, "", "", "")
             == expected
         )
 
@@ -414,7 +412,7 @@ class TestAutoReUploaderManager:
         mocker.patch("modules.cache.Cache.get", return_value=existing_data)
         mocker.patch("modules.cache.Cache.save", return_value=None)
         assert (
-            reupload_manager.reupload_persist_updated_moviedb_to_cache(
+            reupload_manager.cache_moviedb_data(
                 movie_db,
                 torrent_info,
                 "torrent_hash",
@@ -482,7 +480,7 @@ class TestAutoReUploaderManager:
         reupload_manager,
     ):
         assert (
-            reupload_manager.reupload_get_external_id_based_on_priority(
+            reupload_manager.get_external_moviedb_id(
                 movie_db, torrent_info, cached_data, required_id
             )
             == expected
@@ -563,7 +561,7 @@ class TestAutoReUploaderManager:
             "os.getenv", side_effect=self.__torrent_path_translation_side_effect
         )
         assert (
-            reupload_manager.reupload_get_translated_torrent_path(torrent_path)
+            reupload_manager.translate_torrent_path(torrent_path)
             == expected_path
         )
 
@@ -585,7 +583,7 @@ class TestAutoReUploaderManager:
             side_effect=self.__torrent_path_not_translation_side_effect,
         )
         assert (
-            reupload_manager.reupload_get_translated_torrent_path(torrent_path)
+            reupload_manager.translate_torrent_path(torrent_path)
             == expected_path
         )
 
@@ -666,7 +664,7 @@ class TestAutoReUploaderManager:
         qbit_reupload_manager,
     ):
         assert (
-            qbit_reupload_manager.get_available_dynamic_trackers(
+            qbit_reupload_manager.get_trackers_dynamically(
                 torrent=torrent,
                 original_upload_to_trackers=upload_to_trackers,
                 api_keys_dict=api_keys_dict,
@@ -712,9 +710,7 @@ class TestAutoReUploaderManager:
         mocker.patch("modules.cache.Cache.get", return_value=current_status)
 
         assert (
-            reupload_manager.update_success_status_for_torrent_upload(
-                torrent, "TRACKER", {}
-            )
+            reupload_manager.mark_successful_upload(torrent, "TRACKER", {})
             == expected
         )
 
@@ -753,8 +749,6 @@ class TestAutoReUploaderManager:
         mocker.patch("modules.cache.Cache.get", return_value=current_status)
 
         assert (
-            reupload_manager.update_failure_status_for_torrent_upload(
-                torrent, "TRACKER", {}
-            )
+            reupload_manager.mark_failed_upload(torrent, "TRACKER", {})
             == expected
         )

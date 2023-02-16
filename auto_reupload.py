@@ -1363,25 +1363,23 @@ def reupload_job():
         )
         if cached_data is None:
             # Initializing the torrent data to cache
-            reupload_manager.initialize_torrent_data(torrent)
+            reupload_manager.initialize_torrent(torrent)
         else:
             logging.info(
                 f"[Main] Cached data found for torrent with hash {torrent['hash']}"
             )
-            if reupload_manager.should_upload_be_skipped(cached_data):
+            if reupload_manager.skip_reupload(cached_data):
                 logging.info(
                     f"[Main] Skipping upload and processing of torrent {cached_data['name']} since retry limit has exceeded"
                 )
                 continue
 
         # dynamic_tracker_selection
-        upload_to_trackers_working = (
-            reupload_manager.get_available_dynamic_trackers(
-                torrent=torrent,
-                original_upload_to_trackers=upload_to_trackers,
-                api_keys_dict=api_keys_dict,
-                all_trackers_list=acronym_to_tracker.keys(),
-            )
+        upload_to_trackers_working = reupload_manager.get_trackers_dynamically(
+            torrent=torrent,
+            original_upload_to_trackers=upload_to_trackers,
+            api_keys_dict=api_keys_dict,
+            all_trackers_list=acronym_to_tracker.keys(),
         )
 
         logging.info(
@@ -1391,7 +1389,7 @@ def reupload_job():
         save_path = torrent["save_path"]
         # before we start doing anything we need to check whether the media file can be accessed by the uploader.
         # to check whether the file is accessible we need to adhere to any path translations that user want to do
-        torrent_path = reupload_manager.reupload_get_translated_torrent_path(
+        torrent_path = reupload_manager.translate_torrent_path(
             torrent["content_path"]
         )
 
@@ -1440,7 +1438,7 @@ def reupload_job():
         )
         # -------- Basic info --------
         # So now we can start collecting info about the file/folder that was supplied to us (Step 1)
-        # this guy will also try to set tmab and imdb from media info summary
+        # this guy will also try to set tmdb and imdb from media info summary
         if (
             identify_type_and_basic_info(
                 torrent_info["upload_media"], guess_it_result
@@ -1457,27 +1455,21 @@ def reupload_job():
 
         # the metadata items will be first obtained from cached_data. if it's not available then we'll go ahead with
         # mediainfo_summary data and tmdb search
-        movie_db = reupload_manager.reupload_get_movie_db_from_cache(
+        movie_db = reupload_manager.cached_moviedb_details(
             cached_data,
             torrent_info["title"],
             torrent_info["year"] if "year" in torrent_info else "",
             torrent_info["type"],
         )
 
-        metadata_tmdb = (
-            reupload_manager.reupload_get_external_id_based_on_priority(
-                movie_db, torrent_info, cached_data, "tmdb"
-            )
+        metadata_tmdb = reupload_manager.get_external_moviedb_id(
+            movie_db, torrent_info, cached_data, "tmdb"
         )
-        metadata_imdb = (
-            reupload_manager.reupload_get_external_id_based_on_priority(
-                movie_db, torrent_info, cached_data, "imdb"
-            )
+        metadata_imdb = reupload_manager.get_external_moviedb_id(
+            movie_db, torrent_info, cached_data, "imdb"
         )
-        metadata_tvmaze = (
-            reupload_manager.reupload_get_external_id_based_on_priority(
-                movie_db, torrent_info, cached_data, "tvmaze"
-            )
+        metadata_tvmaze = reupload_manager.get_external_moviedb_id(
+            movie_db, torrent_info, cached_data, "tvmaze"
         )
 
         # tmdb, imdb and tvmaze in torrent_info will be filled by this method
@@ -1494,18 +1486,18 @@ def reupload_job():
             and torrent_info["imdb"] == "0"
             and torrent_info["tvmaze"] == "0"
         ):
-            # here we couldn't select a tmdb id automatically / no results from tmdb. Hence we mark this as a special case and stop the upload of the torrent
-            # updating the voerall status of the torrent
+            # here we couldn't select a tmdb id automatically / no results from tmdb. Hence we mark this as a special
+            # case and stop the upload of the torrent updating the overall status of the torrent
             logging.error(
                 "[Main] Marking upload as TMDB Identification failed."
             )
-            reupload_manager.update_field(
+            reupload_manager.update_torrent_field(
                 torrent["hash"],
                 "status",
                 TorrentStatus.TMDB_IDENTIFICATION_FAILED,
                 False,
             )
-            reupload_manager.update_field(
+            reupload_manager.update_torrent_field(
                 torrent["hash"], "possible_matches", possible_matches, True
             )
             continue
@@ -1532,7 +1524,7 @@ def reupload_job():
         torrent_info["mal"] = mal
 
         # saving the updates to moviedb in cache
-        reupload_manager.reupload_persist_updated_moviedb_to_cache(
+        reupload_manager.cache_moviedb_data(
             movie_db,
             torrent_info,
             torrent["hash"],
@@ -1836,7 +1828,7 @@ def reupload_job():
 
             # Tracker Settings
             if upload_status:
-                reupload_manager.update_success_status_for_torrent_upload(
+                reupload_manager.mark_successful_upload(
                     torrent, tracker, upload_response
                 )
 
@@ -1869,7 +1861,7 @@ def reupload_job():
                     is_skip_checking=True,
                 )
             else:
-                reupload_manager.update_failure_status_for_torrent_upload(
+                reupload_manager.mark_failed_upload(
                     torrent, tracker, upload_response
                 )
 
