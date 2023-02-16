@@ -183,9 +183,7 @@ class Server:
 
     @api_required
     def status(self):
-        # TODO: add some check and return status ok, if any only if connection can be established successfully to
-        # TODO: torrent client and the cache
-        return {"status": "OK", "message": "GG-BOT Auto-ReUploader"}, 200
+        return self.visor_server_manager.get_status()
 
     @api_required
     @gg_bot_response
