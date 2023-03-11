@@ -158,7 +158,8 @@
         "strip_text": true,
 
         "parse_json": {
-            "is_needed": false
+            "is_needed": true,
+            "top_lvl": "results"
         }
     },
 
