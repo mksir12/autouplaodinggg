@@ -375,7 +375,7 @@ def check_successful_upload(response):
     response = response.json()
     if (
         response["status"] == 200
-        and response["response"]["message"] == "Successfully uploaded torrent"
+        and response["response"]["message"] == "Succesfully uploaded torrent"
     ):
         return True, "Successfully uploaded torrent to GPW"
     else:
