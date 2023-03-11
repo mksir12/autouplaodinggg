@@ -7,9 +7,9 @@ from imgurpython.helpers.error import (
 )
 from rich.console import Console
 
-from ..image_host_base import GGBotImageHostBase
-import modules.env as Environment
-from ..image_upload_status import GGBotImageUploadStatus
+from modules.image_hosts.image_host_base import GGBotImageHostBase
+from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
+from modules.config import ImgurConfig
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
@@ -18,6 +18,7 @@ console = Console()
 class ImgurImageHost(GGBotImageHostBase):
     def __init__(self, image_path):
         super().__init__(image_path=image_path)
+        self.config = ImgurConfig()
 
     @property
     def img_host(self) -> str:
@@ -26,8 +27,8 @@ class ImgurImageHost(GGBotImageHostBase):
     def upload(self):
         try:
             response = ImgurClient(
-                client_id=Environment.get_imgur_client_id(),
-                client_secret=Environment.get_imgur_api_key(),
+                client_id=self.config.CLIENT_ID,
+                client_secret=self.config.API_KEY,
             ).upload_from_path(self.image_path)
             logging.debug(
                 f"[ImgurImageHost::upload] Imgur image upload response: {response}"

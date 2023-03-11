@@ -3,9 +3,9 @@ import logging
 import ptpimg_uploader
 from rich.console import Console
 
-from ..image_host_base import GGBotImageHostBase
-import modules.env as Environment
-from ..image_upload_status import GGBotImageUploadStatus
+from modules.image_hosts.image_host_base import GGBotImageHostBase
+from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
+from modules.config import PTPImgConfig
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
@@ -14,7 +14,7 @@ console = Console()
 class PTPImgImageHost(GGBotImageHostBase):
     def __init__(self, image_path: str):
         super().__init__(image_path)
-        self.api_key = Environment.get_ptpimg_api_key()
+        self.api_key = PTPImgConfig().API_KEY
 
     @property
     def img_host(self) -> str:

@@ -33,7 +33,12 @@ from dotenv import dotenv_values
 from guessit import guessit
 from rich.console import Console
 
-import modules.env as Environment
+from modules.config import (
+    UploaderConfig,
+    GGBotConfig,
+    UploadAssistantConfig,
+    ImageHostConfig,
+)
 from modules.constants import (
     EXTERNAL_SITE_TEMPLATES_DIR,
     EXTERNAL_TRACKER_ACRONYM_MAPPING,
@@ -204,19 +209,17 @@ def add_bbcode_images_to_description(
 def write_uploader_signature_to_description(
     description_file_path, tracker, bbcode_line_break, release_group
 ):
+    uploader_config = UploaderConfig()
     # TODO what will happen if custom_user_inputs and bbcode_images are not present
     # will then open throw some errors???
     with open(description_file_path, "a") as description:
-        # Finally append the entire thing with some shameless self promotion ;) and some line breaks
-        if (
-            Environment.get_uploader_signature()
-            and len(Environment.get_uploader_signature()) > 0
-        ):
+        # Finally append the entire thing with some shameless self-promotion ;) and some line breaks
+        if uploader_config.SIGNATURE and len(uploader_config.SIGNATURE) > 0:
             logging.debug(
                 "[Utils] User has provided custom uploader signature to use."
             )
             # the user has provided a custom signature to be used. hence we'll use that.
-            uploader_signature = Environment.get_uploader_signature()
+            uploader_signature = uploader_config.SIGNATURE
             logging.debug(
                 f"[Utils] User provided signature :: {uploader_signature}"
             )
@@ -290,7 +293,7 @@ def delete_leftover_files(working_folder, file, resume=False):
     else:
         os.mkdir(working_dir)
 
-    if Environment.is_readable_temp_data_needed():
+    if UploaderConfig().READABLE_TEMP_DIR:
         files = (
             f"{file}/".replace("//", "/")
             .strip()
@@ -319,7 +322,7 @@ def delete_leftover_files(working_folder, file, resume=False):
             )
         )
 
-    logging.info(f"[Utils] Created subfolder {unique_hash} for file {file}")
+    logging.info(f"[Utils] Created sub folder {unique_hash} for file {file}")
     return unique_hash
 
 
@@ -361,7 +364,8 @@ def check_for_dir_and_extract_rars(file_path):
     Status indicates whether the file/folder validation was performed successfully.
     I case of any errors, status will be false and the upload of that file can be skipped
     """
-    # If the path the user specified is a folder with .rar files in it then we unpack the video file & set the torrent_info key equal to the extracted video file
+    # If the path the user specified is a folder with .rar files in it then we unpack the video file & set the
+    # torrent_info key equal to the extracted video file
     if Path(file_path).is_dir():
         logging.info(f"[Utils] User wants to upload a folder: {file_path}")
 
@@ -396,7 +400,8 @@ def check_for_dir_and_extract_rars(file_path):
                 # the value for 'upload_media' with the path to the video file we just extracted
                 return True, latest_file
             else:
-                # If the user doesn't have unrar installed then we let them know here and move on to the next file (if exists)
+                # If the user doesn't have unrar installed then we let them know here and move on to the next file (
+                # if exists)
                 console.print(
                     "unrar is not installed, Unable to extract the rar archinve\n",
                     style="bold red",
@@ -427,9 +432,7 @@ def prepare_and_validate_tracker_api_keys_dict(api_keys_file_path):
     api_keys = json.load(open(api_keys_file_path))
     api_keys_dict = dict()
     for value in api_keys:
-        api_keys_dict[value] = Environment.get_property_or_default(
-            value.upper(), ""
-        )
+        api_keys_dict[value] = GGBotConfig().get_config(value.upper(), "")
 
     # Make sure the TMDB API is provided [Mandatory Property]
     try:
@@ -445,8 +448,9 @@ def prepare_and_validate_tracker_api_keys_dict(api_keys_file_path):
 def validate_env_file(sample_env_location):
     sample_env_keys = dotenv_values(sample_env_location).keys()
     # validating env file with expected keys from sample file
+    ggbot_config = GGBotConfig()
     for key in sample_env_keys:
-        if Environment.get_property_or_default(key, None) is None:
+        if ggbot_config.get_config(key, None) is None:
             console.print(
                 f"Outdated config.env file. Variable [red][bold]{key}[/bold][/red] is missing.",
                 style="blue",
@@ -473,7 +477,7 @@ def get_and_validate_configured_trackers(
         logging.info(
             "[Utils] Attempting check and validate and default trackers configured"
         )
-        tracker_list = Environment.get_default_trackers_list(default="")
+        tracker_list = UploaderConfig().DEFAULT_TRACKERS
         if len(tracker_list) > 0:
             tracker_list = [x.strip() for x in tracker_list.split(",")]
 
@@ -521,8 +525,8 @@ def _get_client_translated_path(torrent_info):
     # before we can upload the torrent to the client, we might need to do some path translations.
     # suppose, we are trying to upload a movie with the user provided path (-p argument) as
     """/home/user/data/movie_name/movie.mkv"""
-    # when we add to client and sets the save location, it needs to be set as '/home/user/data/movie_name/'
-    # if the user is running the torrent client in a docker container, or the uploader is running in a docker container 😉,
+    # when we add to client and sets the save location, it needs to be set as '/home/user/data/movie_name/' if the
+    # user is running the torrent client in a docker container, or the uploader is running in a docker container 😉,
     # the paths accessible to the torrent client will be different. It could be ...
     """ /media/downloads/movie_name/movie.mkv """
     # In these cases we may need to perform path translations.
@@ -530,18 +534,18 @@ def _get_client_translated_path(torrent_info):
         From: /home/user/data/movie_name/movie.mkv
         To: /media/downloads/movie_name/movie.mkv
     """
-
-    if Environment.is_translation_needed():
+    uploader_config = UploaderConfig()
+    if uploader_config.TRANSLATE_PATH:
         logging.info(
             '[Utils] Translating paths... ("translation_needed" flag set to True in config.env) '
         )
 
         # Just in case the user didn't end the path with a forward slash...
-        uploader_accessible_path = f"{Environment.get_uploader_accessible_path('__MISCONFIGURED_PATH__')}/".replace(
+        uploader_accessible_path = f"{uploader_config.UPLOADER_PATH}/".replace(
             "//", "/"
         )
-        client_accessible_path = f"{Environment.get_client_accessible_path('__MISCONFIGURED_PATH__')}/".replace(
-            "//", "/"
+        client_accessible_path = (
+            f"{uploader_config.TORRENT_CLIENT_PATH}/".replace("//", "/")
         )
 
         if "__MISCONFIGURED_PATH__/" in [
@@ -637,9 +641,10 @@ def _post_mode_cross_seed(
 
 
 def _post_mode_watch_folder(torrent_info, working_folder):
+    upload_assistant_config = UploadAssistantConfig()
     move_locations = {
-        "torrent": f"{Environment.get_dot_torrent_move_location()}",
-        "media": f"{Environment.get_media_move_location()}",
+        "torrent": f"{upload_assistant_config.TORRENT_MOVE_PATH}",
+        "media": f"{upload_assistant_config.MEDIA_MOVE_PATH}",
     }
     logging.debug(
         f"[Utils] Move locations configured by user :: {move_locations}"
@@ -665,7 +670,7 @@ def _post_mode_watch_folder(torrent_info, working_folder):
 
             if move_location_key == "torrent":
                 sub_folder = "/"
-                if Environment.is_type_based_move_enabled():
+                if upload_assistant_config.ENABLE_TYPE_BASED_MOVE:
                     sub_folder = sub_folder + torrent_info["type"] + "/"
                     # os.makedirs(os.path.dirname(move_locations["torrent"] + sub_folder), exist_ok=True)
                     if os.path.exists(
@@ -681,7 +686,8 @@ def _post_mode_watch_folder(torrent_info, working_folder):
                         Path(f"{move_locations['torrent']}{sub_folder}").mkdir(
                             parents=True, exist_ok=True
                         )
-                # The user might have upload to a few sites so we need to move all files that end with .torrent to the new location
+                # The user might have upload to a few sites so we need to move all files that end with .torrent to
+                # the new location
                 list_dot_torrent_files = glob.glob(
                     f"{WORKING_DIR.format(base_path=working_folder)}{torrent_info['working_folder']}*.torrent"
                 )
@@ -703,7 +709,8 @@ def _post_mode_watch_folder(torrent_info, working_folder):
                             f"[bold red]Failed to move [green]{dot_torrent_file}[/green] to location [green]{move_locations['torrent'] + sub_folder}[/green] [/bold red]"
                         )
 
-            # Media files are moved instead of copied so we need to make sure they don't already exist in the path the user provides
+            # Media files are moved instead of copied so we need to make sure they don't already exist in the path
+            # the user provides
             if move_location_key == "media":
                 if (
                     str(f"{Path(torrent_info['upload_media']).parent}/")
@@ -719,14 +726,14 @@ def _post_mode_watch_folder(torrent_info, working_folder):
                     )
                 else:
                     sub_folder = "/"
-                    if Environment.is_type_based_move_enabled():
+                    if upload_assistant_config.ENABLE_TYPE_BASED_MOVE:
                         sub_folder = sub_folder + torrent_info["type"] + "/"
                         move_location_value = move_location_value + sub_folder
                         os.makedirs(
                             os.path.dirname(move_location_value), exist_ok=True
                         )
                     logging.info(
-                        f"[Utils] Moving {torrent_info['upload_media']} to {move_location_value }"
+                        f"[Utils] Moving {torrent_info['upload_media']} to {move_location_value}"
                     )
                     try:
                         shutil.move(
@@ -749,21 +756,22 @@ def _post_mode_watch_folder(torrent_info, working_folder):
 
 
 def get_torrent_client_if_needed():
+    upload_assistant_config = UploadAssistantConfig()
     logging.debug(
-        f"[Utils] enable_post_processing {Environment.is_post_processing_needed()}"
+        f"[Utils] enable_post_processing {upload_assistant_config.ENABLE_POST_PROCESSING}"
     )
     logging.debug(
-        f"[Utils] post_processing_mode {Environment.get_post_processing_mode()}"
+        f"[Utils] post_processing_mode {upload_assistant_config.POST_PROCESSING_MODE}"
     )
     if (
-        Environment.is_post_processing_needed()
-        and Environment.get_post_processing_mode() == "CROSS_SEED"
+        upload_assistant_config.ENABLE_POST_PROCESSING
+        and upload_assistant_config.POST_PROCESSING_MODE == "CROSS_SEED"
     ):
         # getting an instance of the torrent client factory
         torrent_client_factory = TorrentClientFactory()
         # creating the torrent client using the factory based on the users configuration
         torrent_client = torrent_client_factory.create(
-            Clients[Environment.get_client_type()]
+            Clients[upload_assistant_config.TORRENT_CLIENT]
         )
         # checking whether the torrent client connection has been created successfully or not
         torrent_client.hello()
@@ -780,9 +788,10 @@ def perform_post_processing(
     tracker,
     allow_multiple_files=False,
 ):
+    upload_assistant_config = UploadAssistantConfig()
     # After we finish uploading, we can add all the dot torrent files to a torrent client to start seeding immediately.
-    # This post processing step can be enabled or disabled based on the users configuration
-    if Environment.is_post_processing_needed():
+    # This post-processing step can be enabled or disabled based on the users configuration
+    if upload_assistant_config.ENABLE_POST_PROCESSING:
         # When running in a bare meta, there is a chance for the user to provide relative paths.
         """data/movie_name/movie.mkv"""
         # the way to identify a relative path is to check whether the `upload_media` starts with a `/`
@@ -800,7 +809,7 @@ def perform_post_processing(
             return False
         torrent_info["client_path"] = translated_path
 
-        post_processing_mode = Environment.get_post_processing_mode()
+        post_processing_mode = upload_assistant_config.POST_PROCESSING_MODE
         if post_processing_mode == "CROSS_SEED":
             console.print(
                 "[bold] 🌱 Detected [red]Cross Seed[/red] as the post processing mode. 🌱 [/bold]",
@@ -936,7 +945,7 @@ def prepare_headers_for_tracker(technical_jargons, search_site, tracker_api):
                 headers[header["key"]] = (
                     tracker_api
                     if header["value"] == "API_KEY"
-                    else Environment.get_property_or_default(
+                    else GGBotConfig().get_config(
                         f"{search_site}_{header['value']}", ""
                     )
                 )
@@ -957,13 +966,14 @@ def _can_upload_to_ptp():
     # to upload to ptp the image host ptpimg needs to be configured and enabled.
     enabled_img_host_num_loop = 0
     found_ptpimg = False
+    img_host_config = ImageHostConfig()
     # checking whether user has enabled ptpimg in img_host_X env variable
     while (
-        Environment.get_image_host_by_priority(enabled_img_host_num_loop + 1)
+        img_host_config.IMAGE_HOST_BY_PRIORITY(enabled_img_host_num_loop + 1)
         is not None
     ):
         if (
-            Environment.get_image_host_by_priority(
+            img_host_config.IMAGE_HOST_BY_PRIORITY(
                 enabled_img_host_num_loop + 1
             )
             == "ptpimg"
@@ -978,8 +988,8 @@ def _can_upload_to_ptp():
 
     # now lets check whether user has provided the ptpimg api key
     if (
-        Environment.get_image_host_api_key("ptpimg") is None
-        or len(Environment.get_image_host_api_key("ptpimg")) <= 0
+        img_host_config.IMAGE_HOST_BY_API_KEY("ptpimg") is None
+        or len(img_host_config.IMAGE_HOST_BY_API_KEY("ptpimg")) <= 0
     ):
         return False
 
@@ -1056,7 +1066,8 @@ def validate_and_load_external_templates(template_validator, working_folder):
     total_number_templates = len(
         list(
             filter(
-                lambda entry: entry.is_file() and entry.suffix == ".json",
+                lambda template_file: template_file.is_file()
+                and template_file.suffix == ".json",
                 Path(external_templates_dir).glob("**/*"),
             )
         )
@@ -1110,10 +1121,10 @@ def validate_and_load_external_templates(template_validator, working_folder):
                 )
 
         # now we have valid template and a proper acronym.
-        # now lets ensure that the api key and announce url have been set properly in environment variables.
+        # now let's ensure that the api key and announce url have been set properly in environment variables.
         api_key_dict = {}
         for tracker in valid_templates:
-            api_key = Environment.get_property_or_default(
+            api_key = GGBotConfig().get_config(
                 f"{tracker_to_acronym[tracker].upper()}_API_KEY",
                 "INVALID_API_KEY",
             )

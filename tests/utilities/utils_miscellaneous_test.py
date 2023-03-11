@@ -17,7 +17,6 @@ from pathlib import Path
 
 import pytest
 from pymediainfo import MediaInfo
-from pytest_mock import mocker
 
 from utilities.utils_miscellaneous import *
 

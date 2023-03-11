@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
 import math
 from functools import cached_property
@@ -5,7 +21,7 @@ from typing import Callable
 
 from torf import Torrent
 
-from .generator_base import GGBotTorrentGeneratorBase
+from modules.torrent_generator.generator_base import GGBotTorrentGeneratorBase
 
 
 class GGBOTTorrent(Torrent):

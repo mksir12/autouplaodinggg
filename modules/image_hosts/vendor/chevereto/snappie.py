@@ -1,6 +1,8 @@
 from typing import Dict
 
-from .chevereto_base import CheveretoImageHostBase
+from modules.image_hosts.vendor.chevereto.chevereto_base import (
+    CheveretoImageHostBase,
+)
 
 
 class SnappieImageHost(CheveretoImageHostBase):

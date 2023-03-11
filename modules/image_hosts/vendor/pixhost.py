@@ -3,8 +3,8 @@ import logging
 import requests
 from rich.console import Console
 
-from ..image_host_base import GGBotImageHostBase
-from ..image_upload_status import GGBotImageUploadStatus
+from modules.image_hosts.image_host_base import GGBotImageHostBase
+from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()

@@ -2,9 +2,10 @@ from unittest import mock
 
 import mongomock as mongomock
 import pytest
+from bson import json_util
 
-import modules.env as Environment
 from modules.cache import CacheVendor, CacheFactory
+from modules.config import CacheConfig
 from utilities.utils_visor_server import VisorServerManager
 
 
@@ -22,7 +23,7 @@ class TestVisorServerManager:
     @mock.patch("os.getenv", return_value="Mongo")
     def cache(self, mock_env, mock_get_mongo_client, mock_mongo_client):
         mock_get_mongo_client.return_value = mock_mongo_client
-        return CacheFactory().create(CacheVendor[Environment.get_cache_type()])
+        return CacheFactory().create(CacheVendor[CacheConfig().CACHE_TYPE])
 
     @pytest.fixture
     def visor_server_manager(self, cache):
@@ -30,7 +31,7 @@ class TestVisorServerManager:
 
     @pytest.fixture(scope="class")
     def mongo_database(self, mock_mongo_client):
-        yield mock_mongo_client.get_database("Mongo")
+        yield mock_mongo_client.get_database("gg-bot-auto-uploader")
 
     @pytest.fixture(scope="class")
     def torrents_collection(self, mongo_database):
@@ -125,7 +126,7 @@ class TestVisorServerManager:
 
     def test_failed_torrents_statistics(self, visor_server_manager):
         assert visor_server_manager.failed_torrents_statistics() == {
-            "all": 4,
+            "all": 2,
             "dupe_check_failure": 1,
             "unknown_failure": 1,
             "upload_failure": 0,
@@ -164,10 +165,8 @@ class TestVisorServerManager:
         self, visor_server_manager, torrents_collection
     ):
         expected = [
-            _convert_oid_to_object_id(
-                torrents_collection.find_one(
-                    {"id": "5374c84f-631c-4faa-8241-da1e6980062b"}
-                )
+            torrents_collection.find_one(
+                {"id": "5374c84f-631c-4faa-8241-da1e6980062b"}
             )
         ]
         assert (

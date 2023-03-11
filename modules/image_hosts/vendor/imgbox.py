@@ -4,8 +4,8 @@ import os
 
 import pyimgbox
 
-from ..image_host_base import GGBotImageHostBase
-from ..image_upload_status import GGBotImageUploadStatus
+from modules.image_hosts.image_host_base import GGBotImageHostBase
+from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
 
 
 class ImgboxImageHost(GGBotImageHostBase):

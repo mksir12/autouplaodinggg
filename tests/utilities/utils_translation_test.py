@@ -343,9 +343,11 @@ def test_should_delay_mapping(load_config, tracker_settings, expected):
 def test_perform_delayed_hybrid_mapping(
     load_config, tracker_settings, torrent_info, expected
 ):
-    translation.perform_delayed_hybrid_mapping(
-        load_config, tracker_settings, torrent_info, False
-    )
+    GGBotHybridMapper(
+        hybrid_mappings=load_config["hybrid_mappings"],
+        torrent_info=torrent_info,
+        exit_program=False,
+    ).perform_delayed_hybrid_mapping(tracker_settings=tracker_settings)
     assert tracker_settings["subcat"] == expected
 
 
@@ -404,6 +406,11 @@ def test_perform_delayed_hybrid_mapping_multiple_mappings(
     subcat_4,
     subcat_5,
 ):
+    GGBotHybridMapper(
+        hybrid_mappings=load_multiple_mapping_config["hybrid_mappings"],
+        torrent_info=torrent_info,
+        exit_program=False,
+    ).perform_delayed_hybrid_mapping(tracker_settings=tracker_settings)
     translation.perform_delayed_hybrid_mapping(
         load_multiple_mapping_config, tracker_settings, torrent_info, False
     )

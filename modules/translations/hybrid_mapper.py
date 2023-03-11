@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
 import sys
 from typing import Dict, Callable, Union, Optional
@@ -279,3 +295,33 @@ class GGBotHybridMapper:
             )
             return True
         return False
+
+    def perform_delayed_hybrid_mapping(self, *, tracker_settings):
+        """
+        I think this does mapping for all hybrid mappings configured
+        """
+        no_of_hybrid_mappings = len(self.hybrid_mappings.keys())
+        logging.info(
+            f"[HybridMapping] Performing hybrid mapping after all translations have completed. No of hybrid mappings "
+            f":: '{no_of_hybrid_mappings}' "
+        )
+        for _ in range(0, no_of_hybrid_mappings):
+            for translation_value in self.hybrid_mappings.keys():
+                # check whether the particular field can be undergoing hybrid mapping
+                delay_mapping = self.should_delay_mapping(
+                    translation_value=translation_value,
+                    prerequisites=self.hybrid_mappings[translation_value][
+                        "prerequisite"
+                    ],
+                    tracker_settings=tracker_settings,
+                )
+                if (
+                    translation_value not in tracker_settings
+                    and not delay_mapping
+                ):
+                    tracker_settings[
+                        translation_value
+                    ] = self.perform_hybrid_mapping(
+                        translation_value=translation_value,
+                        tracker_settings=tracker_settings,
+                    )

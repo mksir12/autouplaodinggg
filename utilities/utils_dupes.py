@@ -1,16 +1,16 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -26,7 +26,7 @@ from rich.console import Console
 from rich.prompt import Confirm
 from rich.table import Table
 
-import modules.env as Environment
+from modules.config import UploaderConfig
 from utilities.utils import prepare_headers_for_tracker
 from utilities.utils_miscellaneous import miscellaneous_identify_repacks
 
@@ -369,13 +369,9 @@ def search_for_dupes_api(
         f"[DupeCheck] We currently are tying to upload a repack type: '{is_repack_or_proper}'. Non '{is_repack_or_proper}' release will be ignored during dupe check"
     )
 
-    imdb = (
-        imdb.replace("tt", "")
-        if config["dupes"]["strip_text"] == True
-        else imdb
-    )
+    imdb = imdb.replace("tt", "") if config["dupes"]["strip_text"] else imdb
     url_dupe_payload = (
-        None  # this is here just for the log, its not technically needed
+        None  # this is here just for the log, It's not technically needed
     )
 
     # multiple authentication modes
@@ -423,7 +419,7 @@ def search_for_dupes_api(
                 json_data=url_dupe_payload,
                 headers=headers,
             )
-            if dupe_check_result == True:
+            if dupe_check_result is True:
                 return True  # being pessimistic and assuming dupes exist in tracker
         else:
             dupe_check_result = _make_request(
@@ -434,7 +430,7 @@ def search_for_dupes_api(
                 multipart_data=url_dupe_payload,
                 headers=headers,
             )
-            if dupe_check_result == True:
+            if dupe_check_result is True:
                 return True  # being pessimistic and assuming dupes exist in tracker
 
     else:  # GET request (BLU & ACM)
@@ -453,7 +449,7 @@ def search_for_dupes_api(
             site_name=str(config["name"]).upper(),
             headers=headers,
         )
-        if dupe_check_result == True:
+        if dupe_check_result is True:
             return True  # being pessimistic and assuming dupes exist in tracker
 
     logging.info(
@@ -472,8 +468,8 @@ def search_for_dupes_api(
         )
         return False
 
-    # Now that we have the response from tracker(X) we can parse the json and try to identify dupes
-    # We first break down the results into very basic categories like "remux", "encode", "web" etc and store the title + results here
+    # Now that we have the response from tracker(X) we can parse the json and try to identify dupes We first break
+    # down the results into very basic categories like "remux", "encode", "web" etc and store the title + results here
     existing_release_types = {}
     existing_releases_count = {
         "bluray_encode": 0,
@@ -490,15 +486,16 @@ def search_for_dupes_api(
     # similarly if a repack or a proper release is already on tracker, then that's 100% dupe
     cent_percent_dupes = {}
     single_episode_upload_with_season_pack_available = False
-    # to handle torrents with HDR and DV, we keep a separate dictionary to keep tracker of hdr. non-hdr and dv releases
-    # the reason to go for a separate map is because in `existing_release_types` the keys are torrent titles and that is not possible for hdr based filtering
-    # note that for hdr filtering we are not bothered about the different formats (PQ10, HDR, HLG etc), Since its rare to see a show release in multiple formats.
-    # although not impossible. (moonknight had PQ10 and HDR versions)
+    # to handle torrents with HDR and DV, we keep a separate dictionary to keep tracker of hdr. non-hdr and dv
+    # releases the reason to go for a separate map is that in `existing_release_types` the keys are torrent titles
+    # and that is not possible for hdr based filtering note that for hdr filtering we are not bothered about the
+    # different formats (PQ10, HDR, HLG etc.), Since it's rare to see a show release in multiple formats. although not
+    # impossible. (moon knight had PQ10 and HDR versions)
     hdr_format_types = {"hdr": [], "dv_hdr": [], "dv": [], "normal": []}
 
-    # adding support for speedapp. Speedapp just returns the torrents as a json array.
+    # adding support for speedapp. SpeedApp just returns the torrents as a json array.
     # for compatibility with other trackers a new flag is added named `is_needed` under `parse_json`
-    # as the name indicates, it decides whether or not the `dupe_check_result` returned from the tracker
+    # as the name indicates, it decides whether the `dupe_check_result` returned from the tracker
     # needs any further parsing.
     logging.debug(
         f'[DupeCheck] DupeCheck config for tracker `{search_site}` \n {pformat(config["dupes"])}'
@@ -506,7 +503,7 @@ def search_for_dupes_api(
     dupe_check_response = _get_response_from_wrapper(
         dupe_check_result, search_site, str(config["name"]).upper()
     )
-    if dupe_check_response == True:
+    if dupe_check_response is True:
         return True
 
     torrent_items = _get_torrent_item(
@@ -529,8 +526,9 @@ def search_for_dupes_api(
             else "name"
         )
         torrent_title = str(torrent_details[torrent_name_key])
-        # certain trackers (NOT ANTHELION) won't give the details as one field. In such cases, we can combine the data from multiple fields to create the torrent name ourselves
-        # If the configured fields are not present then, we'll log the errors and then just skip it.
+        # certain trackers (NOT ANTHELION) won't give the details as one field. In such cases, we can combine the
+        # data from multiple fields to create the torrent name ourselves If the configured fields are not present
+        # then, we'll log the errors and then just skip it.
         if (
             "combine_fields" in config["dupes"]["parse_json"]
             and config["dupes"]["parse_json"]["combine_fields"] is True
@@ -579,7 +577,8 @@ def search_for_dupes_api(
         f"[DupeCheck] Existing release types based on hdr formats identified from tracker {search_site} are {hdr_format_types}"
     )
 
-    # This just updates a dict with the number of a particular "type" of release exists on site (e.g. "2 bluray_encodes" or "1 bluray_remux" etc)
+    # This just updates a dict with the number of a particular "type" of release exists on site (e.g. "2
+    # bluray_encodes" or "1 bluray_remux" etc.)
     for onsite_quality_type in existing_release_types.values():
         existing_releases_count[onsite_quality_type] += 1
     for hdr_format in hdr_format_types:
@@ -588,7 +587,8 @@ def search_for_dupes_api(
         msg=f"[DupeCheck] Results from initial dupe query (all resolution): {existing_releases_count}"
     )
 
-    # If we get no matches when searching via IMDB ID that means this content hasn't been upload in any format, no possibility for dupes
+    # If we get no matches when searching via IMDB ID that means this content hasn't been upload in any format,
+    # no possibility for dupes
     if len(existing_release_types.keys()) == 0:
         logging.info(
             msg="[DupeCheck] Dupe query did not return any releases that we could parse, assuming no dupes exist."
@@ -644,7 +644,7 @@ def search_for_dupes_api(
         )
         logging.debug(f"\n{pformat(their_title_guessit)}")
 
-        # elimination conditiaon
+        # elimination condition
         #   If resolution doesn't match then we can remove items
         logging.debug(
             f'[DupeCheck] Uploading media properties ==> Resolution :: {torrent_info["screen_size"]}, Source ::: {torrent_info["source_type"]}'
@@ -927,9 +927,10 @@ def search_for_dupes_api(
             f"[DupeCheck] Filtered out: {number_of_discarded_seasons} results for not being the right season ({season_num})"
         )
 
+    uploader_config = UploaderConfig()
     possible_dupes_table = Table(show_header=True, header_style="bold cyan")
     possible_dupes_table.add_column(
-        f"Exceeds Max % ({Environment.get_acceptable_similarity_percentage()}%)",
+        f"Exceeds Max % ({uploader_config.DUPE_CHECK_SIMILARITY_THRESHOLD}%)",
         justify="left",
     )
     possible_dupes_table.add_column(
@@ -967,12 +968,12 @@ def search_for_dupes_api(
     ):
         mark_as_dupe = bool(
             possible_dupe_with_percentage_dict[possible_dupe]
-            >= Environment.get_acceptable_similarity_percentage()
+            >= uploader_config.DUPE_CHECK_SIMILARITY_THRESHOLD
         )
         mark_as_dupe_color = "bright_red" if mark_as_dupe else "dodger_blue1"
         mark_as_dupe_percentage_difference_raw_num = (
             possible_dupe_with_percentage_dict[possible_dupe]
-            - Environment.get_acceptable_similarity_percentage()
+            - uploader_config.DUPE_CHECK_SIMILARITY_THRESHOLD
         )
         mark_as_dupe_percentage_difference = f'{"+" if mark_as_dupe_percentage_difference_raw_num >= 0 else "-"}{abs(mark_as_dupe_percentage_difference_raw_num)}%'
 
@@ -1025,7 +1026,7 @@ def search_for_dupes_api(
             )
             # If auto_mode is enabled then return true in all cases
             # If user chooses Yes / y => then we return False indicating that there are no dupes and processing can continue
-            # If user chooses no / n => then we return True indicating that there are possible duplicates and stop the upload for the tracker
+            # If user chooses no / n => then we return Trueretu indicating that there are possible duplicates and stop the upload for the tracker
             return (
                 True
                 if auto_mode

@@ -5,9 +5,9 @@ from typing import Dict
 import requests
 from rich.console import Console
 
-import modules.env as Environment
-from ...image_host_base import GGBotImageHostBase
-from ...image_upload_status import GGBotImageUploadStatus
+from modules.config import ImageHostConfig
+from modules.image_hosts.image_host_base import GGBotImageHostBase
+from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
@@ -16,7 +16,7 @@ console = Console()
 class CheveretoImageHostBase(GGBotImageHostBase, metaclass=ABCMeta):
     def __init__(self, image_path: str):
         super().__init__(image_path)
-        self.api_key = Environment.get_image_host_api_key(self.img_host)
+        self.api_key = ImageHostConfig().IMAGE_HOST_BY_API_KEY(self.img_host)
 
     @property
     @abstractmethod

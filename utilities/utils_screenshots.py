@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import json
 import logging
 from datetime import datetime
@@ -8,7 +24,7 @@ from ffmpy import FFmpeg
 from rich.console import Console
 from rich.progress import track
 
-import modules.env as Environment
+from modules.config import UploaderConfig
 from modules.constants import (
     BB_CODE_IMAGES_PATH,
     URL_IMAGES_PATH,
@@ -18,23 +34,19 @@ from modules.constants import (
 )
 from modules.image_hosts.image_host_manager import GGBotImageHostManager
 from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
-from .utils import normalize_for_system_path
+from utilities.utils import normalize_for_system_path
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
 
 
-def _get_ss_range(duration, num_of_screenshots):
+def _get_ss_range(duration: int, num_of_screenshots: int) -> List[str]:
     # If no spoilers is enabled, then screenshots are taken from first half of the movie or tv show
     # otherwise screenshots are taken at regular intervals from the whole movie or tv show
-    first_time_stamp = (
-        int(int(duration) / 2)
-        if Environment.is_no_spoiler_screenshot()
-        else int(duration)
-    ) / int(int(num_of_screenshots) + 1)
+    first_time_stamp = (int(duration / 2)) / (num_of_screenshots + 1)
 
     timestamps = []
-    for num_screen in range(1, int(num_of_screenshots) + 1):
+    for num_screen in range(1, num_of_screenshots + 1):
         millis = round(first_time_stamp) * num_screen
         timestamps.append(
             str(
@@ -66,7 +78,7 @@ class GGBotScreenshotManager:
         self.skip_screenshots = skip_screenshots
         self.upload_media = upload_media
         self.duration = duration
-        self.num_of_screenshots = Environment.get_num_of_screenshots()
+        self.num_of_screenshots: int = UploaderConfig().NO_OF_SCREENSHOTS
         self.torrent_title = normalize_for_system_path(torrent_title)
         self.image_host_manager = GGBotImageHostManager(self.torrent_title)
 
@@ -119,13 +131,13 @@ class GGBotScreenshotManager:
     def _zero_screenshots_needed(self) -> bool:
         # if user has set number of screenshots to 0, then we don't have to take any screenshots.
         logging.error(
-            f"[GGBotScreenshotManager::generate_screenshots] num_of_screenshots is "
-            f'{"not set" if self.num_of_screenshots is None else f"set to {self.num_of_screenshots}"}, '
+            f"[GGBotScreenshotManager::generate_screenshots] No of screenshots is "
+            f'{"not set" if self.num_of_screenshots == 0 else f"set to {self.num_of_screenshots}"}, '
             f"continuing without screenshots."
         )
         console.print(
-            f"\nnum_of_screenshots is "
-            f'{"not set" if self.num_of_screenshots is None else f"set to {self.num_of_screenshots}"}, \n',
+            f"\nNo of screenshots is "
+            f'{"not set" if self.num_of_screenshots == 0 else f"set to {self.num_of_screenshots}"}, \n',
             style="bold red",
         )
         return self._write_no_screenshot_data()
@@ -221,14 +233,15 @@ class GGBotScreenshotManager:
 
         if self.skip_screenshots:
             return self._skip_screenshot_generation()
-        if self.num_of_screenshots == "0":
+        if self.num_of_screenshots == 0:
             return self._zero_screenshots_needed()
         if self.image_host_manager.no_of_image_hosts == 0:
             return self._write_no_screenshot_data()
 
         # Figure out where exactly to take screenshots by evenly dividing up the length of the video
-        ss_timestamps = _get_ss_range(
-            duration=self.duration, num_of_screenshots=self.num_of_screenshots
+        ss_timestamps: List[str] = _get_ss_range(
+            duration=int(self.duration),
+            num_of_screenshots=self.num_of_screenshots,
         )
         timestamp_outfile_tuple = self._get_timestamp_outfile_tuple(
             ss_timestamps

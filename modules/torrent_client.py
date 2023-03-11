@@ -1,20 +1,21 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
+from typing import Union
 
 
 # Using enum class create enumerations
@@ -63,7 +64,9 @@ class TorrentClient:
             category,
         )
 
-    def update_torrent_category(self, info_hash, category_name=None):
+    def update_torrent_category(
+        self, info_hash, category_name: Union[str, None] = None
+    ):
         self.client.update_torrent_category(info_hash, category_name)
 
     def get_dynamic_trackers(self, torrent):

@@ -1,21 +1,37 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2022  Noob Master669
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
 from typing import List
 
 from rich.console import Console
 
-import modules.env as Environment
-from .image_host_base import GGBotImageHostBase
-from .image_upload_status import GGBotImageUploadStatus
-from .vendor.chevereto.freeimage import FreeImageImageHost
-from .vendor.chevereto.imgbb import ImgbbImageHost
-from .vendor.chevereto.imgfi import ImgFiImageHost
-from .vendor.chevereto.lensdump import LensdumpImageHost
-from .vendor.chevereto.snappie import SnappieImageHost
-from .vendor.dummy import DummyImageHost
-from .vendor.imgbox import ImgboxImageHost
-from .vendor.imgur import ImgurImageHost
-from .vendor.pixhost import PixhostImageHost
-from .vendor.ptpimg import PTPImgImageHost
+from modules.image_hosts.image_host_base import GGBotImageHostBase
+from modules.image_hosts.image_upload_status import GGBotImageUploadStatus
+from modules.image_hosts.vendor.chevereto.freeimage import FreeImageImageHost
+from modules.image_hosts.vendor.chevereto.imgbb import ImgbbImageHost
+from modules.image_hosts.vendor.chevereto.imgfi import ImgFiImageHost
+from modules.image_hosts.vendor.chevereto.lensdump import LensdumpImageHost
+from modules.image_hosts.vendor.chevereto.snappie import SnappieImageHost
+from modules.image_hosts.vendor.dummy import DummyImageHost
+from modules.image_hosts.vendor.imgbox import ImgboxImageHost
+from modules.image_hosts.vendor.imgur import ImgurImageHost
+from modules.image_hosts.vendor.pixhost import PixhostImageHost
+from modules.image_hosts.vendor.ptpimg import PTPImgImageHost
+from modules.config import ImageHostConfig
 
 # For more control over rich terminal content, import and construct a Console object.
 console = Console()
@@ -23,8 +39,9 @@ console = Console()
 
 class GGBotImageHostManager:
     def __init__(self, torrent_title):
+        self.config = ImageHostConfig()
         self.image_hosts: List = self._get_valid_configured_image_hosts()
-        self.thumb_size = Environment.get_thumb_size()
+        self.thumb_size = self.config.THUMB_SIZE
         self.torrent_title = torrent_title
 
     @property
@@ -37,7 +54,7 @@ class GGBotImageHostManager:
         image_hosts = []
         index = 1
         while True:
-            img_host = Environment.get_image_host_by_priority(index)
+            img_host = self.config.IMAGE_HOST_BY_PRIORITY(index)
             if img_host is None or len(img_host) == 0:
                 break
             index += 1
@@ -62,7 +79,7 @@ class GGBotImageHostManager:
             logging.debug(
                 f"[GGBotScreenshotManager::init] Doing api key validation for {image_host}"
             )
-            if Environment.get_image_host_api_key(image_host) is not None:
+            if ImageHostConfig().IMAGE_HOST_BY_API_KEY(image_host) is not None:
                 valid_image_hosts.append(image_host)
                 continue
             logging.error(

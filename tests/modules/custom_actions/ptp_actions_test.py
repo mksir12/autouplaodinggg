@@ -20,7 +20,6 @@ import pickle
 import pytest
 
 from pathlib import Path
-from pytest_mock import mocker
 
 import modules.custom_actions.ptp_actions as ptp_actions
 

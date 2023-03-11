@@ -1,16 +1,16 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -19,9 +19,10 @@ import json
 import logging
 import uuid
 from pprint import pformat
+from typing import Dict, Tuple, Union, Any
 
-import modules.env as Environment
 from modules.cache import Cache
+from modules.config import ReUploaderConfig
 from modules.torrent_client import TorrentClient
 from utilities.utils import get_and_validate_configured_trackers
 
@@ -29,6 +30,15 @@ TORRENT_DB_KEY_PREFIX = "ReUpload::Torrent"
 JOB_REPO_DB_KEY_PREFIX = "ReUpload::JobRepository"
 TMDB_DB_KEY_PREFIX = "MetaData::TMDB"
 UPLOAD_RETRY_LIMIT = 3
+
+
+class TrackerUploadStatus:
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+    DUPE = "DUPE"
+    BANNED_GROUP = "BANNED_GROUP"
+    PAYLOAD_ERROR = "PAYLOAD_ERROR"
 
 
 class TorrentStatus:
@@ -39,8 +49,34 @@ class TorrentStatus:
     PENDING = "PENDING"
     DUPE_CHECK_FAILED = "DUPE_CHECK_FAILED"
     READY_FOR_PROCESSING = "READY_FOR_PROCESSING"
+    KNOWN_FAILURE = "KNOWN_FAILURE"
     # unrecoverable error. Needs to check the log or console to resolve them. Not automatic fix available
     UNKNOWN_FAILURE = "UNKNOWN_FAILURE"
+
+
+class TorrentFailureStatus:
+    RAR_EXTRACTION_FAILED = "RAR_EXTRACTION_FAILED"
+    TMDB_IDENTIFICATION_FAILED = "TMDB_IDENTIFICATION_FAILED"
+    DUPE_CHECK_FAILED = "DUPE_CHECK_FAILED"
+    TYPE_AND_BASIC_INFO_ERROR = "TYPE_AND_BASIC_INFO_ERROR"
+    UNKNOWN_FAILURE = "UNKNOWN_FAILURE"
+
+
+torrent_failure_messages = {
+    TorrentFailureStatus.RAR_EXTRACTION_FAILED: "Failed to extract rared contents",
+    TorrentFailureStatus.TMDB_IDENTIFICATION_FAILED: "Failed to identify proper TMDb ID",
+    TorrentFailureStatus.TYPE_AND_BASIC_INFO_ERROR: "Type and basic info of the torrent could not be identified.",
+    TorrentFailureStatus.DUPE_CHECK_FAILED: "A dupe of this torrent already exists in tracker",
+    TorrentFailureStatus.UNKNOWN_FAILURE: "Unknown Failure. Please get in touch with dev :(",
+}
+
+client_labels_for_failure = {
+    TorrentFailureStatus.RAR_EXTRACTION_FAILED: "GGBOT_ERROR_RAR_EXTRACTION",
+    TorrentFailureStatus.TMDB_IDENTIFICATION_FAILED: "TMDB_IDENTIFICATION_FAILED",
+    TorrentFailureStatus.TYPE_AND_BASIC_INFO_ERROR: "GGBOT_ERROR_TYPE_AND_BASIC",
+    TorrentFailureStatus.DUPE_CHECK_FAILED: "DUPE_CHECK_FAILED",
+    TorrentFailureStatus.UNKNOWN_FAILURE: "GGBOT_ERROR_UNKNOWN_FAILURE",
+}
 
 
 class JobStatus:
@@ -52,6 +88,15 @@ class AutoReUploaderManager:
     def __init__(self, *, cache: Cache, client: TorrentClient):
         self.cache = cache
         self.client = client
+        reuploader_config = ReUploaderConfig()
+        self.dynamic_tracker_selection_enabled: bool = (
+            reuploader_config.DYNAMIC_TRACKER_SELECTION
+        )
+        self.perform_path_translation: bool = reuploader_config.TRANSLATE_PATH
+        self.torrent_client_accessible_path: bool = (
+            reuploader_config.TORRENT_CLIENT_PATH
+        )
+        self.uploader_accessible_path: bool = reuploader_config.UPLOADER_PATH
 
     @staticmethod
     def get_unique_id():
@@ -76,7 +121,7 @@ class AutoReUploaderManager:
             TorrentStatus.PENDING,
         ]
 
-    def initialize_torrent(self, torrent):
+    def initialize_torrent(self, torrent: Dict) -> Dict:
         logging.debug(
             f'[AutoReUploaderManager::initialize_torrent_data] Initializing torrent data in cache for {torrent["name"]}'
         )
@@ -100,7 +145,7 @@ class AutoReUploaderManager:
         )
         return init_data  # adding return for testing
 
-    def skip_reupload(self, torrent):
+    def skip_reupload(self, torrent: Dict) -> bool:
         logging.info(
             f'[ReUploadUtils] Updating upload attempt for torrent {torrent["name"]}'
         )
@@ -110,7 +155,7 @@ class AutoReUploaderManager:
         self.cache.save(f'{TORRENT_DB_KEY_PREFIX}::{torrent["hash"]}', torrent)
         return torrent["upload_attempt"] > UPLOAD_RETRY_LIMIT
 
-    def get_cached_data(self, info_hash):
+    def get_cached_data(self, info_hash: str) -> Dict:
         data = self.cache.get(f"{TORRENT_DB_KEY_PREFIX}::{info_hash}")
         return data[0] if data is not None and len(data) > 0 else None
 
@@ -297,35 +342,34 @@ class AutoReUploaderManager:
         )
         return torrents
 
-    @staticmethod
-    def translate_torrent_path(torrent_path):
-        if Environment.is_translation_needed():
-            logging.info(
-                '[ReUploadUtils] Translating paths... ("translation_needed" flag set to True in reupload.config.env) '
-            )
+    def translate_torrent_path(self, torrent_path: str) -> str:
+        if not self.perform_path_translation:
+            logging.info("[ReUploadUtils] No path translations needed.")
+            return torrent_path
 
-            # Just in case the user didn't end the path with a forward slash...
-            host_path = (
-                f"{Environment.get_uploader_accessible_path()}/".replace(
-                    "//", "/"
-                )
-            )
-            remote_path = (
-                f"{Environment.get_client_accessible_path()}/".replace(
-                    "//", "/"
-                )
-            )
+        logging.info(
+            '[ReUploadUtils] Translating paths... ("translation_needed" flag set to True in reupload.config.env) '
+        )
 
-            translated_path = str(torrent_path).replace(remote_path, host_path)
-            # And finally log the changes
-            logging.info(
-                f"[ReUploadUtils] Remote path of the torrent: {torrent_path}"
-            )
-            logging.info(
-                f"[ReUploadUtils] Translated path of the torrent: {translated_path}"
-            )
-            torrent_path = translated_path
-        return torrent_path
+        # Just in case the user didn't end the path with a forward slash...
+        host_path = f"{self.uploader_accessible_path}/".replace("//", "/")
+        remote_path = f"{self.torrent_client_accessible_path}/".replace(
+            "//", "/"
+        )
+        logging.info(f"[ReUploadUtils] Host path of the torrent: {host_path}")
+        logging.info(
+            f"[ReUploadUtils] Remote path of the torrent: {remote_path}"
+        )
+
+        translated_path = str(torrent_path).replace(remote_path, host_path)
+        # And finally log the changes
+        logging.info(
+            f"[ReUploadUtils] Remote path (torrent_path) of the torrent: {torrent_path}"
+        )
+        logging.info(
+            f"[ReUploadUtils] Translated path of the torrent: {translated_path}"
+        )
+        return translated_path
 
     def get_trackers_dynamically(
         self,
@@ -334,31 +378,32 @@ class AutoReUploaderManager:
         api_keys_dict,
         all_trackers_list,
     ):
-        # we first try to dynamically select the trackers to upload to from the torrent label. (if the feature is
-        # enabled.)
-        if Environment.is_dynamic_tracker_selection_needed():
-            logging.info(
-                "[ReUploadUtils] Uploader running in dynamic tracker section mode. Attempting to resolve any dynamic "
-                "trackers"
-            )
-            dynamic_trackers = None
-            try:
-                dynamic_trackers = self.client.get_dynamic_trackers(torrent)
-                logging.info(
-                    f"[ReUploadUtils] Dynamic trackers obtained from the torrent {torrent['name']} are {dynamic_trackers}"
-                )
-                return get_and_validate_configured_trackers(
-                    trackers=dynamic_trackers,
-                    all_trackers=False,
-                    api_keys_dict=api_keys_dict,
-                    all_trackers_list=all_trackers_list,
-                )
-            except AssertionError:
-                logging.error(
-                    f"[ReUploadUtils] None of the trackers dynamic trackers {dynamic_trackers} have a valid "
-                    f"configuration. Proceeding with fall back trackers {original_upload_to_trackers}"
-                )
+        if not self.dynamic_tracker_selection_enabled:
+            # well, no need to select trackers dynamically or no valid dynamic trackers (exception case)
+            return original_upload_to_trackers
 
+        # try to dynamically select the trackers to upload to from the torrent label.
+        logging.info(
+            "[ReUploadUtils] Uploader running in dynamic tracker section mode. Attempting to resolve any dynamic "
+            "trackers"
+        )
+        dynamic_trackers = None
+        try:
+            dynamic_trackers = self.client.get_dynamic_trackers(torrent)
+            logging.info(
+                f"[ReUploadUtils] Dynamic trackers obtained from the torrent {torrent['name']} are {dynamic_trackers}"
+            )
+            return get_and_validate_configured_trackers(
+                trackers=dynamic_trackers,
+                all_trackers=False,
+                api_keys_dict=api_keys_dict,
+                all_trackers_list=all_trackers_list,
+            )
+        except AssertionError:
+            logging.error(
+                f"[ReUploadUtils] None of the trackers dynamic trackers {dynamic_trackers} have a valid "
+                f"configuration. Proceeding with fall back trackers {original_upload_to_trackers}"
+            )
         # well, no need to select trackers dynamically or no valid dynamic trackers (exception case)
         return original_upload_to_trackers
 
@@ -434,3 +479,56 @@ class AutoReUploaderManager:
         # here status could be FAILED or PARTIALLY_SUCCESSFUL, we don't need to change this status
         # for testing purpose we just return the status obtained from cache
         return torrent_status
+
+    def mark_torrent_failure(
+        self, info_hash: str, status: TorrentFailureStatus
+    ):
+        self.update_torrent_field(info_hash, "status", status, False)
+        self.update_torrent_field(
+            info_hash,
+            "failure_message",
+            torrent_failure_messages[status],
+            False,
+        )
+        self.client.update_torrent_category(
+            info_hash=info_hash, category_name=client_labels_for_failure[status]
+        )
+
+    def update_jobs_and_torrent_status(
+        self,
+        info_hash: str,
+        tracker_status_map: Dict[
+            str, Tuple[TrackerUploadStatus, Union[Dict, Any]]
+        ],
+    ) -> None:
+        # saving tracker status to job repo
+        for trkr, response in tracker_status_map.items():
+            self._save_job_repo_entry(
+                info_hash, trkr, JobStatus.FAILED, response[1]
+            )
+
+        torrent_status = self.get_client_label_for_torrent(tracker_status_map)
+        if torrent_status is None:
+            torrent_status = TorrentStatus.SUCCESS
+        self.update_torrent_field(info_hash, "status", torrent_status, False)
+
+    @staticmethod
+    def get_client_label_for_torrent(
+        tracker_status_map: Dict[
+            str, Tuple[TrackerUploadStatus, Union[Dict, Any]]
+        ]
+    ) -> Union[str, None]:
+        if all(
+            status[0] == TrackerUploadStatus.SUCCESS
+            for trkr, status in tracker_status_map.items()
+        ):
+            # upload successful to all trackers
+            return None  # None tells client to set source label as category
+
+        if any(
+            status[0] != TrackerUploadStatus.SUCCESS
+            for trkr, status in tracker_status_map.items()
+        ):
+            # all uploads have failed
+            return TorrentStatus.FAILED
+        return TorrentStatus.PARTIALLY_SUCCESSFUL

@@ -13,6 +13,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -555,10 +556,16 @@ class TestAutoReUploaderManager:
         ],
     )
     def test_reupload_get_translated_torrent_path(
-        self, torrent_path, expected_path, reupload_manager, mocker
+        self, torrent_path, expected_path, mocker, mock_cache, mock_client
     ):
         mocker.patch(
             "os.getenv", side_effect=self.__torrent_path_translation_side_effect
+        )
+        reupload_manager = AutoReUploaderManager(
+            cache=mock_cache, client=mock_client
+        )
+        reupload_manager.perform_path_translation = os.getenv(
+            "translation_needed", False
         )
         assert (
             reupload_manager.translate_torrent_path(torrent_path)

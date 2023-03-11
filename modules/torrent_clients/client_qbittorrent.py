@@ -19,7 +19,7 @@ from datetime import datetime
 
 import qbittorrentapi
 
-import modules.env as Environment
+from modules.config import ClientConfig, ReUploaderConfig
 
 qbt_keys = [
     "category",
@@ -41,24 +41,26 @@ class Qbittorrent:
 
     def __init__(self):
         logging.info("[Qbittorrent] Connecting to the qbittorrent instance...")
+        self.client_config = ClientConfig()
+        self.reuploader_config = ReUploaderConfig()
         self.qbt_client = qbittorrentapi.Client(
-            host=Environment.get_client_host(),
-            port=Environment.get_client_port(),
-            username=Environment.get_client_username(),
-            password=Environment.get_client_password(),
+            host=self.client_config.CLIENT_HOST,
+            port=self.client_config.CLIENT_PORT,
+            username=self.client_config.CLIENT_USERNAME,
+            password=self.client_config.CLIENT_PASSWORD,
         )
 
         self.dynamic_tracker_selection = (
-            Environment.is_dynamic_tracker_selection_needed()
+            self.reuploader_config.DYNAMIC_TRACKER_SELECTION
         )
         if self.dynamic_tracker_selection:
             # reuploader running in dynamic tracker selection mode
             self.target_label = "GGBOT"
         else:
             # `target_label` is the label of the torrents that we are interested in
-            self.target_label = Environment.get_reupload_label()
+            self.target_label = self.reuploader_config.REUPLOAD_LABEL
         # `seed_label` is the label which will be added to the cross-seeded torrents
-        self.seed_label = Environment.get_cross_seed_label()
+        self.seed_label = self.reuploader_config.CROSS_SEED_LABEL
         # `source_label` is the label which will be added to the original torrent in the client
         self.source_label = f"{self.seed_label}_Source"
 

@@ -1,47 +1,41 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import functools
 import hashlib
+import sys
+import traceback
 from threading import Thread
 
 from flask import Flask, request
 
-import modules.env as Environment
+from modules.cache import CacheFactory, CacheVendor
+from modules.config import VisorConfig
+from modules.visor.schema import GGBotTorrentSchema
 from utilities.utils_visor_server import (
     VisorServerManager,
-    TorrentStatus,
     Query,
 )
 
 stored_key = None
 
 
-def is_valid(api_key):
-    global stored_key
-    if stored_key is None:
-        stored_key = hashlib.sha3_256(
-            f"Bearer {Environment.get_visor_api_key()}".encode()
-        ).hexdigest()
-    return stored_key == hashlib.sha3_256(api_key.encode()).hexdigest()
-
-
 def api_required(function):
     @functools.wraps(function)
-    def decorator(*args, **kwargs):
+    def decorator(self, *args, **kwargs):
         api_key = request.headers.get("Authorization", None)
         if api_key is None:
             return {
@@ -49,7 +43,7 @@ def api_required(function):
                 "message": "Please provide an api key",
             }, 403
 
-        if not is_valid(api_key):
+        if not self.is_valid(api_key):
             return {
                 "status": "UNAUTHORIZED",
                 "message": "Unauthorized Access",
@@ -67,6 +61,14 @@ def gg_bot_response(function):
         try:
             return {"status": "OK", "data": function(*args, **kwargs)}, 200
         except Exception as e:
+            print("Printing only the traceback above the current stack frame")
+            print(
+                "".join(
+                    traceback.format_exception(
+                        sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]
+                    )
+                )
+            )
             return {
                 "status": "ERROR",
                 "message": getattr(e, "message", repr(e)),
@@ -86,6 +88,7 @@ class EndpointAction:
 class Server:
     def __init__(self, cache):
         self.app = Flask("GG-BOT Auto-ReUploader")
+        self.visor_config = VisorConfig()
         self.visor_server_manager: VisorServerManager = VisorServerManager(
             cache
         )
@@ -167,32 +170,40 @@ class Server:
             endpoint, endpoint_name, EndpointAction(handler), methods=methods
         )
 
+    def is_valid(self, api_key):
+        global stored_key
+        if stored_key is None:
+            stored_key = hashlib.sha3_256(
+                f"Bearer {self.visor_config.API_KEY}".encode()
+            ).hexdigest()
+        return stored_key == hashlib.sha3_256(api_key.encode()).hexdigest()
+
     def start(self, detached=False):
         kwargs = {
             "host": "0.0.0.0",
-            "port": Environment.get_visor_port(),
+            "port": self.visor_config.PORT,
             "threaded": True,
             "use_reloader": False,
             "debug": False,
         }
         _ = (
             Thread(target=self.run, daemon=True, kwargs=kwargs).start()
-            if detached == True
-            else self.run(host="0.0.0.0", port=Environment.get_visor_port())
+            if detached
+            else self.run(host="0.0.0.0", port=self.visor_config.PORT)
         )
 
     @api_required
-    def status(self):
+    def status(self):  # YES
         return self.visor_server_manager.get_status()
 
     @api_required
     @gg_bot_response
-    def torrent_statistics(self):
+    def torrent_statistics(self):  # YES
         return self.visor_server_manager.get_torrent_statistics()
 
     @api_required
     @gg_bot_response
-    def failed_torrents_statistics(self):
+    def failed_torrents_statistics(self):  # YES
         return self.visor_server_manager.failed_torrents_statistics()
 
     @api_required
@@ -218,21 +229,11 @@ class Server:
     @api_required
     @gg_bot_response
     def update_metadata(self, torrent_id):
-        torrent = self.visor_server_manager.get_torrent_details_object(
-            torrent_id=torrent_id
+        torrent_data = GGBotTorrentSchema().dump(request.get_json())
+        return self.visor_server_manager.update_torrent(
+            torrent_id=torrent_id, update_data=torrent_data
         )
-        if len(torrent) == 0:
-            err = Exception()
-            err.message = "Invalid torrent Id"
-            raise err
-
-        torrent = torrent[0]
-        metadata = request.get_json()
-        torrent["tmdb_user_choice"] = metadata["tmdb"]
-        torrent["status"] = TorrentStatus.READY_FOR_PROCESSING
-        self.visor_server_manager.update_torrent_object(torrent=torrent)
         # db_metadata = {"tmdb": None, "imdb": None, "tvdb": None, "tvmaze": None, "mal": None, "title": None, "year": None, "type": None}
-        return "Successfully updated metadata."
 
     @api_required
     @gg_bot_response
@@ -287,3 +288,7 @@ class Server:
             items_per_page=items_per_page,
             filter_query=Query.PARTIALLY_SUCCESSFUL,
         )
+
+
+if __name__ == "__main__":
+    Server(cache=CacheFactory().create(cache_type=CacheVendor.Mongo)).start()
