@@ -452,7 +452,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": ["concert"]},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 70min * 60000
                 "imdb": "",
             },
@@ -462,7 +462,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": ["comedy", "stand-up-comedy"]},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 70min * 60000
                 "imdb": "",
             },
@@ -472,7 +472,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": ["short"]},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 70min * 60000
                 "imdb": "",
             },
@@ -484,7 +484,7 @@ def test_check_successful_upload(response, expected, mocker):
                 "tmdb_metadata": {
                     "keywords": ["short", "miniseries", "short-film"]
                 },
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 70min * 60000
                 "imdb": "",
             },
@@ -494,7 +494,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": ["miniseries"]},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 70min * 60000
                 "imdb": "",
             },
@@ -504,7 +504,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": []},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 70min * 60000
                 "imdb": "",
             },
@@ -514,7 +514,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": []},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "1200000",  # 20min * 60000
                 "imdb": "",
             },
@@ -524,7 +524,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": []},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "1200000",  # 20min * 60000
                 "imdb": "0020530",
             },
@@ -534,7 +534,7 @@ def test_check_successful_upload(response, expected, mocker):
         pytest.param(
             {
                 "tmdb_metadata": {"keywords": []},
-                "content_type": "movie",
+                "type": "movie",
                 "duration": "4200000",  # 20min * 60000
                 "imdb": "0499549",
             },
@@ -554,7 +554,7 @@ def test_get_ptp_type_from_user(mocker):
     tracker_settings = {}
     torrent_info = {
         "tmdb_metadata": {"keywords": []},
-        "content_type": "tv",
+        "type": "tv",
         "duration": "1200000",  # 20min * 60000
         "imdb": "",
     }
