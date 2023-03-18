@@ -302,7 +302,7 @@ class GGBotScreenshotManager:
         ):
             status: GGBotImageUploadStatus = (
                 self.image_host_manager.upload_screenshots(
-                    image_path=tuple_item[0]
+                    image_path=tuple_item[1]
                 )
             )
             if status.status:

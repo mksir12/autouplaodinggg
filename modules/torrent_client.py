@@ -16,6 +16,8 @@
 
 import enum
 from typing import Union
+from modules.torrent_clients.client_rtorrent import Rutorrent
+from modules.torrent_clients.client_qbittorrent import Qbittorrent
 
 
 # Using enum class create enumerations
