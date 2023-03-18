@@ -1776,7 +1776,7 @@ def _upload_to_tracker(
 
     GGBotTorrentCreator(
         media=torrent_media,
-        announce_urls=[tracker_env_config.ANNOUNCE_URL.split(" ")],
+        announce_urls=tracker_env_config.ANNOUNCE_URL.split(" "),
         source=config["source"],
         working_folder=working_folder,
         hash_prefix=torrent_info["working_folder"],
