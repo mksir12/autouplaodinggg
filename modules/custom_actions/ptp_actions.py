@@ -415,7 +415,7 @@ def get_ptp_type(torrent_info, tracker_settings, _):
             if torrent_info["tmdb_metadata"] is not None
             else []
         )
-        if torrent_info["content_type"] == "movie":
+        if torrent_info["type"] == "movie":
             duration_in_minutes = int(
                 (int(torrent_info["duration"]) / 6) / 10000
             )
