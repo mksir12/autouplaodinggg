@@ -23,7 +23,7 @@ from pymediainfo import MediaInfo
 from utilities.utils_basic import *
 
 working_folder = Path(__file__).resolve().parent.parent.parent
-temp_working_dir = "/tests/working_folder"
+temp_working_dir = "/tests/working_folder_raw"
 mediainfo_xml = "/tests/resources/mediainfo/xml/"
 mediainfo_summary = "/tests/resources/mediainfo/summary/"
 
