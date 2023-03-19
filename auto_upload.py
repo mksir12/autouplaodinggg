@@ -1749,7 +1749,7 @@ for file in upload_queue:
         # Skip this entire 'file upload' & move onto the next (if exists)
         continue
     torrent_info["upload_media"] = rar_file_validation_response[1]
-    # Performing guessit on the rawfile name and reusing the result instead of calling guessit over and over again
+    # Performing guessit on the raw file name and reusing the result instead of calling guessit over and over again
     guess_it_result = utils.perform_guessit_on_filename(
         torrent_info["upload_media"]
     )
@@ -1762,7 +1762,8 @@ for file in upload_queue:
         )
         == "skip_to_next_file"
     ):
-        # If there is an issue with the file & we can't upload we use this check to skip the current file & move on to the next (if exists)
+        # If there is an issue with the file & we can't upload we use this check to skip the current file & move on
+        # to the next (if exists)
         logging.debug(
             f"[Main] Skipping {torrent_info['upload_media']} because type and basic information cannot be identified."
         )

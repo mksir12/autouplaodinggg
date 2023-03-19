@@ -767,7 +767,7 @@ def basic_get_raw_video_file(upload_media):
     raw_video_file = None
     upload_media = f"{upload_media}/".replace("//", "/")
     for root, _, files in os.walk(upload_media, topdown=False):
-        for file_name in files:
+        for file_name in sorted(files):
             individual_file = os.path.join(root, file_name)
             logging.info(
                 f"[BasicUtils] Checking to see if {individual_file} is a video file"
