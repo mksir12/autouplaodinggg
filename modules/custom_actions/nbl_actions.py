@@ -4,4 +4,4 @@ def season_pack_dupe(torrent_info, tracker_settings, _):
         and torrent_info["episode_number"] != "0"
     ):
         return
-    tracker_settings["ignoredupes"] = 1
+    tracker_settings["ignoredupes"] = "1"
