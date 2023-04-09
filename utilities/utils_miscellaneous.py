@@ -93,6 +93,8 @@ def miscellaneous_perform_scene_group_capitalization(
             )
             srrdb_response = {}
 
+        logging.debug(f"[MiscellaneousUtils] Srrdb Response: {srrdb_response}")
+
         if (
             "results" not in srrdb_response
             or len(srrdb_response["results"]) < 1
