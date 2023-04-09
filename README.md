@@ -276,7 +276,7 @@ docker run --rm -it \
     - [ ] RetroFlix
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
-- [X] Issue#79: Releases tagged incorrectly as scene
+- [X] Issue#106: Releases tagged incorrectly as scene
 
 ### v3.0.8
 - [ ] Improved TMDB metadata search Phase 3
