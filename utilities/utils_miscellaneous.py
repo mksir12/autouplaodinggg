@@ -72,7 +72,9 @@ def miscellaneous_perform_scene_group_capitalization(
         f"[MiscellaneousUtils] pre.corrupt-net response: {precorrupt_response} "
     )
     if (
-        f"Nothing found for: {raw_file_name.replace('+', ' ')}"
+        not precorrupt_response
+        or precorrupt_response == ""
+        or f"Nothing found for: {raw_file_name.replace('+', ' ')}"
         in precorrupt_response
     ):
         # no results found in pre.corrupt-net.org. We can check srrdb api also just to be sure.
