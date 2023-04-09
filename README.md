@@ -276,6 +276,7 @@ docker run --rm -it \
     - [ ] RetroFlix
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
+- [X] Issue#98: Season Packs Not using 1st episode for Mediainfo
 - [X] Issue#106: Releases tagged incorrectly as scene
 
 ### v3.0.8
