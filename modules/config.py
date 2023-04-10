@@ -74,7 +74,7 @@ class UploaderConfig(GGBotConfig):
 
     @property
     def DUPE_CHECK_SIMILARITY_THRESHOLD(self):
-        return self._get_property("acceptable_similarity_percentage", 80)
+        return int(self._get_property("acceptable_similarity_percentage", 80))
 
     @cached_property
     def REUPLOADER(self):

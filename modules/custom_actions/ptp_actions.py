@@ -494,10 +494,22 @@ def add_trumpable_flags(torrent_info, tracker_settings, tracker_config):
     no_subs_in_release = _no_subs_in_release(tracker_settings["subtitles[]"])
 
     trumpable = None
+    logging.debug(
+        f"[CustomActions][PTP] Non english release: {is_non_english_release}"
+    )
+    logging.debug(
+        f"[CustomActions][PTP] English subs present: {is_english_subs_present}"
+    )
+    logging.debug(
+        f"[CustomActions][PTP] No subs in release: {no_subs_in_release}"
+    )
     # for all non-english release if there are no subtiles or if english subtitle is not present
     if is_non_english_release and (
         no_subs_in_release or not is_english_subs_present
     ):
+        logging.info(
+            "[CustomActions][PTP] Trumpable release. Getting trumpable tag from user"
+        )
         trumpable = _get_trumpable_flags()
     else:
         logging.info(
