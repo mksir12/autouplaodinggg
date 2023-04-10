@@ -45,13 +45,13 @@ repos:
         entry: poetry run black
         types_or: [python, pyi]
         require_serial: true
-      - id: isort
-        name: sort python imports
-        description: Automatically sort import statements
-        language: system
-        entry: poetry run isort
-        types_or: [cython, pyi, python]
-        require_serial: true
+#      - id: isort
+#        name: sort python imports
+#        description: Automatically sort import statements
+#        language: system
+#        entry: poetry run isort
+#        types_or: [cython, pyi, python]
+#        require_serial: true
       - id: pyupgrade
         name: check for old python syntax
         description: Automatically upgrade syntax for newer versions

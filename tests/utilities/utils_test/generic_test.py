@@ -19,10 +19,9 @@ import shutil
 from pathlib import Path
 
 import pytest
-from pytest_mock import mocker
 
 import utilities.utils as utils
-from modules.constants import SITE_TEMPLATES_DIR, VALIDATED_SITE_TEMPLATES_DIR
+from modules.constants import SITE_TEMPLATES_DIR
 from modules.template_schema_validator import TemplateSchemaValidator
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
@@ -376,12 +375,11 @@ def test_sanitize_release_group_from_guessit(torrent_info, expected):
 
 def test_validate_builtin_templates():
     all_available_templates = len(
-        list(
-            filter(
-                lambda entry: entry.is_file() and entry.suffix == ".json",
-                Path(f"{working_folder}/site_templates/").glob("**/*"),
-            )
-        )
+        [
+            entry
+            for entry in Path(f"{working_folder}/site_templates/").glob("**/*")
+            if entry.is_file() and entry.suffix == ".json"
+        ]
     )
     template_validator = TemplateSchemaValidator(
         f"{working_folder}/schema/site_template_schema.json"

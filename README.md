@@ -272,8 +272,12 @@ docker run --rm -it \
 # Roadmap
 ### v3.0.7
 - [ ] Add Support for new platforms:
-    - [ ] PirateTheNet
-    - [ ] RetroFlix
+    - [ ] TorrentLeech
+- [X] Code refactor v3
+- [X] Issue#98: Season Packs Not using 1st episode for Mediainfo
+- [X] Issue#106: Releases tagged incorrectly as scene
+
+### v3.0.8
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
@@ -300,6 +304,8 @@ docker run --rm -it \
 - [ ] Add Support for new platforms
     - [ ] MoreThanTV
     - [ ] DanishBytes
+    - [ ] RetroFlix
+    - [ ] PirateTheNet
 - [ ] Add support for DVDs
 
 <br>

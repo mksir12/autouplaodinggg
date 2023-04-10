@@ -1,16 +1,16 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -34,14 +34,14 @@ def miscellaneous_perform_scene_group_capitalization(
     # suppressing https verify false error
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    # Scene releases after they unrared are all lowercase (usually) so we fix the torrent title here (Never rename the actual file)
-    # new groups can be added in the `scene_groups.json`
+    # Scene releases after they unrared are all lowercase (usually) so we fix the torrent title here (Never rename
+    # the actual file) new groups can be added in the `scene_groups.json`
     scene_group_capitalization = json.load(open(scene_groups_path))
     release_group = torrent_info["release_group"]
 
     # compare the release group we extracted to the groups in the dict above ^^
     if str(release_group).lower() in scene_group_capitalization.keys():
-        # replace the "release_group" with the dict value we have
+        # replace the "release_group" with the dict value we have.
         # Also save the fact that this is a scene group for later (we can add a 'scene' tag later to BHD)
         return "true", scene_group_capitalization[str(release_group).lower()]
 
@@ -52,7 +52,7 @@ def miscellaneous_perform_scene_group_capitalization(
         idx_dots = [idx for idx, x in enumerate(raw_file_name) if x == "."]
         raw_file_name = raw_file_name[: max(idx_dots)]
 
-    # searching in pre.corrupt-net.org to check whether its a scene release or not.
+    # searching in pre.corrupt-net.org to check whether it's a scene release or not.
     logging.info(
         "[MiscellaneousUtils] Checking for scene release in 'pre.corrupt-net'"
     )
@@ -72,7 +72,9 @@ def miscellaneous_perform_scene_group_capitalization(
         f"[MiscellaneousUtils] pre.corrupt-net response: {precorrupt_response} "
     )
     if (
-        f"Nothing found for: {raw_file_name.replace('+', ' ')}"
+        not precorrupt_response
+        or precorrupt_response == ""
+        or f"Nothing found for: {raw_file_name.replace('+', ' ')}"
         in precorrupt_response
     ):
         # no results found in pre.corrupt-net.org. We can check srrdb api also just to be sure.
@@ -92,6 +94,8 @@ def miscellaneous_perform_scene_group_capitalization(
                 f"[MiscellaneousUtils] Error from srrdb.", exc_info=ex
             )
             srrdb_response = {}
+
+        logging.debug(f"[MiscellaneousUtils] Srrdb Response: {srrdb_response}")
 
         if (
             "results" not in srrdb_response
@@ -115,19 +119,24 @@ def miscellaneous_perform_scene_group_capitalization(
         )
         return "true", release_group
 
-    return "false", release_group
-
 
 def miscellaneous_identify_bluray_edition(upload_media):
-    # use regex (sourced and slightly modified from official radarr repo) to find torrent editions (Extended, Criterion, Theatrical, etc)
-    # https://github.com/Radarr/Radarr/blob/5799b3dc4724dcc6f5f016e8ce4f57cc1939682b/src/NzbDrone.Core/Parser/Parser.cs#L21
+    # use regex (sourced and slightly modified from official radarr repo) to find torrent editions (Extended,
+    # Criterion, Theatrical, etc) https://github.com/Radarr/Radarr/blob/5799b3dc4724dcc6f5f016e8ce4f57cc1939682b/src
+    # /NzbDrone.Core/Parser/Parser.cs#L21
     try:
         torrent_editions = re.search(
-            r"((Recut.|Extended.|Ultimate.|Criterion.|International.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Final|Criterion|International(?=(.(Cut|Edition|Version|Collection)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.(Cut|Edition|Version|Collection))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|FANRES|Fan.?Edit))?|(Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|FANRES|Edition|Restored|(234)in1))",
+            r"((Recut.|Extended.|Ultimate.|Criterion.|International.)?("
+            r"Director.?s|Collector.?s|Theatrical|Ultimate|Final|Criterion|International(?=(.("
+            r"Cut|Edition|Version|Collection)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.("
+            r"Cut|Edition|Version|Collection))?(.("
+            r"Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|FANRES|Fan.?Edit))?|("
+            r"Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|FANRES|Edition|Restored|(234)in1))",
             upload_media,
         )
         logging.info(
-            f"[MiscellaneousUtils] extracted '{str(torrent_editions.group()).replace('.', ' ')}' as the 'edition' for the final torrent name"
+            f"[MiscellaneousUtils] extracted '{str(torrent_editions.group()).replace('.', ' ')}' as the 'edition' for "
+            f"the final torrent name "
         )
         return str(torrent_editions.group()).replace(".", " ")
     except AttributeError:

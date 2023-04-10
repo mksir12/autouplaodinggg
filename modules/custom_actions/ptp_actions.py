@@ -1,16 +1,16 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -26,12 +26,12 @@ from imdb import Cinemagoer
 from rich.console import Console
 from rich.prompt import Prompt
 
-import modules.env as Environment
-from modules.tfa.tfa import get_totp_token
 from utilities.utils import (
     prepare_headers_for_tracker,
     write_cutsom_user_inputs_to_description,
 )
+from modules.config import PTPImgConfig, TrackerConfig
+from modules.tfa.tfa import get_totp_token
 
 console = Console()
 
@@ -89,7 +89,7 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
     headers = prepare_headers_for_tracker(
         tracker_config["dupes"]["technical_jargons"],
         "PTP",
-        Environment.get_property_or_default("PTP_API_KEY", ""),
+        TrackerConfig("PTP").API_KEY,
     )
     try:
         response = requests.get(url=group_check_url, headers=headers).json()[0]
@@ -156,7 +156,7 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
             else:
                 # we got a poster from PTP. lets now reupload it to ptpimg and use it
                 logging.info(
-                    "[CustomActions][PTP] Rehosting poster from PTP to ptpimg."
+                    "[CustomActions][PTP] Re hosting poster from PTP to ptpimg."
                 )
                 try:
                     poster = _rehost_to_ptpimg(poster)
@@ -240,26 +240,24 @@ def _rehost_to_ptpimg(
     image_url_list,
 ):  # TODO: will this raise any exceptions ??
     return ptpimg_uploader.upload(
-        api_key=Environment.get_ptpimg_api_key(),
-        files_or_urls=image_url_list,
-        timeout=15,
+        api_key=PTPImgConfig().API_KEY, files_or_urls=image_url_list, timeout=15
     )
 
 
-def rehost_screens_to_ptpimg(torrent_info, tracker_settings, tracker_config):
+def rehost_screens_to_ptpimg(torrent_info, tracker_settings, _):
     if "screenshots_data" not in torrent_info:
         logging.info(
-            "[CustomActions][PTP] No screenshots available for rehosting"
+            "[CustomActions][PTP] No screenshots available for re-hosting"
         )
         return
 
     # checking whether the "screenshots_data" have `ptp_rehosted`. If present, then we will
     # use it and proceed. Else we'll reupload the urls and save to screenshots_data
     console.print(
-        "[bold magenta] Rehosting non ptpimg screenshots to ptpimg[/bold magenta]"
+        "[bold magenta] Re-hosting non ptpimg screenshots to ptpimg[/bold magenta]"
     )
     logging.info(
-        "[CustomActions][PTP] Reuploading non-ptpimg screenshots to ptpimg"
+        "[CustomActions][PTP] Re-uploading non-ptpimg screenshots to ptpimg"
     )
     screenshots_data = json.load(open(torrent_info["screenshots_data"]))
 
@@ -322,7 +320,7 @@ def rehost_screens_to_ptpimg(torrent_info, tracker_settings, tracker_config):
     with open(torrent_info["screenshots_data"], "w") as screenshots_file:
         screenshots_file.write(json.dumps(screenshots_data))
     logging.info(
-        "[CustomActions][PTP] Finished reuploading non-ptpimg screenshots to ptpimg"
+        "[CustomActions][PTP] Finished re uploading non-ptpimg screenshots to ptpimg"
     )
 
 
@@ -374,7 +372,7 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
     logging.info("[CustomActions][PTP] Finished creating description for PTP")
 
 
-def get_ptp_type(torrent_info, tracker_settings, tracker_config):
+def get_ptp_type(torrent_info, tracker_settings, _):
     # TODO: get the type from PTP
     # TODO: multi audio being identified even when its not multi audio.
     # TODO: check cases when we don't get imdb id.
@@ -524,7 +522,7 @@ def _get_trumpable_flags():
     return None
 
 
-def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
+def add_subtitle_information(torrent_info, tracker_settings, _):
     subtitle_mapping = {
         ("English", "eng", "en", "English (CC)", "English - SDH"): 3,
         ("Spanish", "spa", "es"): 4,
@@ -620,9 +618,7 @@ def add_subtitle_information(torrent_info, tracker_settings, tracker_config):
     tracker_settings["subtitles[]"] = available_subtitles
 
 
-def mark_scene_release_if_applicable(
-    torrent_info, tracker_settings, tracker_config
-):
+def mark_scene_release_if_applicable(torrent_info, tracker_settings, _):
     if "scene" in torrent_info and torrent_info["scene"] == "true":
         logging.info(
             "[CustomActions][PTP] Marking the upload as a scene release for PTP"
@@ -635,13 +631,13 @@ def mark_scene_release_if_applicable(
         tracker_settings.pop("scene", None)
 
 
-def fix_other_resolution(torrent_info, tracker_settings, tracker_config):
+def fix_other_resolution(_, tracker_settings, __):
     if tracker_settings["resolution"] == "Other":
         logging.info(
             "[CustomActions][PTP] Uploader identified resolution as 'Other'. Removing the resolution from payload"
         )
-        # if we couldn't map the video resolution to one, that is applicable to ptp groups, then we can just remove the resolution
-        # key and PTP will detect and upload the width and height.
+        # if we couldn't map the video resolution to one, that is applicable to ptp groups, then we can just remove
+        # the resolution key and PTP will detect and upload the width and height.
         tracker_settings.pop("resolution", None)
     else:
         logging.info(
@@ -650,6 +646,7 @@ def fix_other_resolution(torrent_info, tracker_settings, tracker_config):
 
 
 def get_crsf_token(torrent_info, tracker_settings, tracker_config):
+    tracker_env_config = TrackerConfig("PTP")
     # first lets create a cookies folder to store ptp login cookies.
     if not Path(f"{torrent_info['cookies_dump']}cookies").is_dir():
         Path(f"{torrent_info['cookies_dump']}cookies").mkdir(
@@ -684,24 +681,22 @@ def get_crsf_token(torrent_info, tracker_settings, tracker_config):
         )
         tracker_passkey = re.match(
             r"https?://please\.passthepopcorn\.me:?\d*/(.+)/announce",
-            Environment.get_tracker_announce_url("ptp"),
+            tracker_env_config.ANNOUNCE_URL,
         ).group(1)
         data = {
-            "username": Environment.get_property_or_default("PTP_USER_NAME"),
-            "password": Environment.get_property_or_default(
-                "PTP_USER_PASSWORD"
-            ),
+            "username": tracker_env_config.get_config("PTP_USER_NAME"),
+            "password": tracker_env_config.get_config("PTP_USER_PASSWORD"),
             "passkey": tracker_passkey,
             "keeplogged": "1",
         }
         # adding tfa code if user has tfa enabled
-        if Environment.get_property_or_default("PTP_2FA_ENABLED", False):
+        if tracker_env_config.get_config("PTP_2FA_ENABLED", False):
             data["TfaType"] = "normal"
             logging.info(
                 "[CustomActions][PTP] User has 2FA enabled. Trying to generate TOTP code."
             )
             data["TfaCode"] = get_totp_token(
-                Environment.get_property_or_default("PTP_2FA_CODE", "")
+                tracker_env_config.get_config("PTP_2FA_CODE", "")
             )
 
         headers = {}
@@ -731,8 +726,7 @@ def check_successful_upload(response):
     # If the response contains our announce url then we are on the upload page and the upload wasn't successful.
     if (
         response_text is not None
-        and response_text.find(Environment.get_tracker_announce_url("ptp"))
-        != -1
+        and response_text.find(TrackerConfig("PTP").ANNOUNCE_URL) != -1
     ):
         # Get the error message.
         # <div class="alert alert--error text--center">No torrent file uploaded, or file is empty.</div>

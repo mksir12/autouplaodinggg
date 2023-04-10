@@ -15,7 +15,9 @@ __pycache__/
 # Excluded file formats
 *.mkv
 *.mp4
+!tests/resources/media/logo.mp4
 *.torrent
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 *.py[cod]

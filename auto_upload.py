@@ -40,20 +40,20 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.traceback import install
 
-import modules.env as Environment
 import utilities.utils as utils
 import utilities.utils_basic as basic_utilities
 import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils_metadata as metadata_utilities
 import utilities.utils_miscellaneous as miscellaneous_utilities
-import utilities.utils_torrent as torrent_utilities
 import utilities.utils_translation as translation_utilities
+from modules.config import UploadAssistantConfig, TrackerConfig
 from modules.constants import *
 
 # Method that will search for dupes in trackers.
 from modules.template_schema_validator import TemplateSchemaValidator
-from utilities.utils_screenshots import take_upload_screens
+from utilities.utils_screenshots import GGBotScreenshotManager
+from utilities.utils_torrent import GGBotTorrentCreator
 
 # utility methods
 # Method that will read and accept text components for torrent description
@@ -93,7 +93,7 @@ logging.basicConfig(
 # Load the .env file that stores info like the tracker/image host API Keys & other info needed to upload
 load_dotenv(ASSISTANT_CONFIG.format(base_path=working_folder))
 
-# By default we load the templates from site_templates/ path
+# By default, we load the templates from site_templates/ path
 # If user has provided load_external_templates argument then we'll update this path to a different one
 site_templates_path = SITE_TEMPLATES_DIR.format(base_path=working_folder)
 
@@ -109,7 +109,8 @@ api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict(
 )
 
 # Import 'auto_mode' status
-auto_mode = Environment.is_auto_mode()
+upload_assistant_config = UploadAssistantConfig()
+auto_mode = upload_assistant_config.AUTO_MODE
 
 # Setup args
 parser = argparse.ArgumentParser()
@@ -269,6 +270,9 @@ internal_args.add_argument(
 )
 internal_args.add_argument(
     "-featured", action="store_true", help="(Internal) feature a new upload"
+)
+internal_args.add_argument(
+    "-personal", action="store_true", help="Mark an upload as personal release"
 )
 internal_args.add_argument(
     "-doubleup",
@@ -964,7 +968,7 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
     torrent_info["commentary"] = commentary
     # --------- Dual Audio / Dubbed / Multi / Commentary --------- #
 
-    # Video continer information
+    # Video container information
     torrent_info["container"] = os.path.splitext(
         torrent_info["raw_video_file"]
         if "raw_video_file" in torrent_info
@@ -1028,7 +1032,7 @@ def upload_to_site(upload_to, tracker_api_key):
                 headers[header["key"]] = (
                     tracker_api_key
                     if header["value"] == "API_KEY"
-                    else Environment.get_property_or_default(
+                    else upload_assistant_config.get_config(
                         f"{upload_to}_{header['value']}", ""
                     )
                 )
@@ -1505,8 +1509,8 @@ If the above mentioned envs are true, we override the user configured `bdinfo_sc
 Similarly, from inside the normal full disk un-supported images, if user tries to upload a Full Disk,
 we stop upload process immediately with an error message.
 """
-bdinfo_script = Environment.get_bdinfo_script_location()
-if Environment.is_containerized() and Environment.is_full_disk_supported():
+bdinfo_script = upload_assistant_config.BD_INFO_LOCATION
+if upload_assistant_config.CONTAINERIZED and upload_assistant_config.BD_SUPPORT:
     logging.info(
         "[Main] Full disk is supported inside this container. Setting overriding configured `bdinfo_script` to use alias `bdinfocli`"
     )
@@ -1514,8 +1518,8 @@ if Environment.is_containerized() and Environment.is_full_disk_supported():
 
 if (
     args.disc
-    and Environment.is_containerized()
-    and not Environment.is_full_disk_supported()
+    and upload_assistant_config.CONTAINERIZED
+    and not upload_assistant_config.BD_SUPPORT
 ):
     logging.fatal(
         "[Main] User tried to upload Full Disk from an unsupported image!. Stopping upload process."
@@ -1551,7 +1555,6 @@ if (
         )
     )
 
-
 # Set the value of args.path to a variable that we can overwrite with a path translation later (if needed)
 user_supplied_paths = args.path
 
@@ -1577,7 +1580,6 @@ site_templates_path = VALIDATED_SITE_TEMPLATES_DIR.format(
     base_path=working_folder
 )
 
-
 if args.load_external_templates:
     logging.info(
         "[Main] User wants to load external site templates. Attempting to load and validate these templates..."
@@ -1596,10 +1598,8 @@ if args.load_external_templates:
         api_keys_dict.update(ext_api_keys_dict)
         acronym_to_tracker.update(ext_acronyms)
 
-
 # Verify we support the tracker specified
 logging.debug(f"[Main] Trackers provided by user {args.trackers}")
-
 
 upload_to_trackers = utils.get_and_validate_configured_trackers(
     args.trackers, args.all_trackers, api_keys_dict, acronym_to_tracker.keys()
@@ -1681,7 +1681,6 @@ if args.batch:
         console.print("Exiting...\n", style="bright_red bold")
         sys.exit()
 
-
 # all files we upload (even if its 1) get added to this list
 upload_queue = []
 
@@ -1750,7 +1749,7 @@ for file in upload_queue:
         # Skip this entire 'file upload' & move onto the next (if exists)
         continue
     torrent_info["upload_media"] = rar_file_validation_response[1]
-    # Performing guessit on the rawfile name and reusing the result instead of calling guessit over and over again
+    # Performing guessit on the raw file name and reusing the result instead of calling guessit over and over again
     guess_it_result = utils.perform_guessit_on_filename(
         torrent_info["upload_media"]
     )
@@ -1763,7 +1762,8 @@ for file in upload_queue:
         )
         == "skip_to_next_file"
     ):
-        # If there is an issue with the file & we can't upload we use this check to skip the current file & move on to the next (if exists)
+        # If there is an issue with the file & we can't upload we use this check to skip the current file & move on
+        # to the next (if exists)
         logging.debug(
             f"[Main] Skipping {torrent_info['upload_media']} because type and basic information cannot be identified."
         )
@@ -1861,7 +1861,7 @@ for file in upload_queue:
     # -------- Dupe check for single tracker uploads --------
     # If user has provided only one Tracker to upload to, then we do dupe check prior to taking screenshots. [if dupe_check is enabled]
     # If there are duplicates in the tracker, then we do not waste time taking and uploading screenshots.
-    if Environment.is_check_dupes() and len(upload_to_trackers) == 1:
+    if upload_assistant_config.CHECK_FOR_DUPES and len(upload_to_trackers) == 1:
         tracker = upload_to_trackers[0]
         temp_tracker_api_key = api_keys_dict[f"{str(tracker).lower()}_api_key"]
 
@@ -1904,16 +1904,19 @@ for file in upload_queue:
     ]
     # This is used to evenly space out timestamps for screenshots
     # Call function to actually take screenshots & upload them (different file)
-    is_screenshots_available = take_upload_screens(
-        duration=torrent_info["duration"],
-        upload_media_import=torrent_info["raw_video_file"]
+    upload_media_for_screenshot = (
+        torrent_info["raw_video_file"]
         if "raw_video_file" in torrent_info
-        else torrent_info["upload_media"],
-        torrent_title_import=torrent_info["title"],
+        else torrent_info["upload_media"]
+    )
+    is_screenshots_available = GGBotScreenshotManager(
+        duration=torrent_info["duration"],
+        torrent_title=torrent_info["title"],
+        upload_media=upload_media_for_screenshot,
         base_path=working_folder,
         hash_prefix=torrent_info["working_folder"],
         skip_screenshots=args.skip_screenshots,
-    )
+    ).generate_screenshots()
 
     if is_screenshots_available:
         screenshots_data = json.load(
@@ -1940,6 +1943,8 @@ for file in upload_queue:
     # At this point the only stuff that remains to be done is site specific so we can start a loop here for each site we are uploading to
     logging.info("[Main] Now starting tracker specific tasks")
     for tracker in upload_to_trackers:
+        tracker_env_config = TrackerConfig(tracker)
+
         torrent_info[
             "shameless_self_promotion"
         ] = f'Uploaded with {"<3" if str(tracker).upper() in ("BHD", "BHDTV") or os.name == "nt" else "❤"} using GG-BOT Upload Assistant'
@@ -2034,7 +2039,10 @@ for file in upload_queue:
         # we take the screenshots and uploads them, then do dupe check for the trackers.
         # dupe check need not be performed if user provided only one tracker.
         # in cases where only one tracker is provided, dupe check will be performed prior to taking screenshots.
-        if Environment.is_check_dupes() and len(upload_to_trackers) > 1:
+        if (
+            upload_assistant_config.CHECK_FOR_DUPES
+            and len(upload_to_trackers) > 1
+        ):
             console.line(count=2)
             console.rule(
                 f"Dupe Check [bold]({tracker})[/bold]",
@@ -2076,18 +2084,16 @@ for file in upload_queue:
         else:
             torrent_media = torrent_info["upload_media"]
 
-        torrent_utilities.generate_dot_torrent(
+        GGBotTorrentCreator(
             media=torrent_media,
-            announce=list(
-                Environment.get_tracker_announce_url(tracker).split(" ")
-            ),
+            announce_urls=tracker_env_config.ANNOUNCE_URL.split(" "),
             source=config["source"],
             working_folder=working_folder,
             hash_prefix=torrent_info["working_folder"],
             use_mktorrent=args.use_mktorrent,
             tracker=tracker,
             torrent_title=torrent_info["torrent_title"],
-        )
+        ).generate_dot_torrent()
 
         # TAGS GENERATION. Generations all the tags that are applicable to this upload
         translation_utilities.generate_all_applicable_tags(torrent_info)
@@ -2126,7 +2132,7 @@ for file in upload_queue:
                         f"[Main] Loaded custom action :: {action} :: Executing..."
                     )
                     # any additional values added to tracker_settings will be treated as optional values by `upload_to_site`
-                    # and all such keys will be send to tracker.
+                    # and all such keys will be sent to tracker.
                     custom_action(torrent_info, tracker_settings, config)
             except Exception as e:
                 # if any sorts of exception occurs from custom actions, we stop the upload to the tracker here

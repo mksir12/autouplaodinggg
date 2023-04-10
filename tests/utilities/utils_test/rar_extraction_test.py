@@ -14,14 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import shutil
 import pytest
-import logging
 
 from pathlib import Path
-from pytest_mock import mocker
-from unittest.mock import MagicMock
 import utilities.utils as utils
 
 
@@ -51,7 +47,10 @@ def run_around_tests():
     Path(f"{folder}/rar").mkdir(parents=True, exist_ok=True)  # rar folder
     Path(f"{folder}/media").mkdir(parents=True, exist_ok=True)  # rar folder
 
-    shutil.copy(f"{working_folder}{rar_file_source}", f"{working_folder}{rar_file_target}")
+    shutil.copy(
+        f"{working_folder}{rar_file_source}",
+        f"{working_folder}{rar_file_target}",
+    )
     yield
     clean_up(folder)
 
@@ -69,11 +68,12 @@ def test_check_for_dir_and_extract_rars_non_rar_folder():
 def test_check_for_dir_and_extract_rars_rar_folder():
     file_path = "tests/working_folder/rar/"
     assert utils.check_for_dir_and_extract_rars(file_path) == (
-        True, "tests/working_folder/rar/something.mkv")
+        True,
+        "tests/working_folder/rar/something.mkv",
+    )
 
 
 def test_check_for_dir_and_extract_rars_no_rar_installed(mocker):
     file_path = "tests/working_folder/rar/"
-    mocker.patch('os.path.isfile', return_value=False)
-    assert utils.check_for_dir_and_extract_rars(
-        file_path) == (False, file_path)
+    mocker.patch("os.path.isfile", return_value=False)
+    assert utils.check_for_dir_and_extract_rars(file_path) == (False, file_path)

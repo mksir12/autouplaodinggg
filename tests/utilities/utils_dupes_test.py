@@ -21,7 +21,6 @@ import logging
 import threading
 
 from pathlib import Path
-from pytest_mock import mocker
 from werkzeug.serving import make_server
 from flask import Flask, jsonify, request, abort
 
@@ -45,10 +44,9 @@ tracker_api_key = "TRACKER_API_DUMMY"
 
 
 class ServerThread(threading.Thread):
-
     def __init__(self, app):
         threading.Thread.__init__(self)
-        self.server = make_server('127.0.0.1', 5000, app)
+        self.server = make_server("127.0.0.1", 5000, app)
         self.ctx = app.app_context()
         self.ctx.push()
 
@@ -61,15 +59,19 @@ class ServerThread(threading.Thread):
 
 def start_server():
     global server
-    app = Flask('gg-bot-upload-assistant-dummy')
+    app = Flask("gg-bot-upload-assistant-dummy")
 
     # api_key based search endpoint
 
-    @app.route('/api/torrents/filter', methods=['GET'])
+    @app.route("/api/torrents/filter", methods=["GET"])
     def filter_torrents_dummy():
-        sample_data = json.load(open(
-            f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'))
+        sample_data = json.load(
+            open(
+                f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'
+            )
+        )
         api_key = request.args.get("api_token")
+        print(f"Api Key: {api_key}", flush=True)
         if api_key == tracker_api_key:
             return jsonify(sample_data)
         else:
@@ -77,30 +79,40 @@ def start_server():
 
     # Bearer Token based search endpoint
 
-    @app.route('/api/torrents/filter/bearer', methods=['GET'])
+    @app.route("/api/torrents/filter/bearer", methods=["GET"])
     def filter_torrents_dummy_bearer():
-        sample_data = json.load(open(
-            f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'))
-        token = request.headers.get('Authorization')
+        sample_data = json.load(
+            open(
+                f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'
+            )
+        )
+        token = request.headers.get("Authorization")
         logging.info(f"Token: {token}")
-        if token == f'Bearer {tracker_api_key}':
+        print(f"Token: {token}", flush=True)
+        if token == f"Bearer {tracker_api_key}":
             return jsonify(sample_data)
         else:
             abort(403)
 
     # Header based search endpoint
 
-    @app.route('/api/torrents/filter/header', methods=['GET'])
+    @app.route("/api/torrents/filter/header", methods=["GET"])
     def filter_torrents_dummy_header():
-        sample_data = json.load(open(f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'))
-        token = request.headers.get('X-API-KEY')
+        sample_data = json.load(
+            open(
+                f'{working_folder}/tests/resources/dupes/server_responses/{request.args.get("imdbId")}.json'
+            )
+        )
+        token = request.headers.get("X-API-KEY")
         logging.info(f"Token: {token}")
+        print(f"Token: {token}", flush=True)
         if token == tracker_api_key:
             return jsonify(sample_data)
         else:
             abort(403)
 
     server = ServerThread(app)
+    logging.info("Starting dummy server")
     server.start()
 
 
@@ -112,16 +124,28 @@ def stop_server():
 
 @pytest.fixture(scope="module", autouse=True)
 def run_around_tests():
-    source_destination_api_key_based = f'{working_folder}/tests/resources/dupes/templates/api_key_based.json'
-    destination_api_key_based = f'{working_folder}/site_templates/api_key_based.json'
+    source_destination_api_key_based = (
+        f"{working_folder}/tests/resources/dupes/templates/api_key_based.json"
+    )
+    destination_api_key_based = (
+        f"{working_folder}/site_templates/api_key_based.json"
+    )
     shutil.copy(source_destination_api_key_based, destination_api_key_based)
 
-    source_destination_token_based = f'{working_folder}/tests/resources/dupes/templates/token_based.json'
-    destination_token_based = f'{working_folder}/site_templates/token_based.json'
+    source_destination_token_based = (
+        f"{working_folder}/tests/resources/dupes/templates/token_based.json"
+    )
+    destination_token_based = (
+        f"{working_folder}/site_templates/token_based.json"
+    )
     shutil.copy(source_destination_token_based, destination_token_based)
 
-    source_destination_header_based = f'{working_folder}/tests/resources/dupes/templates/header_based.json'
-    destination_header_based = f'{working_folder}/site_templates/header_based.json'
+    source_destination_header_based = (
+        f"{working_folder}/tests/resources/dupes/templates/header_based.json"
+    )
+    destination_header_based = (
+        f"{working_folder}/site_templates/header_based.json"
+    )
     shutil.copy(source_destination_header_based, destination_header_based)
 
     start_server()
@@ -136,23 +160,64 @@ def run_around_tests():
 
 def __fetch_dupe_check_test_data():
     sample_data = json.load(
-        open(f'{working_folder}/tests/resources/dupes/test_data.json'))
+        open(f"{working_folder}/tests/resources/dupes/test_data.json")
+    )
     test_cases = []
 
     for case in sample_data:
         test_cases.append(
-            pytest.param(case["site_template"], case["imdb"], case["tmdb"], case["tvmaze"], case["auto_mode"], case["torrent_info"], case["expected"], id=case["name"])
+            pytest.param(
+                case["site_template"],
+                case["imdb"],
+                case["tmdb"],
+                case["tvmaze"],
+                case["auto_mode"],
+                case["torrent_info"],
+                case["expected"],
+                id=case["name"],
+            )
         )
 
     return test_cases
 
 
-@pytest.mark.parametrize(("site_template", "imdb", "tmdb", "tvmaze", "auto_mode", "torrent_info", "expected"), __fetch_dupe_check_test_data())
-def test_search_for_dupes_api_api_key_based(site_template, imdb, tmdb, tvmaze, auto_mode, torrent_info, expected, mocker):
-    # hardcoding
+@pytest.mark.parametrize(
+    (
+        "site_template",
+        "imdb",
+        "tmdb",
+        "tvmaze",
+        "auto_mode",
+        "torrent_info",
+        "expected",
+    ),
+    __fetch_dupe_check_test_data(),
+)
+def test_search_for_dupes_api_api_key_based(
+    site_template, imdb, tmdb, tvmaze, auto_mode, torrent_info, expected, mocker
+):
+    # hard coding
     #   `debug` to False
     #   `tracker_api` to TRACKER_API_DUMMY (tracker_api_key)
     mocker.patch("os.getenv", return_value=80)
-    tracker_config = json.load(open(f'{working_folder}/site_templates/{site_template}.json', "r", encoding="utf-8"))
+    tracker_config = json.load(
+        open(
+            f"{working_folder}/site_templates/{site_template}.json",
+            encoding="utf-8",
+        )
+    )
 
-    assert search_for_dupes_api("ACRONYM", site_template, imdb, tmdb, tvmaze, torrent_info, tracker_api_key, tracker_config, auto_mode) == expected
+    assert (
+        search_for_dupes_api(
+            "ACRONYM",
+            site_template,
+            imdb,
+            tmdb,
+            tvmaze,
+            torrent_info,
+            tracker_api_key,
+            tracker_config,
+            auto_mode,
+        )
+        == expected
+    )
