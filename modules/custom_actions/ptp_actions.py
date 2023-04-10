@@ -459,6 +459,69 @@ def get_ptp_type(torrent_info, tracker_settings, _):
     )
 
 
+def _is_english_subs_present(subtitles=None):
+    if subtitles is None:
+        subtitles = []
+    for subs in subtitles:
+        if subs == 3:
+            return True
+    return False
+
+
+def _is_non_english_release(torrent_info):
+    original_language = (
+        torrent_info["tmdb_metadata"]["original_language"]
+        if torrent_info["tmdb_metadata"] is not None
+        else ""
+    )
+    return original_language != "en"
+
+
+def _no_subs_in_release(subtitles=None):
+    if subtitles is None:
+        subtitles = []
+    for subs in subtitles:
+        if subs == 44:
+            return True
+    return False
+
+
+def add_trumpable_flags(torrent_info, tracker_settings, tracker_config):
+    is_non_english_release = _is_non_english_release(torrent_info)
+    is_english_subs_present = _is_english_subs_present(
+        tracker_settings["subtitles[]"]
+    )
+    no_subs_in_release = _no_subs_in_release(tracker_settings["subtitles[]"])
+
+    trumpable = None
+    # for all non-english release if there are no subtiles or if english subtitle is not present
+    if is_non_english_release and (
+        no_subs_in_release or not is_english_subs_present
+    ):
+        trumpable = _get_trumpable_flags()
+    else:
+        logging.info(
+            "[CustomActions][PTP] Subtitle is present / english audio release. No need to add any trumpable tags."
+        )
+    tracker_settings["trumpable[]"] = trumpable
+
+
+def _get_trumpable_flags():
+    trumpable_values = {"Hardcoded Subs (Full)": 4, "No English Subs": 14}
+    console.print("[red]Possible trumpable release.[/red]")
+    console.print("1. Hardcoded Subs")
+    console.print("2. No English Subs")
+    console.print("3. Non-Trumpable")
+    trumpable = Prompt.ask(
+        "Select one of the flags that apply: ", choices=["1", "2"], default="3"
+    )
+    if trumpable == "1":
+        return 4
+    elif trumpable == "2":
+        return 14
+    return None
+
+
 def add_subtitle_information(torrent_info, tracker_settings, _):
     subtitle_mapping = {
         ("English", "eng", "en", "English (CC)", "English - SDH"): 3,
@@ -688,7 +751,7 @@ def check_successful_upload(response):
 
     # URL format in case of successful upload: https://passthepopcorn.me/torrents.php?id=9329&torrentid=91868
     match = re.match(
-        r"https*:\/\/passthepopcorn\.me\/torrents\.php\?id=(\d+)&torrentid=(\d+)",
+        r"http[s]*:\/\/passthepopcorn\.me\/torrents\.php\?id=(\d+)&torrentid=(\d+)",
         response.url,
     )
     if match is None:

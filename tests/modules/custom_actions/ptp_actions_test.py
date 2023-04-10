@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import json
 import copy
+import json
 import pickle
-import pytest
-
 from pathlib import Path
+
+import pytest
+from pytest_mock import mocker
 
 import modules.custom_actions.ptp_actions as ptp_actions
 
@@ -562,3 +563,51 @@ def test_get_ptp_type_from_user(mocker):
     ptp_actions.get_ptp_type(torrent_info, tracker_settings, {})
     assert "type" in tracker_settings
     assert tracker_settings["type"] == "Miniseries"
+
+
+@pytest.mark.parametrize(
+    ("torrent_info", "tracker_settings", "user_prompt", "expected"),
+    [
+        pytest.param(
+            {"tmdb_metadata": {"original_language": "en"}},
+            {"subtitles[]": [3]},
+            None,
+            None,
+            id="non_trumpable_with_subs",
+        ),
+        pytest.param(
+            {"tmdb_metadata": {"original_language": "en"}},
+            {"subtitles[]": [44]},
+            "3",
+            None,
+            id="non_trumpable_without_subs",
+        ),
+        pytest.param(
+            {"tmdb_metadata": {"original_language": "ml"}},
+            {"subtitles[]": [44]},
+            "3",
+            None,
+            id="non_english_without_eng_subs_user_non_trumpable_user",
+        ),
+        pytest.param(
+            {"tmdb_metadata": {"original_language": "ml"}},
+            {"subtitles[]": [44]},
+            "2",
+            14,
+            id="non_english_without_eng_subs_user_trumpable",
+        ),
+        pytest.param(
+            {"tmdb_metadata": {"original_language": "ml"}},
+            {"subtitles[]": [44]},
+            "1",
+            4,
+            id="non_english_hardcoded_subs",
+        ),
+    ],
+)
+def test_add_trumpable_flags(
+    torrent_info, tracker_settings, user_prompt, expected, mocker
+):
+    mocker.patch("rich.prompt.Prompt.ask", return_value=user_prompt)
+    ptp_actions.add_trumpable_flags(torrent_info, tracker_settings, {})
+    assert tracker_settings["trumpable[]"] == expected

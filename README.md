@@ -284,6 +284,8 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
+- [X] Support for trumpable flags for PTP
+- [X] Updated banned groups for TSP
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
