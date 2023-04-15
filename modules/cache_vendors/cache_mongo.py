@@ -71,7 +71,7 @@ class Mongo:
             )
         else:
             MONGO_URL = f"mongodb://{self.config.CACHE_HOST}:{self.config.CACHE_PORT}/{self.config.CACHE_DATABASE}"
-        MONGO_URL = "mongodb://100.119.76.65:27017/gg-bot-auto-uploader"
+        # MONGO_URL = "mongodb://100.119.76.65:27017/gg-bot-auto-uploader"
         # MONGO_URL = "mongodb://192.168.0.127:27017/gg-bot-auto-uploader"
         return MongoClient(MONGO_URL)
 

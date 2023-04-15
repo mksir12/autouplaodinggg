@@ -177,7 +177,7 @@
                         ]
                     }
                 },
-                "43": {
+                "45": {
                     "category_id": {
                         "data_source": "tracker",
                         "values": [
@@ -195,7 +195,7 @@
                         ]
                     }
                 },
-                "45": {
+                "43": {
                     "category_id": {
                         "data_source": "tracker",
                         "values": [
@@ -212,7 +212,7 @@
                 "61": "Movies: UHD",
                 "41": "TV: Pack",
                 "43": "HDTV: Episodes",
-                "45": "TV: Episodes"
+                "45": "TV: Episodes (SD)"
             }
         }
     },

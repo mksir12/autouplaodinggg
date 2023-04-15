@@ -399,6 +399,24 @@ def test_miscellaneous_identify_repacks(input, expected):
             ("HULU", "Hulu"),
         ),
         pytest.param(
+            "Georgootty.Co.Georgootty.1991.1080p.HS.WEB-DL.DDP.2.0.H.264-DTR",
+            {},
+            ("HTSR", "HotStar"),
+            id="hotstar_hs",
+        ),
+        pytest.param(
+            "Georgootty.Co.Georgootty.1991.1080p.HTSR.WEB-DL.DDP.2.0.H.264-DTR",
+            {},
+            ("HTSR", "HotStar"),
+            id="hotstar_htsr",
+        ),
+        pytest.param(
+            "Georgootty.Co.Georgootty.1991.1080p.NOW.WEB-DL.DDP.2.0.H.264-DTR",
+            {},
+            ("NOW", "Now Tv"),
+            id="now_tv",
+        ),
+        pytest.param(
             "Conversations.with.Friends.S01E01.2160p.WEB-DL.DDP.5.1.HEVC-MiON",
             {},
             (None, None),
