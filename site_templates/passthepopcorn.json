@@ -29,6 +29,7 @@
             "modules.custom_actions.ptp_actions.get_ptp_type",
             "modules.custom_actions.ptp_actions.rewrite_description",
             "modules.custom_actions.ptp_actions.add_subtitle_information",
+            "modules.custom_actions.ptp_actions.add_trumpable_flags",
             "modules.custom_actions.ptp_actions.mark_scene_release_if_applicable",
             "modules.custom_actions.ptp_actions.fix_other_resolution",
             "modules.custom_actions.ptp_actions.get_crsf_token"
@@ -283,6 +284,7 @@
         "album_desc": "",
         "trailer": "",
         "subtitles[]": "",
+        "trumpable[]": "",
         "groupid": ""
     },
 

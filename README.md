@@ -276,7 +276,9 @@ docker run --rm -it \
 - [X] Code refactor v3
 - [X] Issue#98: Season Packs Not using 1st episode for Mediainfo
 - [X] Issue#106: Releases tagged incorrectly as scene
-
+- [X] Issue#107: Streaming service names being ignored
+- [X] Issue#108: SpeedApp SD and HD TV episode mismatch
+-
 ### v3.0.8
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
@@ -284,6 +286,8 @@ docker run --rm -it \
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
 - [ ] Issue#79: Not able to cross-seed rared releases
+- [X] Support for trumpable flags for PTP
+- [X] Updated banned groups for TSP
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator

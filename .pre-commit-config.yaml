@@ -25,6 +25,9 @@ repos:
           [
             --check-hidden,
             --check-filenames,
+            -L,
+            'te,tha',
+            --skip=*.po,
             --builtin,
             clear,
             rare,

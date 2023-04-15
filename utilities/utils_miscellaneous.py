@@ -209,7 +209,7 @@ def miscellaneous_identify_web_streaming_source(
 
     if web_source is None:
         source_regex = (
-            r"[\.|\ ](" + "|".join(streaming_sources.values()) + r")[\.|\ ]"
+            r"[\.|\ ](" + "|".join(streaming_sources.keys()) + r")[\.|\ ]"
         )
         match_web_source = re.search(source_regex, raw_file_name.upper())
         if match_web_source is not None:
@@ -217,6 +217,8 @@ def miscellaneous_identify_web_streaming_source(
                 f'[MiscellaneousUtils] Used Regex to extract the WEB Source: {match_web_source.group().replace(".", "").strip()}'
             )
             web_source = match_web_source.group().replace(".", "").strip()
+            # mapping the regex extracted web to its intended abbreviation
+            web_source = streaming_sources[web_source]
         else:
             logging.error(
                 "[MiscellaneousUtils] Not able to extract the web source information from REGEX and GUESSIT"
