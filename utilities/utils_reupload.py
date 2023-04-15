@@ -178,9 +178,14 @@ class AutoReUploaderManager:
         ]
         if is_json and data is not None:
             data = json.dumps(data)
-        logging.debug(
-            f"[ReUploadUtils] Updating `{field}` of `{info_hash}` from `{existing_data[field]}` to `{data}`"
-        )
+        if field not in existing_data:
+            logging.debug(
+                f"[ReUploadUtils] Setting `{field}` of `{info_hash}` to `{data}`"
+            )
+        else:
+            logging.debug(
+                f"[ReUploadUtils] Updating `{field}` of `{info_hash}` from `{existing_data[field]}` to `{data}`"
+            )
         existing_data[field] = data
         self.cache.save(f"{TORRENT_DB_KEY_PREFIX}::{info_hash}", existing_data)
         return existing_data  # returning data for testing
