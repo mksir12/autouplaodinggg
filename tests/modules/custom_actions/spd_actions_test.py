@@ -1,12 +1,14 @@
-from modules.custom_actions.spd_actions import update_torrent_info_hash
-from pathlib import Path
-from tests.conftest import TestUtils
-import utilities.utils as utils
-import pytest
-import os
 import glob
+import os
 import shutil
+from pathlib import Path
+
+import pytest
+
+import utilities.utils as utils
+from modules.custom_actions.spd_actions import update_torrent_info_hash
 from modules.torrent_generator.torf_generator import GGBOTTorrent
+from tests.conftest import TestUtils
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
 temp_working_dir = "/tests/working_folder"
@@ -95,7 +97,7 @@ def test_update_torrent_info_hash():
     spd_torrent = GGBOTTorrent.read(spd_file)
     bkp_torrent = GGBOTTorrent.read(bkp_spd_file)
 
-    # assert that the infohash of BKP_SPD-atorrent.torrent is added to source of SPD-atorrent.torrent
+    # assert that the info-hash of BKP_SPD-atorrent.torrent is added to source of SPD-atorrent.torrent
     assert (
         spd_torrent.metainfo["info"]["source"]
         == f'{bkp_torrent.metainfo["info"]["source"]}-{bkp_torrent.infohash}'

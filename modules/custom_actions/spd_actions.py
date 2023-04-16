@@ -1,8 +1,9 @@
-from modules.torrent_generator.torf_generator import GGBOTTorrent
-from modules.constants import WORKING_DIR
-import logging
 import glob
+import logging
 import shutil
+
+from modules.constants import WORKING_DIR
+from modules.torrent_generator.torf_generator import GGBOTTorrent
 
 
 def update_torrent_info_hash(torrent_info, _, __, working_folder):
