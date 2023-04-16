@@ -16,6 +16,7 @@ __pycache__/
 *.mkv
 *.mp4
 !tests/resources/media/logo.mp4
+!tests/resources/torrent/SPD-atorrent.torrent
 *.torrent
 .DS_Store
 
