@@ -16,8 +16,8 @@ __pycache__/
 *.mkv
 *.mp4
 !tests/resources/media/logo.mp4
-!tests/resources/torrent/SPD-atorrent.torrent
 *.torrent
+!tests/resources/torrent/SPD-atorrent.torrent
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
