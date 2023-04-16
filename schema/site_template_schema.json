@@ -78,7 +78,11 @@
                 "custom_actions":{
                     "$ref": "#/definitions/stringArray"
                 },
-                "headers":{ "$ref": "#/definitions/authenticationHeaders" }
+                "headers":{ "$ref": "#/definitions/authenticationHeaders" },
+                "success_processor":{
+                    "type":"string",
+                    "description": "Specifies a method in custom action module that must be executed if torrent upload is successful."
+                }
             },
             "allOf":[
                 {
