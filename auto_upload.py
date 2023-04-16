@@ -2160,6 +2160,24 @@ for file in upload_queue:
         torrent_info[f"{tracker}_upload_status"] = upload_to_site(
             upload_to=tracker, tracker_api_key=temp_tracker_api_key
         )
+        if (
+            torrent_info[f"{tracker}_upload_status"] is True
+            and "success_processor" in config["technical_jargons"]
+        ):
+            logging.info(
+                f"[Main] Upload to tracker {tracker} is successful and success processor is configured"
+            )
+            action = config["technical_jargons"]["success_processor"]
+            logging.info(
+                f"[Main] Performing success processor action '{action}' for tracker {tracker}"
+            )
+            custom_action = utils.load_custom_actions(action)
+            logging.info(
+                f"[Main] Loaded custom action :: {action} :: Executing..."
+            )
+            custom_action(
+                torrent_info, tracker_settings, config, working_folder
+            )
 
         # Tracker Settings
         console.print("\n\n")
