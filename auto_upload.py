@@ -1650,7 +1650,16 @@ if not auto_mode:
 # TODO an issue with batch mode currently is that we have a lot of "assert" & sys.exit statements during the prep work we do for each upload,
 # if one of these "assert/quit" statements get triggered, then it will quit the entire script instead of just moving on to the next file in the list 'upload_queue'
 # ---------- Batch mode prep ---------- #
-if not utils.validate_batch_mode(batch_mode=args.batch, path=args.path):
+if not utils.validate_batch_mode(
+    batch_mode=args.batch,
+    path=args.path,
+    metadata_ids={
+        "tmdb": args.tmdb,
+        "imdb": args.imdb,
+        "tvmaze": args.tvmaze,
+        "tvdb": args.tvdb,
+    },
+):
     sys.exit()
 
 # all files we upload (even if its 1) get added to this list

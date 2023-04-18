@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from tests.test_utilities import TestUtils
-from utilities.utils import files_for_batch_processing
+from utilities.utils import files_for_batch_processing, validate_batch_mode
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
 temp_working_dir = "/tests/working_folder"
@@ -66,3 +67,77 @@ def test_files_for_batch_processing_invalid_extension():
     input_path = [f"{batch_folder}/subdir3"]
     expected_output = []
     assert files_for_batch_processing(input_path) == expected_output
+
+
+@pytest.fixture
+def metadata_ids():
+    return {"id_1": "", "id_2": ""}
+
+
+def test_validate_batch_mode_returns_true_if_batch_mode_is_false(metadata_ids):
+    assert (
+        validate_batch_mode(
+            batch_mode=False, path=["/some/path"], metadata_ids=metadata_ids
+        )
+        is True
+    )
+
+
+def test_validate_batch_mode_returns_false_if_batch_mode_is_true_and_metadata_ids_is_not_empty():
+    metadata_ids = {"id_1": "123", "id_2": "456"}
+    assert (
+        validate_batch_mode(
+            batch_mode=True, path=["/some/path"], metadata_ids=metadata_ids
+        )
+        is False
+    )
+
+
+def test_validate_batch_mode_returns_false_if_batch_mode_is_true_and_path_has_multiple_directories(
+    metadata_ids,
+):
+    with patch(
+        "utilities.utils._log_error_and_exit_batch_and_multiple_path"
+    ) as mock_error_func:
+        assert (
+            validate_batch_mode(
+                batch_mode=True,
+                path=["/path1", "/path2"],
+                metadata_ids=metadata_ids,
+            )
+            is False
+        )
+        mock_error_func.assert_called_once()
+
+
+def test_validate_batch_mode_returns_false_if_batch_mode_is_true_and_path_is_not_a_directory(
+    metadata_ids,
+):
+    with patch("os.path.isdir") as mock_isdir, patch(
+        "utilities.utils._log_error_and_exit_batch_and_file_path"
+    ) as mock_error_func:
+        mock_isdir.return_value = False
+        assert (
+            validate_batch_mode(
+                batch_mode=True,
+                path=["/path/to/file"],
+                metadata_ids=metadata_ids,
+            )
+            is False
+        )
+        mock_error_func.assert_called_once()
+
+
+def test_validate_batch_mode_returns_true_if_batch_mode_is_true_and_path_has_one_directory(
+    metadata_ids,
+):
+    with patch("os.path.isdir") as mock_isdir:
+        mock_isdir.return_value = True
+        assert (
+            validate_batch_mode(
+                batch_mode=True,
+                path=["/path/to/directory"],
+                metadata_ids=metadata_ids,
+            )
+            is True
+        )
