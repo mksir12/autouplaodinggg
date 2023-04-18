@@ -278,8 +278,9 @@ docker run --rm -it \
 - [X] Issue#106: Releases tagged incorrectly as scene
 - [X] Issue#107: Streaming service names being ignored
 - [X] Issue#108: SpeedApp SD and HD TV episode mismatch
+- [X] Issue#110: GGBotException when connection to mongo fails
 - [X] Issue#111: SpeedApp cross seed torrents not registered
--
+
 ### v3.0.8
 - [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
