@@ -272,6 +272,8 @@ docker run --rm -it \
 # Roadmap
 ### v3.0.7
 - [X] Code refactor v3
+- [X] Support for trumpable flags for PTP
+- [X] Updated banned groups for TSP
 - [X] Issue#98: Season Packs Not using 1st episode for Mediainfo
 - [X] Issue#106: Releases tagged incorrectly as scene
 - [X] Issue#107: Streaming service names being ignored
@@ -282,14 +284,17 @@ docker run --rm -it \
 ### v3.0.8
 - [ ] Add Support for new platforms:
     - [ ] TorrentLeech
-- [ ] Use new search API for ANT
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
+- [ ] Issue#79: Not able to cross-seed rared releases
+- [ ] Issue#93: Bit-hdtv doesn't allow ptpimg screenshots
+- [ ] Issue#96: DVD Remux not supported
+- [ ] Issue#97: PTP uploads fail if no tags in IMDB
+
+### v3.0.9
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
-- [ ] Issue#79: Not able to cross-seed rared releases
-- [X] Support for trumpable flags for PTP
-- [X] Updated banned groups for TSP
+- [ ] Use new search API for ANT
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
