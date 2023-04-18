@@ -23,6 +23,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 import unicodedata
 from pathlib import Path
@@ -1170,3 +1171,48 @@ def normalize_for_system_path(file_path: str) -> str:
     return re.sub(
         r"[-\s]+", "_", re.sub(r"[^\w\s-]", "", file_path.lower())
     ).strip("__")
+
+
+def validate_batch_mode(*, batch_mode: bool, path: str) -> bool:
+    if not batch_mode:
+        return True
+
+    if len(path) != 1 or not os.path.isdir(path[0]):
+        if len(path) != 1:
+            _log_error_and_exit_batch_and_multiple_path()
+        else:
+            _log_error_and_exit_batch_and_file_path()
+        console.print("Exiting...\n", style="bright_red bold")
+        return False
+
+    return True
+
+
+def _log_error_and_exit_batch_and_file_path() -> None:
+    # Since args.path is required now, we don't need to check if len(args.path) == 0 since that's impossible
+    # instead we check to see if it's a folder, if not then
+    logging.critical(
+        "[Main]  The arg '-batch' can not be run an a single video file"
+    )
+    logging.info(
+        "[Main] The arg '-batch' should be used to upload all the files in 1 folder specified with the '-path' arg "
+    )
+    console.print(
+        "We can not [deep_sky_blue1]-batch[/deep_sky_blue1] upload a single video file, \n"
+        "[deep_sky_blue1]-batch[/deep_sky_blue1] is supposed to be used on a "
+        "single folder containing multiple files you want to individually upload\n",
+        style="bright_red",
+    )
+
+
+def _log_error_and_exit_batch_and_multiple_path() -> None:
+    logging.critical(
+        "[Main] The arg '-batch' can not be run with multiple '-path' args"
+    )
+    logging.info(
+        "[Main] The arg '-batch' should be used to upload all the files in 1 folder specified with the '-path' arg "
+    )
+    console.print(
+        "Cannot use [deep_sky_blue1]-batch[/deep_sky_blue1] and multiple [deep_sky_blue1]-path[/deep_sky_blue1] args\n",
+        style="bright_red",
+    )
