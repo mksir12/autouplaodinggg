@@ -1825,6 +1825,18 @@ def _upload_to_tracker(
         reupload_manager.mark_failed_upload(torrent, tracker, upload_response)
         return TrackerUploadStatus.FAILED, upload_response
 
+    if "success_processor" in config["technical_jargons"]:
+        logging.info(
+            f"[Main] Upload to tracker {tracker} is successful and success processor is configured"
+        )
+        action = config["technical_jargons"]["success_processor"]
+        logging.info(
+            f"[Main] Performing success processor action '{action}' for tracker {tracker}"
+        )
+        custom_action = utils.load_custom_actions(action)
+        logging.info(f"[Main] Loaded custom action :: {action} :: Executing...")
+        custom_action(torrent_info, tracker_settings, config, working_folder)
+
     reupload_manager.mark_successful_upload(torrent, tracker, upload_response)
 
     # -------- Post Processing --------

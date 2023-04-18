@@ -1658,36 +1658,17 @@ if not auto_mode:
 # TODO an issue with batch mode currently is that we have a lot of "assert" & sys.exit statements during the prep work we do for each upload,
 # if one of these "assert/quit" statements get triggered, then it will quit the entire script instead of just moving on to the next file in the list 'upload_queue'
 # ---------- Batch mode prep ---------- #
-if args.batch:
-    if len(args.path) > 1:
-        logging.critical(
-            "[Main] The arg '-batch' can not be run with multiple '-path' args"
-        )
-        logging.info(
-            "[Main] The arg '-batch' should be used to upload all the files in 1 folder that you specify with the '-path' arg"
-        )
-        console.print(
-            "You can not use the arg [deep_sky_blue1]-batch[/deep_sky_blue1] while supplying multiple [deep_sky_blue1]-path[/deep_sky_blue1] args\n",
-            style="bright_red",
-        )
-        console.print("Exiting...\n", style="bright_red bold")
-        sys.exit()
-    elif not os.path.isdir(args.path[0]):
-        # Since args.path is required now, we don't need to check if len(args.path) == 0 since that's impossible
-        # instead we check to see if its a folder, if not then
-        logging.critical(
-            "[Main]  The arg '-batch' can not be run an a single video file"
-        )
-        logging.info(
-            "[Main]  The arg '-batch' should be used to upload all the files in 1 folder that you specify with the '-path' arg"
-        )
-        console.print(
-            "We can not [deep_sky_blue1]-batch[/deep_sky_blue1] upload a single video file, [deep_sky_blue1]-batch[/deep_sky_blue1] is supposed to be used on a "
-            "single folder containing multiple files you want to individually upload\n",
-            style="bright_red",
-        )
-        console.print("Exiting...\n", style="bright_red bold")
-        sys.exit()
+if not utils.validate_batch_mode(
+    batch_mode=args.batch,
+    path=args.path,
+    metadata_ids={
+        "tmdb": args.tmdb,
+        "imdb": args.imdb,
+        "tvmaze": args.tvmaze,
+        "tvdb": args.tvdb,
+    },
+):
+    sys.exit()
 
 # all files we upload (even if its 1) get added to this list
 upload_queue = []
@@ -1695,35 +1676,19 @@ upload_queue = []
 if args.batch:
     logging.info("[Main] Running in batch mode")
     logging.info(f"[Main] Uploading all the items in the folder: {args.path}")
-    # # This should be OK to upload, we've caught all the obvious issues above ^^ so if this is able to run we should be alright
-    # for arg_file in glob.glob(f'{args.path[0]}/*'):
-    #     # Since we are in batch mode, we upload every file/folder we find in the path the user specified
-    #     upload_queue.append(arg_file)  # append each item to the list 'upload_queue' now
-    # logging.debug(f'[Main] Upload queue for batch mode {upload_queue}')
-    dirlist = [args.path[0]]
-    for (dirpath, dirnames, filenames) in os.walk(dirlist.pop()):
-        dirlist.extend(dirnames)
-        # if filenames.endsWith(".mkv") or filenames.endsWith(".mp4"):
-        upload_queue.extend(
-            filter(
-                lambda file_name: file_name.endswith(".mkv")
-                or file_name.endswith(".mp4"),
-                map(
-                    lambda path_and_file: os.path.join(*path_and_file),
-                    zip([dirpath] * len(filenames), filenames),
-                ),
-            )
-        )
+    upload_queue.extend(utils.files_for_batch_processing([args.path[0]]))
     logging.info(f"[Main] Upload queue for batch mode {upload_queue}")
 else:
     logging.info("[Main] Running in regular '-path' mode, starting upload now")
-    # This means the ran the script normally and specified a direct path to some media (or multiple media items, in which case we append it like normal to the list 'upload_queue')
+    # This means the ran the script normally and specified a direct path to some media (or multiple media items,
+    # in which case we append it like normal to the list 'upload_queue')
     for arg_file in user_supplied_paths:
         upload_queue.append(arg_file)
 
 logging.debug(f"[Main] Upload queue: {upload_queue}")
 
-# Now for each file we've been supplied (batch more or just the user manually specifying multiple files) we create a loop here that uploads each of them until none are left
+# Now for each file we've been supplied (batch more or just the user manually specifying multiple files) we create a
+# loop here that uploads each of them until none are left
 for file in upload_queue:
     # Remove all old temp_files & data from the previous upload
     torrent_info.clear()
@@ -2168,6 +2133,24 @@ for file in upload_queue:
         torrent_info[f"{tracker}_upload_status"] = upload_to_site(
             upload_to=tracker, tracker_api_key=temp_tracker_api_key
         )
+        if (
+            torrent_info[f"{tracker}_upload_status"] is True
+            and "success_processor" in config["technical_jargons"]
+        ):
+            logging.info(
+                f"[Main] Upload to tracker {tracker} is successful and success processor is configured"
+            )
+            action = config["technical_jargons"]["success_processor"]
+            logging.info(
+                f"[Main] Performing success processor action '{action}' for tracker {tracker}"
+            )
+            custom_action = utils.load_custom_actions(action)
+            logging.info(
+                f"[Main] Loaded custom action :: {action} :: Executing..."
+            )
+            custom_action(
+                torrent_info, tracker_settings, config, working_folder
+            )
 
         # Tracker Settings
         console.print("\n\n")

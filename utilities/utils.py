@@ -27,6 +27,7 @@ import time
 import unicodedata
 from pathlib import Path
 from pprint import pformat
+from typing import List, Dict
 
 import pyfiglet
 from dotenv import dotenv_values
@@ -1170,3 +1171,69 @@ def normalize_for_system_path(file_path: str) -> str:
     return re.sub(
         r"[-\s]+", "_", re.sub(r"[^\w\s-]", "", file_path.lower())
     ).strip("__")
+
+
+def validate_batch_mode(
+    *, batch_mode: bool, path: List[str], metadata_ids: Dict[str, str]
+) -> bool:
+    if not batch_mode:
+        return True
+
+    if any(meta_id for meta_id in metadata_ids.values()):
+        return False
+
+    if len(path) != 1 or not os.path.isdir(path[0]):
+        if len(path) != 1:
+            _log_error_and_exit_batch_and_multiple_path()
+        else:
+            _log_error_and_exit_batch_and_file_path()
+        console.print("Exiting...\n", style="bright_red bold")
+        return False
+
+    return True
+
+
+def _log_error_and_exit_batch_and_file_path() -> None:
+    # Since args.path is required now, we don't need to check if len(args.path) == 0 since that's impossible
+    # instead we check to see if it's a folder, if not then
+    logging.critical(
+        "[Main]  The arg '-batch' can not be run an a single video file"
+    )
+    logging.info(
+        "[Main] The arg '-batch' should be used to upload all the files in 1 folder specified with the '-path' arg "
+    )
+    console.print(
+        "We can not [deep_sky_blue1]-batch[/deep_sky_blue1] upload a single video file, \n"
+        "[deep_sky_blue1]-batch[/deep_sky_blue1] is supposed to be used on a "
+        "single folder containing multiple files you want to individually upload\n",
+        style="bright_red",
+    )
+
+
+def _log_error_and_exit_batch_and_multiple_path() -> None:
+    logging.critical(
+        "[Main] The arg '-batch' can not be run with multiple '-path' args"
+    )
+    logging.info(
+        "[Main] The arg '-batch' should be used to upload all the files in 1 folder specified with the '-path' arg "
+    )
+    console.print(
+        "Cannot use [deep_sky_blue1]-batch[/deep_sky_blue1] and multiple [deep_sky_blue1]-path[/deep_sky_blue1] args\n",
+        style="bright_red",
+    )
+
+
+def files_for_batch_processing(dirlist: List[str]) -> List[str]:
+    if not dirlist:
+        return []
+
+    files_list = []
+    for dir_path, dir_names, filenames in os.walk(dirlist.pop()):
+        dirlist.extend(dir_names)
+        files_list.extend(
+            os.path.join(dir_path, f)
+            for f in filenames
+            if f.endswith(".mkv") or f.endswith(".mp4")
+        )
+
+    return files_list

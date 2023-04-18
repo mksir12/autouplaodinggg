@@ -3,7 +3,7 @@
     "url": "https://speedapp.io/",
     "upload_form": "https://speedapp.io/api/upload",
     "torrents_search": "https://speedapp.io/api/torrent",
-    "source": "sunshine",
+    "source": "speedapp.io",
     "platform": "TBDev",
     "bbcode_line_break": "\n",
     "bbcode_code": "[code][/code]",
@@ -12,7 +12,8 @@
     "technical_jargons": {
         "authentication_mode": "BEARER",
         "response_type": "JSON",
-        "payload_type": "JSON"
+        "payload_type": "JSON",
+        "success_processor": "modules.custom_actions.spd_actions.update_torrent_info_hash"
     },
 
     "translation": {

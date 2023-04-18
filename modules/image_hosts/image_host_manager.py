@@ -107,6 +107,7 @@ class GGBotImageHostManager:
                     f"[Screenshots] Response from image host: {status}"
                 )
                 return status
+        return GGBotImageUploadStatus(status=False)
 
     def _create_image_host_uploader(
         self, *, image_host: str, image_path: str
