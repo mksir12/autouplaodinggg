@@ -28,6 +28,7 @@ import time
 import unicodedata
 from pathlib import Path
 from pprint import pformat
+from typing import List
 
 import pyfiglet
 from dotenv import dotenv_values
@@ -1173,7 +1174,7 @@ def normalize_for_system_path(file_path: str) -> str:
     ).strip("__")
 
 
-def validate_batch_mode(*, batch_mode: bool, path: str) -> bool:
+def validate_batch_mode(*, batch_mode: bool, path: List[str]) -> bool:
     if not batch_mode:
         return True
 
@@ -1216,3 +1217,19 @@ def _log_error_and_exit_batch_and_multiple_path() -> None:
         "Cannot use [deep_sky_blue1]-batch[/deep_sky_blue1] and multiple [deep_sky_blue1]-path[/deep_sky_blue1] args\n",
         style="bright_red",
     )
+
+
+def files_for_batch_processing(dirlist: List[str]) -> List[str]:
+    if not dirlist:
+        return []
+
+    files_list = []
+    for dir_path, dir_names, filenames in os.walk(dirlist.pop()):
+        dirlist.extend(dir_names)
+        files_list.extend(
+            os.path.join(dir_path, f)
+            for f in filenames
+            if f.endswith(".mkv") or f.endswith(".mp4")
+        )
+
+    return files_list
