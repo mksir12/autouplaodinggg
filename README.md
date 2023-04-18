@@ -274,6 +274,7 @@ docker run --rm -it \
 - [X] Code refactor v3
 - [X] Support for trumpable flags for PTP
 - [X] Updated banned groups for TSP
+- [X] Initial windows support (_might be buggy_)
 - [X] Issue#98: Season Packs Not using 1st episode for Mediainfo
 - [X] Issue#106: Releases tagged incorrectly as scene
 - [X] Issue#107: Streaming service names being ignored
