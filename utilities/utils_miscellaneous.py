@@ -61,6 +61,7 @@ def miscellaneous_perform_scene_group_capitalization(
             f"https://pre.corrupt-net.org/search.php?search={raw_file_name}",
             headers={"Accept-Language": "en-US,en;q=0.8"},
             verify=False,
+            timeout=5,
         ).text
     except Exception as ex:
         logging.fatal(

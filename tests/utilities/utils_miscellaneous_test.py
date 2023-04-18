@@ -91,20 +91,22 @@ def test_scene_group_capitalization_for_p2p_group_folder(monkeypatch):
     expected = ("false", "decibeL")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt"
         ).read(),
     )
     srr_db = APIResponse(
-        json.load(
+        data=json.load(
             open(f"{working_folder}/tests/resources/scene_db/srr_db.json")
         )
     )
     scene_api_responses = iter([pre_corrupt_db, srr_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -123,20 +125,22 @@ def test_scene_group_capitalization_for_p2p_group_file(monkeypatch):
     expected = ("false", "decibeL")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt"
         ).read(),
     )
     srr_db = APIResponse(
-        json.load(
+        data=json.load(
             open(f"{working_folder}/tests/resources/scene_db/srr_db.json")
         )
     )
     scene_api_responses = iter([pre_corrupt_db, srr_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -155,15 +159,17 @@ def test_scene_group_capitalization_pre_corrupt_db_match(monkeypatch):
     expected = ("true", "SPARKS")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_success.txt",
         ).read(),
     )
     scene_api_responses = iter([pre_corrupt_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -183,13 +189,13 @@ def test_scene_group_capitalization_srr_db_match(monkeypatch):
     expected = ("true", "SPARKS")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_sparks.txt",
         ).read(),
     )
     srr_db = APIResponse(
-        json.load(
+        data=json.load(
             open(
                 f"{working_folder}/tests/resources/scene_db/srr_db_success.json",
             )
@@ -198,7 +204,9 @@ def test_scene_group_capitalization_srr_db_match(monkeypatch):
     scene_api_responses = iter([pre_corrupt_db, srr_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
