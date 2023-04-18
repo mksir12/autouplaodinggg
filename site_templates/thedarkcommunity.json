@@ -228,6 +228,7 @@
         "episode_number": "episode_number",
         "internal": "internal",
         "featured": "featured",
+        "personal": "personal_release",
         "doubleup": "doubleup",
         "sticky": "sticky",
         "freeleech": "free"
@@ -250,6 +251,7 @@
         "internal": "string",
         "free": "string",
         "featured": "string",
+        "personal_release": "string",
         "doubleup": "string",
         "sticky": "string",
 

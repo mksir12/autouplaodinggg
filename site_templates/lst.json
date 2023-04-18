@@ -51,6 +51,7 @@
         "internal": "internal",
         "featured": "featured",
         "doubleup": "doubleup",
+        "personal": "personal_release",
         "sticky": "sticky",
         "freeleech": "free"
     },
@@ -70,6 +71,7 @@
         "igdb": "string",
 
         "internal": "string",
+        "personal_release": "string",
         "free": "string",
         "featured": "string",
         "doubleup": "string",

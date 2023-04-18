@@ -44,6 +44,7 @@
 
         "optimized": "stream",
         "internal": "internal",
+        "personal": "personal_release",
         "featured": "featured",
         "doubleup": "doubleup",
         "sticky": "sticky",
@@ -68,6 +69,7 @@
         "free": "string",
         "featured": "string",
         "doubleup": "string",
+        "personal_release": "string",
         "sticky": "string",
 
         "category_id": {

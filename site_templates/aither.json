@@ -8,7 +8,7 @@
     "bbcode_line_break": "\n",
     "title_separator" : " ",
     "screenshot_type": "bbcode_images",
-    
+
     "description_components":{
         "code_code": "[code][/code]",
         "spoiler_code":"[spoiler=TITLE_PLACEHOLDER][/spoiler]",
@@ -50,6 +50,7 @@
         "optimized": "stream",
         "internal": "internal",
         "featured": "featured",
+        "personal": "personal_release",
         "doubleup": "doubleup",
         "sticky": "sticky",
         "freeleech": "free"
@@ -72,6 +73,7 @@
         "internal": "string",
         "free": "string",
         "featured": "string",
+        "personal_release": "string",
         "doubleup": "string",
         "sticky": "string",
 

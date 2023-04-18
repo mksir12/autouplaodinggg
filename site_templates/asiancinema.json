@@ -46,6 +46,7 @@
         "tvdb": "tvdb",
         "mal": "mal",
         "igdb": "igdb",
+        "personal": "personal_release",
         "optimized": "stream",
         "nfo_file": "nfo_file"
     },
@@ -57,6 +58,7 @@
         "sd": "string",
         "anonymous": "string",
         "stream": "string",
+        "personal_release": "string",
         "igdb": "string",
         "mal": "string",
         "tvdb": "string",

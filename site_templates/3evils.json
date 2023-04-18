@@ -8,7 +8,7 @@
     "bbcode_line_break": "\n",
     "title_separator" : " ",
     "screenshot_type": "bbcode_images",
-    
+
 
     "description_components":{
         "code_code": "[code][/code]",
@@ -50,6 +50,7 @@
         "episode_number": "episode_number",
         "internal": "internal",
         "featured": "featured",
+        "personal": "personal_release",
         "doubleup": "doubleup",
         "sticky": "sticky",
         "freeleech": "free"
@@ -69,7 +70,7 @@
         "igdb": "string",
 
         "internal": "string",
-        "free": "string",
+        "personal_release": "string",
         "featured": "string",
         "doubleup": "string",
         "sticky": "string",
