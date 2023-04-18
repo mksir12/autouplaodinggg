@@ -28,7 +28,7 @@ import time
 import unicodedata
 from pathlib import Path
 from pprint import pformat
-from typing import List
+from typing import List, Dict
 
 import pyfiglet
 from dotenv import dotenv_values
@@ -1174,9 +1174,14 @@ def normalize_for_system_path(file_path: str) -> str:
     ).strip("__")
 
 
-def validate_batch_mode(*, batch_mode: bool, path: List[str]) -> bool:
+def validate_batch_mode(
+    *, batch_mode: bool, path: List[str], metadata_ids: Dict[str, str]
+) -> bool:
     if not batch_mode:
         return True
+
+    if any(meta_id for meta_id in metadata_ids.values()):
+        return False
 
     if len(path) != 1 or not os.path.isdir(path[0]):
         if len(path) != 1:
