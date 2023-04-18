@@ -217,6 +217,21 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
 
 <!-- Basic setup -->
 # Basic setup for Upload Assistant
+
+## Docker (recommended):
+1. Create new folder / dir [`mkdir GGBotUploader && cd GGBotUploader`]
+2. Download `samples/assistant/config.env` to the newly created folder (`GGBotUploader`)
+3. Fill out the required values in `config.env`
+5. Run GG-Bot-Uploader using docker run command below. (For more samples refer to Wiki [Docker Run Command Examples](https://gitlab.com/gg-bot/gg-bot-uploader/-/wikis/Docker-Run-Command-Examples))
+```
+docker run --rm -it \
+    -v <PATH_TO_YOUR_MEDIA>:/data \
+    --env-file config.env \
+    noobmaster669/gg-bot-uploader -t ATH TSP -p "/data/<YOUR_FILE_FOLDER>"
+```
+> See [DockerHub](https://hub.docker.com/r/noobmaster669/gg-bot-uploader/tags) for various tags
+<br />
+
 ## Bare Metal / VM:
 1. Clone this repository `git clone https://gitlab.com/NoobMaster669/gg-bot-upload-assistant.git`
 > It is recommended to checkout a tag and use it instead of using as the master branch, as there is a possibility for master branch to have bug / error / conflicts during merges.<br>
@@ -237,19 +252,34 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
 
 <br>
 
-## Docker (recommended):
-1. Create new folder / dir [`mkdir GGBotUploader && cd GGBotUploader`]
-2. Download `samples/assistant/config.env` to the newly created folder (`GGBotUploader`)
-3. Fill out the required values in `config.env`
-5. Run GG-Bot-Uploader using docker run command below. (For more samples refer to Wiki [Docker Run Command Examples](https://gitlab.com/gg-bot/gg-bot-uploader/-/wikis/Docker-Run-Command-Examples))
-```
-docker run --rm -it \
-    -v <PATH_TO_YOUR_MEDIA>:/data \
-    --env-file config.env \
-    noobmaster669/gg-bot-uploader -t ATH TSP -p "/data/<YOUR_FILE_FOLDER>"
-```
-> See [DockerHub](https://hub.docker.com/r/noobmaster669/gg-bot-uploader/tags) for various tags
+## Windows Setup (Upload Assistant):
+> In Windows, it's recommended to use [Anaconda Distribution](https://www.anaconda.com/products/distribution) to create 
+> python environment and install packages. 
 
+> If you are not using anaconda, make sure to install the latest version 
+> of [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). This is required for `python-Levenshtein` package.
+> Skip to Step 4 if you are not using conda.
+1. Create a new conda environment with Python 3.8.16.
+2. Activate the newly created environment
+```commandline
+activate gg-bot
+```
+3. Install `python-levenshtein` using conda.
+```commandline
+conda install python-levenshtein
+```
+4. Clone this repository git clone https://gitlab.com/NoobMaster669/gg-bot-upload-assistant.git
+>It is recommended to check out a tag and use it instead of using as the master branch, as there is a possibility for master branch to have bug / error / conflicts during merges.
+Checkout a tag using the command `git checkout tags/<TAG>`
+5. Checkout a release `tag/version` that you wish to use `git checkout tags/2.0`
+6. Install GG-BOT python packages.
+```commandline
+pip install -r requirements/requirements.txt
+```
+7. Copy `config.env` from `samples/assistant` folder to cloned project root.
+8. Fill out the required values in `config.env`
+> NOTE: Disable `readable_temp_data` when working in windows <br>
+> Set `readable_temp_data=False` in `config.env`
 <br />
 
 **Things to note:**

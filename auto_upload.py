@@ -83,12 +83,21 @@ torrent_info = {}
 
 # Debug logs for the upload processing
 # Logger running in "w" : write mode
-logging.basicConfig(
-    filename=ASSISTANT_LOG.format(base_path=working_folder),
-    filemode="w",
-    level=logging.INFO,
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
-)
+# Create a custom log format with UTF-8 encoding
+log_format = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s', '%Y-%m-%d %H:%M:%S')
+handler = logging.FileHandler(ASSISTANT_LOG.format(base_path=working_folder), mode='w', encoding='utf-8')
+handler.setFormatter(log_format)
+# Add the FileHandler to the root logger
+logging.root.addHandler(handler)
+logging.root.setLevel(logging.INFO)
+#
+# logging.basicConfig(
+#     filename=ASSISTANT_LOG.format(base_path=working_folder),
+#     filemode="w",
+#     encoding="utf-8",
+#     level=logging.INFO,
+#     format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+# )
 
 # Load the .env file that stores info like the tracker/image host API Keys & other info needed to upload
 load_dotenv(ASSISTANT_CONFIG.format(base_path=working_folder))
@@ -100,7 +109,7 @@ site_templates_path = SITE_TEMPLATES_DIR.format(base_path=working_folder)
 # Used to correctly select json file
 # the value in this dictionary must correspond to the file name of the site template
 acronym_to_tracker = json.load(
-    open(TRACKER_ACRONYMS.format(base_path=working_folder))
+    open(TRACKER_ACRONYMS.format(base_path=working_folder), "r", encoding="utf-8")
 )
 
 # the `prepare_tracker_api_keys_dict` prepares the api_keys_dict and also does mandatory property validations
@@ -855,13 +864,12 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
             torrent_info["screen_size"], torrent_info["upload_media"]
         )
 
-    # Bluray disc regions
-    # Regions are read from new json file
+    # Blu-ray disc regions are read from new json file
     bluray_regions = json.load(
-        open(BLURAY_REGIONS_MAP.format(base_path=working_folder))
+        open(BLURAY_REGIONS_MAP.format(base_path=working_folder), "r", encoding="utf-8")
     )
 
-    # Try to split the torrent title and match a few key words
+    # Try to split the torrent title and match a few keywords
     # End user can add their own 'key_words' that they might want to extract and add to the final torrent title
     key_words = {
         "remux": "REMUX",
@@ -1169,7 +1177,7 @@ def upload_to_site(upload_to, tracker_api_key):
                 if not os.path.exists(val):
                     create_file = open(val, "w+")
                     create_file.close()
-                with open(val) as txt_file:
+                with open(val, encoding="utf-8") as txt_file:
                     val = txt_file.read()
             if req_opt == "Optional":
                 logging.info(
