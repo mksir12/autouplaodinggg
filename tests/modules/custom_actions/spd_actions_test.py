@@ -8,7 +8,7 @@ import pytest
 import utilities.utils as utils
 from modules.custom_actions.spd_actions import update_torrent_info_hash
 from modules.torrent_generator.torf_generator import GGBOTTorrent
-from tests.conftest import TestUtils
+from tests.test_utilities import TestUtils
 
 working_folder = Path(__file__).resolve().parent.parent.parent.parent
 temp_working_dir = "/tests/working_folder"
