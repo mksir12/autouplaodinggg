@@ -351,7 +351,7 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
             debug=True,
         )
 
-    with open(ptp_description_file, "a") as ptp_description:
+    with open(ptp_description_file, "a", encoding="utf-8") as ptp_description:
         # writing mediainfo to description
         mediainfo = open(torrent_info["mediainfo"]).read()
         ptp_description.write(f"[mediainfo]{mediainfo}[/mediainfo]\n")

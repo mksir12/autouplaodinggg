@@ -30,7 +30,7 @@ class TemplateSchemaValidator:
 
     def is_valid(self, json_file):
         try:
-            self.schema(json.load(open(json_file)))
+            self.schema(json.load(open(json_file, "r", encoding="utf-8")))
             return True
         except JsonSchemaException as json_exception:
             logging.error(
