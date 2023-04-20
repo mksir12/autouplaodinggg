@@ -1,17 +1,36 @@
+### **3.0.7**
+    Underhood Changes
+        * Code refactor v3
+
+    New Features
+        * Support for trumpable flags for PTP
+        * Updated banned groups for TSP
+        * Initial windows support (_might be buggy_)
+
+    Bug Fixes
+        * Issue#98: Season Packs Not using 1st episode for Mediainfo
+        * Issue#106: Releases tagged incorrectly as scene
+        * Issue#107: Streaming service names being ignored
+        * Issue#108: SpeedApp SD and HD TV episode mismatch
+        * Issue#110: GGBotException when connection to mongo fails
+        * Issue#111: SpeedApp cross seed torrents not registered
+
+<br>
+
 ## **3.0.6**
     New Trackers
         * TheDarkCommunity
-    
+
     New Features
         * Support for Anamorphic videos and screenshots in display resolution
-    
+
     Bug Fixes
         * Fixed an issue where release groups was not identified for AV1 releases
         * Issue#67: Torf fails due to invalid characters in torrent title
         * Issue#92: Reuploader has issues with folders starting with [ ]
 
 <br>
- 
+
 ## **3.0.5**
     New Features
         * Support for DVD and HD-DVD PTP uploads
