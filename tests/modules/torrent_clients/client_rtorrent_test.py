@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-from pytest_mock import mocker
 
 from modules.torrent_clients.client_rtorrent import Rutorrent
 
@@ -28,6 +27,7 @@ def __reuploader_default_mode(param, default=None):
     if param == "client_host":
         return "localhost"
     return default
+
 
 def __reuploader_dynamic_mode(param, default=None):
     if param == "dynamic_tracker_selection":
@@ -70,16 +70,29 @@ def test_init_rutorrent_dynamic_reuploader(mocker):
         pytest.param({"category": "GGBOT::"}, [], id="no_trackers_provided"),
         pytest.param({"category": "SomeOtherLabel"}, [], id="wrong_label"),
         pytest.param({"category": ""}, [], id="no_label"),
-        pytest.param({"category": "GGBOT::TSP::ATH"}, ["TSP", "ATH"], id="two_trackers_provided"),
-        pytest.param({"category": "GGBOT::TSP::ATH::"}, ["TSP", "ATH"], id="two_trackers_provided"),
-        pytest.param({"category": "GGBOT::spd::ath::"}, ["spd", "ath"], id="two_trackers_provided"),
-    ]
+        pytest.param(
+            {"category": "GGBOT::TSP::ATH"},
+            ["TSP", "ATH"],
+            id="two_trackers_provided",
+        ),
+        pytest.param(
+            {"category": "GGBOT::TSP::ATH::"},
+            ["TSP", "ATH"],
+            id="two_trackers_provided",
+        ),
+        pytest.param(
+            {"category": "GGBOT::spd::ath::"},
+            ["spd", "ath"],
+            id="two_trackers_provided",
+        ),
+    ],
 )
 def test_get_dynamic_trackers(torrent, expected, mocker):
     mock_api_call = mocker.patch("requests.post")
     mocker.patch("os.getenv", side_effect=__reuploader_dynamic_mode)
     rutorrent = Rutorrent()
     assert rutorrent.get_dynamic_trackers(torrent) == expected
+
 
 @pytest.mark.parametrize(
     ("torrent", "expected"),
@@ -88,10 +101,16 @@ def test_get_dynamic_trackers(torrent, expected, mocker):
         pytest.param({"category": "SomeOtherLabel"}, [], id="wrong_label"),
         pytest.param({"category": ""}, [], id="no_label"),
         pytest.param({"category": "GGBOT::"}, [], id="no_trackers_provided"),
-        pytest.param({"category": "GGBOT::TSP::ATH"}, [], id="two_trackers_provided"),
-        pytest.param({"category": "GGBOT::TSP::ATH::"}, [], id="two_trackers_provided"),
-        pytest.param({"category": "GGBOT::spd::ath::"}, [], id="two_trackers_provided"),
-    ]
+        pytest.param(
+            {"category": "GGBOT::TSP::ATH"}, [], id="two_trackers_provided"
+        ),
+        pytest.param(
+            {"category": "GGBOT::TSP::ATH::"}, [], id="two_trackers_provided"
+        ),
+        pytest.param(
+            {"category": "GGBOT::spd::ath::"}, [], id="two_trackers_provided"
+        ),
+    ],
 )
 def test_get_dynamic_trackers_when_disabled(torrent, expected, mocker):
     mock_api_call = mocker.patch("requests.post")

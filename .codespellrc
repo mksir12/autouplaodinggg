@@ -1,0 +1,4 @@
+[codespell]
+ignore-words-list=te,th,tha,writters,succesfully
+skip=*.po
+exclude-file=.codespellrc

@@ -15,7 +15,10 @@ __pycache__/
 # Excluded file formats
 *.mkv
 *.mp4
+!tests/resources/media/logo.mp4
 *.torrent
+!tests/resources/torrent/SPD-atorrent.torrent
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 *.py[cod]

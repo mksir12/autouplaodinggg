@@ -45,6 +45,7 @@
         "igdb": "igdb",
         "optimized": "stream",
         "nfo_file": "nfo",
+        "personal": "personal_release",
         "internal": "internal",
         "featured": "featured",
         "doubleup": "doubleup",
@@ -68,6 +69,7 @@
         "internal": "string",
         "free": "string",
         "featured": "string",
+        "personal_release": "string",
         "doubleup": "string",
         "sticky": "string",
 

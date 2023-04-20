@@ -17,7 +17,6 @@
 import pytest
 
 from pathlib import Path
-from pytest_mock import mocker
 import utilities.utils as utils
 
 
@@ -33,17 +32,23 @@ def run_around_tests():
     if Path(folder).is_dir():
         clean_up(folder)
 
-    Path(f"{folder}/temp_upload/test_working_folder").mkdir(parents=True, exist_ok=True)  # temp_upload folder
+    Path(f"{folder}/temp_upload/test_working_folder").mkdir(
+        parents=True, exist_ok=True
+    )  # temp_upload folder
 
     # created torrents for cross-seeding tests
-    touch(f'{folder}/temp_upload/test_working_folder/TRACKER-Some Title different from torrent_title.torrent')
-    touch(f'{folder}/temp_upload/test_working_folder/TRACKER2-Some Title different from torrent_title.torrent')
+    touch(
+        f"{folder}/temp_upload/test_working_folder/TRACKER-Some Title different from torrent_title.torrent"
+    )
+    touch(
+        f"{folder}/temp_upload/test_working_folder/TRACKER2-Some Title different from torrent_title.torrent"
+    )
     yield
     clean_up(folder)
 
 
 def touch(file_path):
-    fp = open(file_path, 'x')
+    fp = open(file_path, "x")
     fp.close()
 
 
@@ -60,7 +65,7 @@ def clean_up(pth):
 # ------------------------------------------------------------------------------------------------------------------
 # ------------------------------------ Tests For Cross Seeding -----------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------
-"""
+r"""
     ___________________________________________________________________________________________________________________________
 
     --------------------------------------------------------- MOVIES ----------------------------------------------------------
@@ -122,15 +127,23 @@ def __cross_seed_with_translation_side_effect(param, default):
         return default
 
 
-def __mock_upload_torrent(torrent, save_path, use_auto_torrent_management, is_skip_checking):
+def __mock_upload_torrent(
+    torrent, save_path, use_auto_torrent_management, is_skip_checking
+):
     return (torrent, save_path, use_auto_torrent_management, is_skip_checking)
 
 
 def test_client_upload_tv_season_with_translation(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES"
-    torrent_info["raw_video_file"] = "/gg-bot-upload-assistant/files/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/Arcane.S01E01.Welcome.to.the.Playground.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/"
+    torrent_info[
+        "raw_file_name"
+    ] = "Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES"
+    torrent_info[
+        "raw_video_file"
+    ] = "/gg-bot-upload-assistant/files/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/Arcane.S01E01.Welcome.to.the.Playground.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "tv"
     torrent_info["working_folder"] = "test_working_folder/"
@@ -139,24 +152,37 @@ def test_client_upload_tv_season_with_translation(mocker):
     torrent_info["individual_episodes"] = "0"
     tracker = "TRACKER"
 
-    mocker.patch("os.getenv", side_effect=__cross_seed_with_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+    mocker.patch(
+        "os.getenv", side_effect=__cross_seed_with_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        '/some/folder/accessible/by/client/data/',
+        "/some/folder/accessible/by/client/data/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(
-        torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == expected
+    )
 
 
 def test_client_upload_tv_episode_with_translation(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Arcane.S01E01.Welcome.to.the.Playground.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/Arcane.S01E01.Welcome.to.the.Playground.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES.mkv"
+    torrent_info[
+        "raw_file_name"
+    ] = "Arcane.S01E01.Welcome.to.the.Playground.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/Arcane.S01E01.Welcome.to.the.Playground.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES.mkv"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "tv"
     torrent_info["working_folder"] = "test_working_folder/"
@@ -166,151 +192,246 @@ def test_client_upload_tv_episode_with_translation(mocker):
     tracker = "TRACKER"
 
     mocker.patch(
-        "os.getenv", side_effect=__cross_seed_with_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+        "os.getenv", side_effect=__cross_seed_with_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        '/some/folder/accessible/by/client/data/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/',
+        "/some/folder/accessible/by/client/data/Arcane.S01.1080p.NF.WEB-DL.DDP5.1.HDR.HEVC-TEPES/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(
-        torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == expected
+    )
 
 
 def test_client_upload_movie_folder_with_translation(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
-    torrent_info["raw_video_file"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
+    torrent_info[
+        "raw_file_name"
+    ] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
+    torrent_info[
+        "raw_video_file"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "movie"
     torrent_info["working_folder"] = "test_working_folder/"
     tracker = "TRACKER"
 
     mocker.patch(
-        "os.getenv", side_effect=__cross_seed_with_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+        "os.getenv", side_effect=__cross_seed_with_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        '/some/folder/accessible/by/client/data/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/',
+        "/some/folder/accessible/by/client/data/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(
-        torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == expected
+    )
 
 
 def test_client_upload_movie_folder(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
-    torrent_info["raw_video_file"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
+    torrent_info[
+        "raw_file_name"
+    ] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
+    torrent_info[
+        "raw_video_file"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "movie"
     torrent_info["working_folder"] = "test_working_folder/"
     tracker = "TRACKER"
 
-    mocker.patch("os.getenv", side_effect=__cross_seed_no_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+    mocker.patch(
+        "os.getenv", side_effect=__cross_seed_no_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        '/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/',
+        "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == expected
+    )
 
 
 def test_client_upload_movie_folder_allow_multiple_files(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
-    torrent_info["raw_video_file"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
+    torrent_info[
+        "raw_file_name"
+    ] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
+    torrent_info[
+        "raw_video_file"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "movie"
     torrent_info["working_folder"] = "test_working_folder/"
     tracker = "TRACKER"
 
-    mocker.patch("os.getenv", side_effect=__cross_seed_no_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+    mocker.patch(
+        "os.getenv", side_effect=__cross_seed_no_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        '/gg-bot-upload-assistant/files/',
+        "/gg-bot-upload-assistant/files/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker, True) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+            True,
+        )
+        == expected
+    )
 
 
 def test_client_upload_movie_folder_torrent_upload_failed(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
-    torrent_info["raw_video_file"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
+    torrent_info[
+        "raw_file_name"
+    ] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA"
+    torrent_info[
+        "raw_video_file"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA/"
     torrent_info[f"TRACKER_upload_status"] = False
     torrent_info["type"] = "movie"
     torrent_info["working_folder"] = "test_working_folder/"
     tracker = "TRACKER"
 
     mocker.patch(
-        "os.getenv", side_effect=__cross_seed_no_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+        "os.getenv", side_effect=__cross_seed_no_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
-    assert utils.perform_post_processing(
-        torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == False
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == False
+    )
 
 
 def test_client_upload_movie_file(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
-    torrent_info["upload_media"] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "raw_file_name"
+    ] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "/gg-bot-upload-assistant/files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "movie"
     torrent_info["working_folder"] = "test_working_folder/"
     tracker = "TRACKER"
 
     mocker.patch(
-        "os.getenv", side_effect=__cross_seed_no_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+        "os.getenv", side_effect=__cross_seed_no_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        '/gg-bot-upload-assistant/files/',
+        "/gg-bot-upload-assistant/files/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(
-        torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == expected
+    )
 
 
 def test_client_upload_movie_file_relative(mocker):
     torrent_info = {}
-    torrent_info["raw_file_name"] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
-    torrent_info["upload_media"] = "files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "raw_file_name"
+    ] = "Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
+    torrent_info[
+        "upload_media"
+    ] = "files/Varathan.2018.1080p.Blu-ray.Remux.AVC.DTS-HD.MA.5.1-FAFDA.mkv"
     torrent_info[f"TRACKER_upload_status"] = True
     torrent_info["type"] = "movie"
     torrent_info["working_folder"] = "test_working_folder/"
     tracker = "TRACKER"
 
-    mocker.patch("os.getenv", side_effect=__cross_seed_no_translation_side_effect)
-    mock_client = mocker.patch('modules.torrent_client.TorrentClient')
+    mocker.patch(
+        "os.getenv", side_effect=__cross_seed_no_translation_side_effect
+    )
+    mock_client = mocker.patch("modules.torrent_client.TorrentClient")
     mock_client.upload_torrent = __mock_upload_torrent
 
     expected = (
         f'{working_folder}{temp_working_dir}/temp_upload/{torrent_info["working_folder"]}TRACKER-Some Title different from torrent_title.torrent',
-        f'{working_folder}{temp_working_dir}/files/',
+        f"{working_folder}{temp_working_dir}/files/",
         False,
-        True
+        True,
     )
-    assert utils.perform_post_processing(torrent_info, mock_client, f"{working_folder}{temp_working_dir}", tracker) == expected
+    assert (
+        utils.perform_post_processing(
+            torrent_info,
+            mock_client,
+            f"{working_folder}{temp_working_dir}",
+            tracker,
+        )
+        == expected
+    )

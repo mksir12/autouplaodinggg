@@ -17,7 +17,6 @@ from pathlib import Path
 
 import pytest
 from pymediainfo import MediaInfo
-from pytest_mock import mocker
 
 from utilities.utils_miscellaneous import *
 
@@ -92,20 +91,22 @@ def test_scene_group_capitalization_for_p2p_group_folder(monkeypatch):
     expected = ("false", "decibeL")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt"
         ).read(),
     )
     srr_db = APIResponse(
-        json.load(
+        data=json.load(
             open(f"{working_folder}/tests/resources/scene_db/srr_db.json")
         )
     )
     scene_api_responses = iter([pre_corrupt_db, srr_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -124,20 +125,22 @@ def test_scene_group_capitalization_for_p2p_group_file(monkeypatch):
     expected = ("false", "decibeL")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db.txt"
         ).read(),
     )
     srr_db = APIResponse(
-        json.load(
+        data=json.load(
             open(f"{working_folder}/tests/resources/scene_db/srr_db.json")
         )
     )
     scene_api_responses = iter([pre_corrupt_db, srr_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -156,15 +159,17 @@ def test_scene_group_capitalization_pre_corrupt_db_match(monkeypatch):
     expected = ("true", "SPARKS")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_success.txt",
         ).read(),
     )
     scene_api_responses = iter([pre_corrupt_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -184,13 +189,13 @@ def test_scene_group_capitalization_srr_db_match(monkeypatch):
     expected = ("true", "SPARKS")
 
     pre_corrupt_db = APIResponse(
-        None,
-        open(
+        data=None,
+        text=open(
             f"{working_folder}/tests/resources/scene_db/pre_corrupt_db_sparks.txt",
         ).read(),
     )
     srr_db = APIResponse(
-        json.load(
+        data=json.load(
             open(
                 f"{working_folder}/tests/resources/scene_db/srr_db_success.json",
             )
@@ -199,7 +204,9 @@ def test_scene_group_capitalization_srr_db_match(monkeypatch):
     scene_api_responses = iter([pre_corrupt_db, srr_db])
     monkeypatch.setattr(
         "requests.get",
-        lambda url, headers=None, verify=True: next(scene_api_responses),
+        lambda url, headers=None, verify=True, timeout=5: next(
+            scene_api_responses
+        ),
     )
 
     assert (
@@ -398,6 +405,24 @@ def test_miscellaneous_identify_repacks(input, expected):
             "Conversations.with.Friends.S01E01.2160p.HULU.WEB-DL.DDP.5.1.HEVC-MiON",
             {},
             ("HULU", "Hulu"),
+        ),
+        pytest.param(
+            "Georgootty.Co.Georgootty.1991.1080p.HS.WEB-DL.DDP.2.0.H.264-DTR",
+            {},
+            ("HTSR", "HotStar"),
+            id="hotstar_hs",
+        ),
+        pytest.param(
+            "Georgootty.Co.Georgootty.1991.1080p.HTSR.WEB-DL.DDP.2.0.H.264-DTR",
+            {},
+            ("HTSR", "HotStar"),
+            id="hotstar_htsr",
+        ),
+        pytest.param(
+            "Georgootty.Co.Georgootty.1991.1080p.NOW.WEB-DL.DDP.2.0.H.264-DTR",
+            {},
+            ("NOW", "Now Tv"),
+            id="now_tv",
         ),
         pytest.param(
             "Conversations.with.Friends.S01E01.2160p.WEB-DL.DDP.5.1.HEVC-MiON",

@@ -17,14 +17,14 @@
 import pytest
 
 from pathlib import Path
-from pytest_mock import mocker
 
-import utilities.utils_screenshots as screenshots
+from utilities.utils_screenshots import GGBotScreenshotManager
 
 working_folder = Path(__file__).resolve().parent.parent.parent
 media_path = "tests/resources/media"
 temp_working_dir = f"/{media_path}/temp_upload"
 hash_prefix = "HASH_PREFIX/"
+
 
 def clean_up(pth):
     pth = Path(pth)
@@ -43,19 +43,33 @@ def run_around_tests():
     if Path(folder).is_dir():
         clean_up(folder)
 
-    Path(f"{folder}/{hash_prefix}screenshots").mkdir(parents=True, exist_ok=True)
+    Path(f"{folder}/{hash_prefix}screenshots").mkdir(
+        parents=True, exist_ok=True
+    )
 
     yield
     clean_up(folder)
 
 
 def test_take_upload_screens_0_num_screenshots():
-    response = screenshots.take_upload_screens(
-        "1:10", f"{working_folder}/{media_path}/logo.mp4", "GGBotUploadAssistant", f"{working_folder}/{media_path}", "HASH_PREFIX/"
-    )
+    response = GGBotScreenshotManager(
+        duration="1:10",
+        torrent_title="GGBotUploadAssistant",
+        upload_media=f"{working_folder}/{media_path}/logo.mp4",
+        skip_screenshots=False,
+        base_path=f"{working_folder}/{media_path}",
+        hash_prefix="HASH_PREFIX/",
+    ).generate_screenshots()
     assert not response
-    with open(f"{working_folder}/{media_path}/temp_upload/{hash_prefix}bbcode_images.txt", "r") as bbcode_images, open(f"{working_folder}/{media_path}/temp_upload/{hash_prefix}url_images.txt", "r") as url_images:
-        assert bbcode_images.readline() == "[b][color=#FF0000][size=22]No Screenshots Available[/size][/color][/b]"
+    with open(
+        f"{working_folder}/{media_path}/temp_upload/{hash_prefix}bbcode_images.txt",
+    ) as bbcode_images, open(
+        f"{working_folder}/{media_path}/temp_upload/{hash_prefix}url_images.txt",
+    ) as url_images:
+        assert (
+            bbcode_images.readline()
+            == "[b][color=#FF0000][size=22]No Screenshots Available[/size][/color][/b]"
+        )
         assert url_images.readline() == "No Screenshots Available"
         url_images.close()
         bbcode_images.close()
@@ -70,20 +84,47 @@ def screenshot_side_effect_1(key, default=None):
         return "DUMMY_API_KEY"
     return default
 
-# TODO find why this test is failing in gitlab ci.
-# TODO change base image????
-# def test_take_upload_screens_1_screenshots(mocker):
-#     mocker.patch("os.getenv", side_effect=screenshot_side_effect_1)
 
-#     response = screenshots.take_upload_screens(
-#         "70", f"{working_folder}/{media_path}/logo.mp4", "GGBotUploadAssistant", f"{working_folder}/{media_path}", "HASH_PREFIX/"
-#     )
-#     assert response is True
-#     assert Path(f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots/screenshots_data.json").is_file() == True
-#     assert Path(f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark").is_file() == True
-#     with open(f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark", "r") as completed_mark:
-#         assert completed_mark.readline() == "ALL_SCREENSHOT_UPLOADED_SUCCESSFULLY"
-#         completed_mark.close()
+def test_take_upload_screens_1_screenshots(mocker):
+    mocker.patch("os.getenv", side_effect=screenshot_side_effect_1)
+    response = GGBotScreenshotManager(
+        duration="10",
+        torrent_title="GGBotUploadAssistant",
+        upload_media=f"{working_folder}/{media_path}/logo.mp4",
+        skip_screenshots=False,
+        base_path=f"{working_folder}/{media_path}",
+        hash_prefix="HASH_PREFIX/",
+    ).generate_screenshots()
+    assert response is True
+    screenshot_found = False
+    for file in Path(
+        f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots"
+    ).iterdir():
+        print(file.name)
+        if file.name.endswith(".png") and file.name.startswith(
+            "GGBotUploadAssistant".lower()
+        ):
+            screenshot_found = True
+    assert screenshot_found
+    assert (
+        Path(
+            f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots/screenshots_data.json"
+        ).is_file()
+        is True
+    )
+    assert (
+        Path(
+            f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark"
+        ).is_file()
+        is True
+    )
+    with open(
+        f"{working_folder}/{media_path}/temp_upload/{hash_prefix}screenshots/uploads_complete.mark",
+    ) as completed_mark:
+        assert (
+            completed_mark.readline() == "ALL_SCREENSHOT_UPLOADED_SUCCESSFULLY"
+        )
+        completed_mark.close()
 
 
 def screenshot_side_effect_pixhost(key, default=None):

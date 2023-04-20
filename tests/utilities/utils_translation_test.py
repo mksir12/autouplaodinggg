@@ -20,22 +20,36 @@ import pytest
 from pathlib import Path
 
 import utilities.utils_translation as translation
-
+from modules.translations.hybrid_mapper import GGBotHybridMapper
 
 working_folder = Path(__file__).resolve().parent.parent.parent
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def load_config():
-    yield json.load(open(f"{working_folder}/tests/resources/translations/hybrid_mapping.json"))
+    yield json.load(
+        open(
+            f"{working_folder}/tests/resources/translations/hybrid_mapping.json"
+        )
+    )
 
-@pytest.fixture(scope='class')
+
+@pytest.fixture(scope="class")
 def load_multiple_mapping_config():
-    yield json.load(open(f"{working_folder}/tests/resources/translations/multiple_hybrid_mapping.json"))
+    yield json.load(
+        open(
+            f"{working_folder}/tests/resources/translations/multiple_hybrid_mapping.json"
+        )
+    )
 
-@pytest.fixture(scope='class')
+
+@pytest.fixture(scope="class")
 def full_tracker_config():
-    yield json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/full_tracker_config.json"))
+    yield json.load(
+        open(
+            f"{working_folder}/tests/resources/translations/translation_tests/full_tracker_config.json"
+        )
+    )
 
 
 class Args:
@@ -63,373 +77,343 @@ class Args:
     ("tracker_settings", "torrent_info", "expected"),
     [
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : "H.264",
+                "video_codec": "H.264",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "1",
-            id="Movies_encode_x264"
+            id="Movies_encode_x264",
         ),
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : "H.265",
+                "video_codec": "H.265",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "43",
-            id="Movies_encode_HEVC"
+            id="Movies_encode_HEVC",
         ),
         pytest.param(
+            {"source": "6", "resolution": "1", "cat": "10"},
             {
-                "source" : "6",
-                "resolution" : "1",
-                "cat" : "10"
-            },
-            {
-                "video_codec" : "H.265",
+                "video_codec": "H.265",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "7",
-            id="TV_Single_Episode_HDTV"
+            id="TV_Single_Episode_HDTV",
         ),
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "HYBRID_MAPPING_INVALID_CONFIGURATION",
-            id="invalid_config"
+            id="invalid_config",
         ),
         pytest.param(
+            {"source": "5", "resolution": "2", "cat": ""},
             {
-                "source" : "5",
-                "resolution" : "2",
-                "cat" : ""
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "5",
-            id="empty_values_defaulting"
+            id="empty_values_defaulting",
         ),
         pytest.param(
+            {"source": "100", "resolution": "2", "cat": "2"},
             {
-                "source" : "100",
-                "resolution" : "2",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "100",
-            id="rule_order_testing_first"
+            id="rule_order_testing_first",
         ),
         pytest.param(
+            {"source": "100", "resolution": "2", "cat": "2"},
             {
-                "source" : "100",
-                "resolution" : "2",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "2"
+                "episode_number": "2",
             },
             "101",
-            id="rule_order_testing_second"
+            id="rule_order_testing_second",
         ),
         pytest.param(
+            {"source": "100", "resolution": "2", "cat": "2"},
             {
-                "source" : "100",
-                "resolution" : "2",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "mal": "200",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "2"
+                "episode_number": "2",
             },
             "anime",
-            id="is_not_none_or_is_present"
-        )
-    ]
+            id="is_not_none_or_is_present",
+        ),
+    ],
 )
 @pytest.mark.usefixtures("load_config")
 def test_get_hybrid_type(load_config, tracker_settings, torrent_info, expected):
-    assert translation._get_hybrid_type("subcat", tracker_settings, load_config, False, torrent_info) == expected
+    assert (
+        GGBotHybridMapper(
+            hybrid_mappings=load_config["hybrid_mappings"],
+            torrent_info=torrent_info,
+            exit_program=False,
+        ).perform_hybrid_mapping(
+            translation_value="subcat", tracker_settings=tracker_settings
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
     ("tracker_settings", "torrent_info"),
     [
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
-            id="invalid_config_program_exit")
-    ]
+            id="invalid_config_program_exit",
+        )
+    ],
 )
 @pytest.mark.usefixtures("load_config")
-def test_get_hybrid_type_application_exit(load_config, tracker_settings, torrent_info):
+def test_get_hybrid_type_application_exit(
+    load_config, tracker_settings, torrent_info
+):
     with pytest.raises(SystemExit) as pytest_wrapped_e:
-            translation._get_hybrid_type("subcat", tracker_settings, load_config, True, torrent_info)
+        GGBotHybridMapper(
+            hybrid_mappings=load_config["hybrid_mappings"],
+            torrent_info=torrent_info,
+            exit_program=True,
+        ).perform_hybrid_mapping(
+            translation_value="subcat", tracker_settings=tracker_settings
+        )
     assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == "Invalid hybrid mapping configuration provided."
+    assert (
+        pytest_wrapped_e.value.code
+        == "Invalid hybrid mapping configuration provided."
+    )
 
 
 @pytest.mark.parametrize(
-    ("tracker_settings","expected"),
+    ("tracker_settings", "expected"),
     [
         pytest.param(
-            {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
+            {"source": "3", "resolution": "2", "cat": "7"},
             False,
-            id="no_need_to_delay"
+            id="no_need_to_delay",
         ),
+        pytest.param({"source": "3", "cat": "7"}, False, id="no_need_to_delay"),
         pytest.param(
-            {
-                "source" : "3",
-                "cat" : "7"
-            },
-            False,
-            id="no_need_to_delay"
-        ),
-        pytest.param(
-            {
-                "source" : "3",
-                "resolution" : "2"
-            },
+            {"source": "3", "resolution": "2"},
             True,
-            id="delay_hybrid_mapping_after_all_translations"
-        )
-    ]
+            id="delay_hybrid_mapping_after_all_translations",
+        ),
+    ],
 )
 @pytest.mark.usefixtures("load_config")
 def test_should_delay_mapping(load_config, tracker_settings, expected):
-    assert translation.should_delay_mapping("subcat", load_config["hybrid_mappings"]["subcat"]["prerequisite"],tracker_settings) == expected
+    assert (
+        GGBotHybridMapper.should_delay_mapping(
+            translation_value="subcat",
+            prerequisites=load_config["hybrid_mappings"]["subcat"][
+                "prerequisite"
+            ],
+            tracker_settings=tracker_settings,
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
     ("tracker_settings", "torrent_info", "expected"),
     [
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : "H.264",
+                "video_codec": "H.264",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "1",
-            id="Movies_encode_x264"
+            id="Movies_encode_x264",
         ),
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : "H.265",
+                "video_codec": "H.265",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "43",
-            id="Movies_encode_HEVC"
+            id="Movies_encode_HEVC",
         ),
         pytest.param(
+            {"source": "6", "resolution": "1", "cat": "10"},
             {
-                "source" : "6",
-                "resolution" : "1",
-                "cat" : "10"
-            },
-            {
-                "video_codec" : "H.265",
+                "video_codec": "H.265",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "7",
-            id="TV_Single_Episode_HDTV"
+            id="TV_Single_Episode_HDTV",
         ),
         pytest.param(
+            {"source": "3", "resolution": "2", "cat": "7"},
             {
-                "source" : "3",
-                "resolution" : "2",
-                "cat" : "7"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "HYBRID_MAPPING_INVALID_CONFIGURATION",
-            id="invalid_config"
+            id="invalid_config",
         ),
         pytest.param(
+            {"source": "5", "resolution": "2", "cat": ""},
             {
-                "source" : "5",
-                "resolution" : "2",
-                "cat" : ""
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "5",
-            id="empty_values_defaulting"
+            id="empty_values_defaulting",
         ),
         pytest.param(
+            {"source": "100", "resolution": "2", "cat": "2"},
             {
-                "source" : "100",
-                "resolution" : "2",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "0"
+                "episode_number": "0",
             },
             "100",
-            id="rule_order_testing_first"
+            id="rule_order_testing_first",
         ),
         pytest.param(
+            {"source": "100", "resolution": "2", "cat": "2"},
             {
-                "source" : "100",
-                "resolution" : "2",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "2"
+                "episode_number": "2",
             },
             "101",
-            id="rule_order_testing_second"
+            id="rule_order_testing_second",
         ),
         pytest.param(
+            {"source": "100", "resolution": "2", "cat": "2"},
             {
-                "source" : "100",
-                "resolution" : "2",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : None,
+                "video_codec": None,
                 "mal": "200",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "2"
+                "episode_number": "2",
             },
             "anime",
-            id="is_not_none_or_is_present"
-        )
-    ]
+            id="is_not_none_or_is_present",
+        ),
+    ],
 )
 @pytest.mark.usefixtures("load_config")
-def test_perform_delayed_hybrid_mapping(load_config, tracker_settings, torrent_info, expected):
-    translation.perform_delayed_hybrid_mapping(load_config, tracker_settings, torrent_info, False)
+def test_perform_delayed_hybrid_mapping(
+    load_config, tracker_settings, torrent_info, expected
+):
+    GGBotHybridMapper(
+        hybrid_mappings=load_config["hybrid_mappings"],
+        torrent_info=torrent_info,
+        exit_program=False,
+    ).perform_delayed_hybrid_mapping(tracker_settings=tracker_settings)
     assert tracker_settings["subcat"] == expected
 
 
 @pytest.mark.parametrize(
-    ("tracker_settings", "torrent_info", "subcat_1", "subcat_2", "subcat_3", "subcat_4", "subcat_5"),
+    (
+        "tracker_settings",
+        "torrent_info",
+        "subcat_1",
+        "subcat_2",
+        "subcat_3",
+        "subcat_4",
+        "subcat_5",
+    ),
     [
         pytest.param(
+            {"source": "3", "cat": "2"},
             {
-                "source" : "3",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : "H.264",
+                "video_codec": "H.264",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
-                "episode_number": "1"
+                "episode_number": "1",
             },
             "HYBRID_MAPPING_INVALID_CONFIGURATION",
             "subcat_2_digits",
             "subcat_3_digits",
             "subcat_4_three_digit",
             "101",
-            id="delayed_multiple_mapping"
+            id="delayed_multiple_mapping",
         ),
         pytest.param(
+            {"source": "3", "cat": "2"},
             {
-                "source" : "3",
-                "cat" : "2"
-            },
-            {
-                "video_codec" : "H.264",
+                "video_codec": "H.264",
                 "source": "SOURCE_FOR_LOGGING",
                 "screen_size": "SCREEN_SIZE_FOR_LOGGING",
                 "episode_number": "0",
-                "mal":"100"
+                "mal": "100",
             },
             "subcat_1_mapping",
             "subcat_2_anime",
             "subcat_3_anime",
             "subcat_4_anime",
             "anime",
-            id="delayed_multiple_mapping"
-        )
-    ]
+            id="delayed_multiple_mapping",
+        ),
+    ],
 )
 @pytest.mark.usefixtures("load_multiple_mapping_config")
 def test_perform_delayed_hybrid_mapping_multiple_mappings(
-    load_multiple_mapping_config, tracker_settings, torrent_info, subcat_1, subcat_2, subcat_3, subcat_4, subcat_5
+    load_multiple_mapping_config,
+    tracker_settings,
+    torrent_info,
+    subcat_1,
+    subcat_2,
+    subcat_3,
+    subcat_4,
+    subcat_5,
 ):
-    translation.perform_delayed_hybrid_mapping(load_multiple_mapping_config, tracker_settings, torrent_info, False)
+    GGBotHybridMapper(
+        hybrid_mappings=load_multiple_mapping_config["hybrid_mappings"],
+        torrent_info=torrent_info,
+        exit_program=False,
+    ).perform_delayed_hybrid_mapping(tracker_settings=tracker_settings)
+    translation.perform_delayed_hybrid_mapping(
+        load_multiple_mapping_config, tracker_settings, torrent_info, False
+    )
     assert tracker_settings["subcat_1"] == subcat_1
     assert tracker_settings["subcat_2"] == subcat_2
     assert tracker_settings["subcat_3"] == subcat_3
@@ -441,29 +425,64 @@ def test_perform_delayed_hybrid_mapping_multiple_mappings(
     ("torrent_info", "expected"),
     [
         pytest.param(
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/1/torrent_info.json")),
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/1/tracker_settings.json")),
-            id="torrent_info_1"
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/1/torrent_info.json"
+                )
+            ),
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/1/tracker_settings.json"
+                )
+            ),
+            id="torrent_info_1",
         ),
         pytest.param(
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/2/torrent_info.json")),
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/2/tracker_settings.json")),
-            id="torrent_info_2"
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/2/torrent_info.json"
+                )
+            ),
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/2/tracker_settings.json"
+                )
+            ),
+            id="torrent_info_2",
         ),
         pytest.param(
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/3/torrent_info.json")),
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/3/tracker_settings.json")),
-            id="torrent_info_3"
-        )
-    ]
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/3/torrent_info.json"
+                )
+            ),
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/3/tracker_settings.json"
+                )
+            ),
+            id="torrent_info_3",
+        ),
+    ],
 )
 @pytest.mark.usefixtures("full_tracker_config")
 def test_choose_right_tracker_keys(full_tracker_config, torrent_info, expected):
     args = Args()
     tracker_settings = {}
-    translation.choose_right_tracker_keys(full_tracker_config, tracker_settings, "GG-BOT", torrent_info, args, working_folder)
+    translation.choose_right_tracker_keys(
+        full_tracker_config,
+        tracker_settings,
+        "GG-BOT",
+        torrent_info,
+        args,
+        working_folder,
+    )
 
-    for key in tracker_settings.keys() if len(tracker_settings) > len(expected) else expected.keys():
+    for key in (
+        tracker_settings.keys()
+        if len(tracker_settings) > len(expected)
+        else expected.keys()
+    ):
         if key == "file":
             assert tracker_settings[key].endswith(expected[key])
         else:
@@ -475,20 +494,41 @@ def test_choose_right_tracker_keys(full_tracker_config, torrent_info, expected):
     ("torrent_info", "expected"),
     [
         pytest.param(
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/1/torrent_info.json")),
-            json.load(open(f"{working_folder}/tests/resources/translations/translation_tests/1/tracker_settings.json")),
-            id="torrent_info_1"
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/1/torrent_info.json"
+                )
+            ),
+            json.load(
+                open(
+                    f"{working_folder}/tests/resources/translations/translation_tests/1/tracker_settings.json"
+                )
+            ),
+            id="torrent_info_1",
         )
-    ]
+    ],
 )
 @pytest.mark.usefixtures("full_tracker_config")
-def test_choose_right_tracker_keys_disc_enabled(full_tracker_config, torrent_info, expected):
+def test_choose_right_tracker_keys_disc_enabled(
+    full_tracker_config, torrent_info, expected
+):
     args = Args()
     args.disc = True
     tracker_settings = {}
-    translation.choose_right_tracker_keys(full_tracker_config, tracker_settings, "GG-BOT", torrent_info, args, working_folder)
+    translation.choose_right_tracker_keys(
+        full_tracker_config,
+        tracker_settings,
+        "GG-BOT",
+        torrent_info,
+        args,
+        working_folder,
+    )
 
-    for key in tracker_settings.keys() if len(tracker_settings) > len(expected) else expected.keys():
+    for key in (
+        tracker_settings.keys()
+        if len(tracker_settings) > len(expected)
+        else expected.keys()
+    ):
         if key == "file":
             assert tracker_settings[key].endswith(expected[key])
         else:
@@ -501,11 +541,9 @@ def __get_tag_grouping():
         "group_1": {
             "subkey_1_1": ["val_1_1_1", "val_1_1_2", "val_1_1_3"],
             "subkey_1_2": ["val_1_2_1", "val_1_2_2", "val_1_2_3", "val_1_2_4"],
-            "subkey_1_3": ["val_1_3_1"]
+            "subkey_1_3": ["val_1_3_1"],
         },
-        "group_2": {
-            "subkey_2_1": ["val_2_1_1", "val_2_1_2"]
-        }
+        "group_2": {"subkey_2_1": ["val_2_1_1", "val_2_1_2"]},
     }
 
 
@@ -514,48 +552,119 @@ def __get_tag_grouping():
     [
         pytest.param(
             {
-                "hdr" : "HDR",
-                "atmos" : "Atmos",
-                "source_type" : "bluray_remux",
-                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+                "hdr": "HDR",
+                "atmos": "Atmos",
+                "source_type": "bluray_remux",
+                "tag_grouping": json.load(
+                    open(f"{working_folder}/parameters/tag_grouping.json")
+                ),
             },
-            sorted(["HDR", "HDR10", "hdr10", "Atmos", "Dolby Atmos", "dolby_atmos", "Remux", "BlurayRemux", "Bluray-Remux", "remux"]),
-            id = "hdr_atmos_bluray_remux"
+            sorted(
+                [
+                    "HDR",
+                    "HDR10",
+                    "hdr10",
+                    "Atmos",
+                    "Dolby Atmos",
+                    "dolby_atmos",
+                    "Remux",
+                    "BlurayRemux",
+                    "Bluray-Remux",
+                    "remux",
+                ]
+            ),
+            id="hdr_atmos_bluray_remux",
         ),
         pytest.param(
             {
-                "atmos" : "Atmos",
+                "atmos": "Atmos",
                 "dv": "DV",
-                "source_type" : "webdl",
-                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+                "source_type": "webdl",
+                "tag_grouping": json.load(
+                    open(f"{working_folder}/parameters/tag_grouping.json")
+                ),
             },
-            sorted(["Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "webdl"]),
-            id = "dv_atmos_webdl"
+            sorted(
+                [
+                    "Atmos",
+                    "Dolby Atmos",
+                    "dolby_atmos",
+                    "WEBDL",
+                    "WEB-DL",
+                    "Dolby Vision",
+                    "dolby_vision",
+                    "DV",
+                    "DoVi",
+                    "Do-Vi",
+                    "webdl",
+                ]
+            ),
+            id="dv_atmos_webdl",
         ),
         pytest.param(
             {
-                "atmos" : "Atmos",
+                "atmos": "Atmos",
                 "dv": "DV",
                 "edition": "International Cut",
-                "source_type" : "webdl",
-                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json"))
+                "source_type": "webdl",
+                "tag_grouping": json.load(
+                    open(f"{working_folder}/parameters/tag_grouping.json")
+                ),
             },
-            sorted(["Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "webdl", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
-            id = "edition"
+            sorted(
+                [
+                    "Atmos",
+                    "Dolby Atmos",
+                    "dolby_atmos",
+                    "WEBDL",
+                    "WEB-DL",
+                    "webdl",
+                    "Dolby Vision",
+                    "dolby_vision",
+                    "DV",
+                    "DoVi",
+                    "Do-Vi",
+                    "International",
+                    "International Cut",
+                    "International-Cut",
+                ]
+            ),
+            id="edition",
         ),
         pytest.param(
             {
-                "atmos" : "Atmos",
+                "atmos": "Atmos",
                 "dv": "DV",
                 "edition": "International Cut",
-                "source_type" : "webdl",
-                "tag_grouping": json.load(open(f"{working_folder}/parameters/tag_grouping.json")),
-                "argument_tags": ["argument_tag1", "another_tag_from_argument"]
+                "source_type": "webdl",
+                "tag_grouping": json.load(
+                    open(f"{working_folder}/parameters/tag_grouping.json")
+                ),
+                "argument_tags": ["argument_tag1", "another_tag_from_argument"],
             },
-            sorted(["another_tag_from_argument", "argument_tag1", "Atmos", "Dolby Atmos", "dolby_atmos", "WEBDL", "WEB-DL", "webdl", "Dolby Vision", "dolby_vision", "DV", "DoVi", "Do-Vi", "International", "International Cut", "International-Cut"]),
-            id = "edition_with_custom_argument_tags"
-        )
-    ]
+            sorted(
+                [
+                    "another_tag_from_argument",
+                    "argument_tag1",
+                    "Atmos",
+                    "Dolby Atmos",
+                    "dolby_atmos",
+                    "WEBDL",
+                    "WEB-DL",
+                    "webdl",
+                    "Dolby Vision",
+                    "dolby_vision",
+                    "DV",
+                    "DoVi",
+                    "Do-Vi",
+                    "International",
+                    "International Cut",
+                    "International-Cut",
+                ]
+            ),
+            id="edition_with_custom_argument_tags",
+        ),
+    ],
 )
 def test_generate_all_applicable_tags(torrent_info, expected):
     translation.generate_all_applicable_tags(torrent_info)

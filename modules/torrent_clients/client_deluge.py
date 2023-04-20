@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 class Deluge:
-    def display(self):
+    @staticmethod
+    def display():
         print("Hello From Deluge")

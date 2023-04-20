@@ -217,6 +217,21 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
 
 <!-- Basic setup -->
 # Basic setup for Upload Assistant
+
+## Docker (recommended):
+1. Create new folder / dir [`mkdir GGBotUploader && cd GGBotUploader`]
+2. Download `samples/assistant/config.env` to the newly created folder (`GGBotUploader`)
+3. Fill out the required values in `config.env`
+5. Run GG-Bot-Uploader using docker run command below. (For more samples refer to Wiki [Docker Run Command Examples](https://gitlab.com/gg-bot/gg-bot-uploader/-/wikis/Docker-Run-Command-Examples))
+```
+docker run --rm -it \
+    -v <PATH_TO_YOUR_MEDIA>:/data \
+    --env-file config.env \
+    noobmaster669/gg-bot-uploader -t ATH TSP -p "/data/<YOUR_FILE_FOLDER>"
+```
+> See [DockerHub](https://hub.docker.com/r/noobmaster669/gg-bot-uploader/tags) for various tags
+<br />
+
 ## Bare Metal / VM:
 1. Clone this repository `git clone https://gitlab.com/NoobMaster669/gg-bot-upload-assistant.git`
 > It is recommended to checkout a tag and use it instead of using as the master branch, as there is a possibility for master branch to have bug / error / conflicts during merges.<br>
@@ -237,19 +252,34 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
 
 <br>
 
-## Docker (recommended):
-1. Create new folder / dir [`mkdir GGBotUploader && cd GGBotUploader`]
-2. Download `samples/assistant/config.env` to the newly created folder (`GGBotUploader`)
-3. Fill out the required values in `config.env`
-5. Run GG-Bot-Uploader using docker run command below. (For more samples refer to Wiki [Docker Run Command Examples](https://gitlab.com/gg-bot/gg-bot-uploader/-/wikis/Docker-Run-Command-Examples))
-```
-docker run --rm -it \
-    -v <PATH_TO_YOUR_MEDIA>:/data \
-    --env-file config.env \
-    noobmaster669/gg-bot-uploader -t ATH TSP -p "/data/<YOUR_FILE_FOLDER>"
-```
-> See [DockerHub](https://hub.docker.com/r/noobmaster669/gg-bot-uploader/tags) for various tags
+## Windows Setup (Upload Assistant):
+> In Windows, it's recommended to use [Anaconda Distribution](https://www.anaconda.com/products/distribution) to create
+> python environment and install packages.
 
+> If you are not using anaconda, make sure to install the latest version
+> of [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). This is required for `python-Levenshtein` package.
+> Skip to Step 4 if you are not using conda.
+1. Create a new conda environment with Python 3.8.16.
+2. Activate the newly created environment
+```commandline
+activate gg-bot
+```
+3. Install `python-levenshtein` using conda.
+```commandline
+conda install python-levenshtein
+```
+4. Clone this repository git clone https://gitlab.com/NoobMaster669/gg-bot-upload-assistant.git
+>It is recommended to check out a tag and use it instead of using as the master branch, as there is a possibility for master branch to have bug / error / conflicts during merges.
+Checkout a tag using the command `git checkout tags/<TAG>`
+5. Checkout a release `tag/version` that you wish to use `git checkout tags/2.0`
+6. Install GG-BOT python packages.
+```commandline
+pip install -r requirements/requirements.txt
+```
+7. Copy `config.env` from `samples/assistant` folder to cloned project root.
+8. Fill out the required values in `config.env`
+> NOTE: Disable `readable_temp_data` when working in windows <br>
+> Set `readable_temp_data=False` in `config.env`
 <br />
 
 **Things to note:**
@@ -257,6 +287,7 @@ docker run --rm -it \
 2. If you provide the IMDB ID via ```-imdb```, you must include the 'tt' that precedes the numerical ID
 3. When providing multiple database (TMDB, IMDB, TVMAZE ) ids via optional arguments, uploader uses the ids with priority **`IMDB > TMDB > TVMAZE > TVDB`**
 4. Full Disk uploads are supported ONLY in FAT version of the docker images. Look for image tags in the format **`:FullDisk-{TAG}`**
+5. When running in windows, ensure that `readable_temp_data` is set to `False` (disabled).
 
 <br>
 
@@ -266,20 +297,25 @@ docker run --rm -it \
 2. No support for Bluray distributors and Bluray disc regions
 3. No official support for Blurays in .iso format
 4. No support for 3D Bluray discs
+5. Cannot pass `tmdb`, `imdb`, `tvmaze` and `mal` ids as command line arguments when running in `batch` mode.
 
 <br>
 
 # Roadmap
-### v3.0.7
+### v3.0.8
 - [ ] Add Support for new platforms:
-    - [ ] PirateTheNet
-    - [ ] RetroFlix
-- [ ] Use new search API for ANT
+    - [ ] TorrentLeech
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
+- [ ] Issue#79: Not able to cross-seed rared releases
+- [ ] Issue#93: Bit-hdtv doesn't allow ptpimg screenshots
+- [ ] Issue#96: DVD Remux not supported
+- [ ] Issue#97: PTP uploads fail if no tags in IMDB
+
+### v3.0.9
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
-- [ ] Issue#79: Not able to cross-seed rared releases
+- [ ] Use new search API for ANT
 
 ### Backlogs
 - [ ] EPIC: GGBOT Metadata Aggregator
@@ -298,6 +334,8 @@ docker run --rm -it \
 - [ ] Add Support for new platforms
     - [ ] MoreThanTV
     - [ ] DanishBytes
+    - [ ] RetroFlix
+    - [ ] PirateTheNet
 - [ ] Add support for DVDs
 
 <br>
@@ -306,15 +344,15 @@ docker run --rm -it \
 ## **3.0.6**
     New Trackers
         * TheDarkCommunity
-    
+
     New Features
         * Support for Anamorphic videos and screenshots in display resolution
-    
+
     Bug Fixes
         * Fixed an issue where release groups was not identified for AV1 releases
         * Issue#67: Torf fails due to invalid characters in torrent title
         * Issue#92: Reuploader has issues with folders starting with [ ]
-        
+
 <br>
 
 ## **3.0.5**

@@ -1,16 +1,16 @@
 # GG Bot Upload Assistant
 # Copyright (C) 2022  Noob Master669
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -19,10 +19,9 @@ import sys
 
 from rich.console import Console
 
-import modules.env as Environment
+from modules.config import UploaderConfig
 from modules.constants import WORKING_DIR
-
-from .utils import normalize_for_system_path
+from utilities.utils import normalize_for_system_path
 
 console = Console()
 
@@ -318,7 +317,7 @@ def perform_delayed_hybrid_mapping(
 
     for _ in range(0, no_of_hybrid_mappings):
         for translation_value in config["hybrid_mappings"].keys():
-            # check whether the particular field can be underdo hybrid mapping
+            # check whether the particular field can be undergoing hybrid mapping
             delay_mapping = should_delay_mapping(
                 translation_value=translation_value,
                 prerequisites=config["hybrid_mappings"][translation_value][
@@ -326,10 +325,7 @@ def perform_delayed_hybrid_mapping(
                 ],
                 tracker_settings=tracker_settings,
             )
-            if (
-                translation_value not in tracker_settings
-                and delay_mapping == False
-            ):
+            if translation_value not in tracker_settings and not delay_mapping:
                 tracker_settings[translation_value] = _get_hybrid_type(
                     translation_value=translation_value,
                     tracker_settings=tracker_settings,
@@ -439,7 +435,7 @@ def _validate_and_do_hybrid_mapping(
                 f"[HybridMapping] No 'prerequisite' required for '{translation_value}'"
             )
 
-        if delayed_mapping == True:
+        if delayed_mapping:
             return True, is_hybrid_translation_needed
 
         logging.info(
@@ -537,9 +533,10 @@ def choose_right_tracker_keys(
                     # BHD requires the key "live" (0 = Sent to drafts and 1 = Live on site)
                     if required_key == "live":
                         # BHD Live/Draft
-                        live = "1" if Environment.is_live() else "0"
+                        # TODO: move this to a BHD custom action
+                        live = "1" if UploaderConfig().BHD_LIVE else "0"
                         logging.info(
-                            f"Upload live status: {'Live (Visible)' if Environment.is_live() else 'Draft (Hidden)'}"
+                            f"Upload live status: {'Live (Visible)' if UploaderConfig().BHD_LIVE else 'Draft (Hidden)'}"
                         )
                         tracker_settings[
                             config["translation"][translation_key]
@@ -557,6 +554,7 @@ def choose_right_tracker_keys(
                         "doubleup",
                         "featured",
                         "freeleech",
+                        "personal",
                         "internal",
                         "sticky",
                         "tripleup",
@@ -838,7 +836,7 @@ def fix_default_naming_styles(torrent_info):
             else:
                 torrent_info["source"] = "Blu-ray"
         else:
-            # BluRay encodes & Remuxs just use the complete word "BluRay"
+            # BluRay encodes & Remuxes just use the complete word "BluRay"
             torrent_info["source"] = "BluRay"
 
     # Now fix WEB
@@ -862,11 +860,12 @@ def fix_default_naming_styles(torrent_info):
 #                           Format torrent title!                        #
 # ---------------------------------------------------------------------- #
 def format_title(json_config, torrent_info):
-    # ------------------ Load correct "naming config" ------------------ #
-    # Here we open the uploads corresponding .json file and using the current uploads "source" we pull in a custom naming config
-    # this "naming config" can individually tweaked for each site & "content_type" (bluray_encode, web, etc)
+    # ------------------ Load correct "naming config" ------------------ # Here we open the uploads corresponding
+    # .json file and using the current uploads "source" we pull in a custom naming config this "naming config" can
+    # individually be tweaked for each site & "content_type" (bluray_encode, web, etc)
 
-    # Because 'webrips' & 'webdls' have basically the same exact naming style we convert the 'source_type' to just 'web' (we do something similar to DVDs as well)
+    # Because 'webrips' & 'web-dls' have basically the same exact naming style we convert the 'source_type' to just
+    # 'web' (we do something similar to DVDs as well)
     if str(torrent_info["source"]).lower() == "dvd":
         config_profile = "dvd"
     elif str(torrent_info["source"]).lower() == "web":
@@ -887,23 +886,24 @@ def format_title(json_config, torrent_info):
         tracker_torrent_name_style.replace("{", "").replace("}", "").split(" ")
     )
     for item in temp_load_torrent_info:
-        # Here is were we actual get the torrent_info response and add it to the "generate_format_string" dict we declared earlier
+        # Here is were we actual get the torrent_info response and add it to the "generate_format_string" dict we
+        # declared earlier
         generate_format_string[item] = (
             torrent_info[item].replace(" ", separator)
             if item in torrent_info and torrent_info[item] is not None
             else ""
         )
 
-    formatted_title = ""  # This is the final torrent title, we add any info we get from "torrent_info" to it using the "for loop" below
+    formatted_title = ""  # This is the final torrent title, we add any info we get from "torrent_info" to it using
+    # the "for loop" below
     for key, value in generate_format_string.items():
         # ignore no matches (e.g. most TV Shows don't have the "year" added to its title so unless it was directly specified in the filename we also ignore it)
         if len(value) != 0:
             formatted_title = f'{formatted_title}{"-" if key == "release_group" else separator}{value}'
 
-    # Custom title translations specific to tracker
-    # Certain terms might not be allowed in certain trackers. Such terms are configured in a separate config in the tracker template.
-    # Eg: DD+ might not be allowed in certain trackers. Instead they'll use DDP
-    # These translations are then applied here.
+    # Custom title translations specific to tracker Certain terms might not be allowed in certain trackers. Such
+    # terms are configured in a separate config in the tracker template. Eg: DD+ might not be allowed in certain
+    # trackers. Instead, they'll use DDP These translations are then applied here.
     if "torrent_title_translation" in json_config:
         torrent_title_translation = json_config["torrent_title_translation"]
         logging.info(
