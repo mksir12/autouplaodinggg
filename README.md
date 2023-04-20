@@ -253,10 +253,10 @@ docker run --rm -it \
 <br>
 
 ## Windows Setup (Upload Assistant):
-> In Windows, it's recommended to use [Anaconda Distribution](https://www.anaconda.com/products/distribution) to create 
-> python environment and install packages. 
+> In Windows, it's recommended to use [Anaconda Distribution](https://www.anaconda.com/products/distribution) to create
+> python environment and install packages.
 
-> If you are not using anaconda, make sure to install the latest version 
+> If you are not using anaconda, make sure to install the latest version
 > of [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). This is required for `python-Levenshtein` package.
 > Skip to Step 4 if you are not using conda.
 1. Create a new conda environment with Python 3.8.16.
@@ -287,6 +287,7 @@ pip install -r requirements/requirements.txt
 2. If you provide the IMDB ID via ```-imdb```, you must include the 'tt' that precedes the numerical ID
 3. When providing multiple database (TMDB, IMDB, TVMAZE ) ids via optional arguments, uploader uses the ids with priority **`IMDB > TMDB > TVMAZE > TVDB`**
 4. Full Disk uploads are supported ONLY in FAT version of the docker images. Look for image tags in the format **`:FullDisk-{TAG}`**
+5. When running in windows, ensure that `readable_temp_data` is set to `False` (disabled).
 
 <br>
 
@@ -296,22 +297,11 @@ pip install -r requirements/requirements.txt
 2. No support for Bluray distributors and Bluray disc regions
 3. No official support for Blurays in .iso format
 4. No support for 3D Bluray discs
+5. Cannot pass `tmdb`, `imdb`, `tvmaze` and `mal` ids as command line arguments when running in `batch` mode.
 
 <br>
 
 # Roadmap
-### v3.0.7
-- [X] Code refactor v3
-- [X] Support for trumpable flags for PTP
-- [X] Updated banned groups for TSP
-- [X] Initial windows support (_might be buggy_)
-- [X] Issue#98: Season Packs Not using 1st episode for Mediainfo
-- [X] Issue#106: Releases tagged incorrectly as scene
-- [X] Issue#107: Streaming service names being ignored
-- [X] Issue#108: SpeedApp SD and HD TV episode mismatch
-- [X] Issue#110: GGBotException when connection to mongo fails
-- [X] Issue#111: SpeedApp cross seed torrents not registered
-
 ### v3.0.8
 - [ ] Add Support for new platforms:
     - [ ] TorrentLeech
