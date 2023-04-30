@@ -351,6 +351,12 @@ def basic_get_missing_audio_codec(
             )
             return "AAC", atmos
 
+        if "OPUS" in audio_codec:
+            logging.info(
+                f"[BasicUtils] Used pymediainfo to identify the audio codec: {audio_codec}"
+            )
+            return "Opus", atmos
+
         if "FLAC" in audio_codec:
             # This is similar to the AAC situation right above ^^, on a recent upload I got the value "A_FLAC" which
             # can be shortened to 'FLAC'
