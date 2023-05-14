@@ -311,6 +311,8 @@ pip install -r requirements/requirements.txt
 - [ ] Issue#96: DVD Remux not supported
 - [ ] Issue#97: PTP uploads fail if no tags in IMDB
 - [X] Issue#114: Not detecting Opus audio codec
+- [X] Issue#116: Error on image upload: json KeyError: 'url_viewer'
+
 
 ### v3.0.9
 - [ ] Improved TMDB metadata search Phase 3
