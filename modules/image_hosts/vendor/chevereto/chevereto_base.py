@@ -56,7 +56,7 @@ class CheveretoImageHostBase(GGBotImageHostBase, metaclass=ABCMeta):
                 logging.debug(
                     f"[CheveretoImageHostBase::upload] Image upload response: {img_upload_response} from host {self.img_host}"
                 )
-                self.parse_response(img_upload_response)
+                self.parse_response(img_upload_response[self.response_data_key])
             else:
                 logging.error(
                     f"[CheveretoImageHostBase::upload] {self.img_host} upload failed. JSON Response: {img_upload_request.json()}"
