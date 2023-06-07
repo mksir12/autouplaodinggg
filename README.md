@@ -310,7 +310,9 @@ pip install -r requirements/requirements.txt
 - [ ] Issue#93: Bit-hdtv doesn't allow ptpimg screenshots
 - [ ] Issue#96: DVD Remux not supported
 - [ ] Issue#97: PTP uploads fail if no tags in IMDB
-- [X] Issue#118: GPW upload failures
+- [X] Issue#114: Not detecting Opus audio codec
+- [X] Issue#116: Error on image upload: json KeyError: 'url_viewer'
+
 
 ### v3.0.9
 - [ ] Improved TMDB metadata search Phase 3
