@@ -804,6 +804,8 @@ def choose_right_tracker_keys(
 
     # Adding default values from template to tracker settings
     for default_key, default_value in config["Default"].items():
+        if default_key in tracker_settings:
+            continue
         logging.debug(
             f"[Translation] Adding default key `{default_key}` with value `{default_value}` to tracker settings"
         )
