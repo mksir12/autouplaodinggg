@@ -312,6 +312,7 @@ pip install -r requirements/requirements.txt
 - [ ] Issue#97: PTP uploads fail if no tags in IMDB
 - [X] Issue#114: Not detecting Opus audio codec
 - [X] Issue#116: Error on image upload: json KeyError: 'url_viewer'
+- [X] Issue#118: GPW upload failures
 
 
 ### v3.0.9
