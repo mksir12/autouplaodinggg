@@ -1,6 +1,6 @@
 {
     "status": "failure",
-    "error": "Group not found",
+    "erro": "Group not found",
     "response": [],
     "info": {
         "source": "GPW DEV",

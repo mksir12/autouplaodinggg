@@ -103,9 +103,12 @@ def check_for_existing_group(torrent_info, tracker_settings, tracker_config):
     check_group_url = f"{base_url}{check_group_params}"
     try:
         group_response = requests.get(check_group_url).json()
+        logging.debug(
+            f"[CustomActions][GPW] Group check response: {group_response}"
+        )
         if (
             group_response["status"] == "failure"
-            and group_response["error"] == "Group not found"
+            and group_response["erro"] == "Group not found"
         ):
             # group doesn't exist on tracker. we'll need to prepare the extra metadata needed for creating a new
             # group since the group doesn't exist we need to get the movie metadata. Lets get the autofill metadata
@@ -529,4 +532,4 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
             )
 
     tracker_settings["release_desc"] = gpw_description_file
-    logging.info("[CustomActions][GPW] Finished creating description for PTP")
+    logging.info("[CustomActions][GPW] Finished creating description for GPW")
