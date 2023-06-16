@@ -8,7 +8,7 @@
     "bbcode_line_break": "\n",
     "title_separator": " ",
     "screenshot_type": "bbcode_images",
-    
+
     "technical_jargons": {
         "authentication_mode": "API_KEY",
         "response_type": "JSON",
@@ -80,10 +80,12 @@
                 "bluray_encode": 1
             },
             "4": {
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
             "5": {
-                "webrip": 1
+                "webrip": 2,
+                "web_rip": 2
             },
             "6": {
                 "hdtv": 1

@@ -118,7 +118,9 @@
                 "2160p": 1,
                 "bluray_encode": 2,
                 "webdl": 2,
-                "webrip": 2
+                "web_dl": 2,
+                "webrip": 2,
+                "web_rip": 2
             },
             "8": {
                 "dvd": 1,
@@ -131,7 +133,9 @@
             },
             "11": {
                 "webdl": 2,
-                "webrip": 2
+                "web_dl": 2,
+                "webrip": 2,
+                "web_rip": 2
             },
             "13": {
                 "hdtv": 0,

@@ -313,6 +313,7 @@ pip install -r requirements/requirements.txt
 - [X] Issue#114: Not detecting Opus audio codec
 - [X] Issue#116: Error on image upload: json KeyError: 'url_viewer'
 - [X] Issue#118: GPW upload failures
+- [X] Issue#120: Unable to upload web-dls to GPW
 
 
 ### v3.0.9

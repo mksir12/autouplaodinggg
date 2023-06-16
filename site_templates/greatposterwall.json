@@ -199,10 +199,12 @@
                 "bluray_encode": 1
             },
             "4": {
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
             "5": {
-                "webrip": 1
+                "webrip": 2,
+                "web_rip": 2
             },
             "6": {
                 "hdtv": 1
