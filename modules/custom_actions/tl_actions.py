@@ -60,4 +60,4 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
             )
 
     tracker_settings["description"] = tl_description_file
-    logging.info("[CustomActions][TL] Finished creating description for PTP")
+    logging.info("[CustomActions][TL] Finished creating description for TL")
