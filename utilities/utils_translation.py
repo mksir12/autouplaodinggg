@@ -203,9 +203,27 @@ def _get_hybrid_type(
                 if sub_val["data_source"] == "tracker"
                 else torrent_info
             )
-            selected_val = (
-                datasource[sub_key] if sub_key in datasource else None
-            )
+            if sub_key.startswith("$."):
+                logging.info(
+                    f"[HybridMapping] Identified json path '{sub_key}' as datasource key. Attempting to fetch data...`"
+                )
+                items = sub_key.replace("$.", "").split(".")
+                try:
+                    temp_datasource = datasource
+                    for item in items:
+                        temp_datasource = temp_datasource[item]
+                    selected_val = temp_datasource
+                except Exception as ex:
+                    logging.error(
+                        f"[HybridMapping] Invalid json path '{sub_key}' configured for hybrid mapping data key.",
+                        exc_info=ex,
+                    )
+                    selected_val = None
+            else:
+                selected_val = (
+                    datasource[sub_key] if sub_key in datasource else None
+                )
+
             logging.debug(
                 f"[HybridMapping] Value selected from data source is '{selected_val}'"
             )

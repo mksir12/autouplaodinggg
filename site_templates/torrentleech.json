@@ -2,7 +2,7 @@
     "name": "TorrentLeech",
     "url": "https://www.torrentleech.org/",
     "upload_form": "https://www.torrentleech.org/torrents/upload/apiupload",
-    "torrents_search": "",
+    "torrents_search": "https://www.torrentleech.org/torrents/upload/apiupload",
     "source": "TL",
     "platform": "TorrentLeech",
     "bbcode_line_break": "\n",
@@ -15,109 +15,145 @@
     },
 
     "technical_jargons": {
-        "authentication_mode": "COOKIE",
-        "cookie": {
-            "provider": "custom_action",
-            "data": "modules.custom_actions.ptp_actions.get_crsf_token"
-        },
+        "authentication_mode": "API_KEY",
         "response_type": "TEXT",
-        "response_action": "modules.custom_actions.ptp_actions.check_successful_upload",
+        "response_action": "modules.custom_actions.tl_actions.check_successful_upload",
         "payload_type": "MULTI-PART",
         "custom_actions": [
+            "modules.custom_actions.tl_actions.add_announce_pid_to_payload"
         ]
     },
 
     "hybrid_mappings": {
-        "container":{
-            "required":true,
-            "prerequisite":[],
-            "mapping":{
-                "MKV":{
-                    "container":{
-                        "data_source": "torrent",
-                        "values":[".mkv"]
-                    }
-                },
-                "MP4":{
-                    "container":{
-                        "data_source": "torrent",
-                        "values":[".mp4"]
-                    }
-                }
-            }
-        },
-        "codec":{
-            "required":true,
-            "prerequisite":[],
-            "mapping":{
-                "H.264":{
-                    "pymediainfo_video_codec":{
-                        "data_source": "torrent",
-                        "values":["AVC", "H.264"]
-                    }
-                },
-                "x264":{
-                    "pymediainfo_video_codec":{
-                        "data_source": "torrent",
-                        "values":["x264"]
-                    }
-                },
-                "H.265":{
-                    "pymediainfo_video_codec":{
-                        "data_source": "torrent",
-                        "values":["HEVC", "H.265"]
-                    }
-                },
-                "x265":{
-                    "pymediainfo_video_codec":{
-                        "data_source": "torrent",
-                        "values":["x265"]
-                    }
-                }
-            }
-        },
-        "source": {
+        "category": {
             "required": true,
             "prerequisite": [
-                "type_id"
+                "resolution", "category_id", "type_id"
             ],
             "mapping":{
-                "Blu-ray":{
-                    "source":{
+                "36":{
+                    "_comment": "Movies|Foregin",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
+                    },
+                    "$.tmdb_metadata.original_language":{
                         "data_source": "torrent",
-                        "values": ["BluRay", "Blu-Ray"]
+                        "not": true,
+                        "values": ["en"]
+                    }
+                },
+                "47":{
+                    "_comment": "Movies|4K",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
+                    },
+                    "resolution":{
+                        "data_source": "tracker",
+                        "values": ["2160p"]
+                    }
+                },
+                "12":{
+                    "_comment": "Movies|DVD",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
                     },
                     "type_id":{
                         "data_source": "tracker",
-                        "values": ["2", "3"]
+                        "values": ["7"]
                     }
                 },
-                "WEB":{
+                "13":{
+                    "_comment": "Movies|BluRay",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
+                    },
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["1", "2"]
+                    }
+                },
+                "14":{
+                    "_comment": "Movies|BluRayRip",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
+                    },
+                    "type_id":{
+                        "data_source": "tracker",
+                        "values": ["3"]
+                    }
+                },
+                "37":{
+                    "_comment": "Movies|WEBRip",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
+                    },
                     "type_id":{
                         "data_source": "tracker",
                         "values": ["4", "5"]
                     }
                 },
-                "HDTV":{
+                "43":{
+                    "_comment": "Movies|HDRip",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["1"]
+                    },
                     "type_id":{
                         "data_source": "tracker",
                         "values": ["6"]
                     }
                 },
-                "HD-DVD":{
-                    "type_id":{
+                "44":{
+                    "_comment": "TV|Foregin",
+                    "category_id":{
                         "data_source": "tracker",
-                        "values": ["2", "7"]
+                        "values": ["2"]
                     },
-                    "resolution":{
-                        "data_source": "tracker",
-                        "values": ["1080p", "1080i"]
+                    "$.tmdb_metadata.original_language":{
+                        "data_source": "torrent",
+                        "not": true,
+                        "values": ["en"]
                     }
                 },
-                "DVD":{
-                    "type_id":{
+                "27":{
+                    "_comment": "TV|BoxSets",
+                    "category_id":{
                         "data_source": "tracker",
-                        "values": ["2", "7"]
+                        "values": ["2"]
+                    },
+                    "episode_number": {
+                        "data_source": "torrent",
+                        "values": [
+                            "0"
+                        ]
+                    }
+                },
+                "26":{
+                    "_comment": "TV|Episodes",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["2"]
+                    },
+                    "resolution_id": {
+                        "data_source": "tracker",
+                        "values": [
+                            "576p",
+                            "480p",
+                            "Other"
+                        ]
+                    }
+                },
+                "32":{
+                    "_comment": "TV|EpisodesHD",
+                    "category_id":{
+                        "data_source": "tracker",
+                        "values": ["2"]
                     }
                 }
             }
@@ -125,48 +161,28 @@
     },
 
     "translation": {
-        "dot_torrent": "file_input",
-        "hybrid_type_1": "source",
-        "hybrid_type_2": "codec",
-        "hybrid_type_3": "container",
-        "description": "release_desc",
-        "tags": "remaster_title",
-        "imdb": "imdb",
-        "scene": "scene",
-
+        "dot_torrent": "torrent",
+        "description": "description",
+        "imdb":"imdb",
+        "hybrid_type_1": "category",
         "torrent_title": "name",
         "mediainfo": "mediainfo",
         "bdinfo": "bdinfo",
         "type": "category_id",
         "source": "type_id",
         "resolution": "resolution",
-        "anon": "anonymous",
-        "live": "live",
-        "sd": "sd",
-        "nfo_file": "nfo_text"
+        "nfo_file": "nfo"
     },
 
     "Required": {
-        "file_input": "file",
-        "release_desc": "string",
-        "source": "hybrid_type",
-        "codec": "hybrid_type",
-        "container": "hybrid_type",
-
+        "torrent": "file",
+        "description": "string",
+        "category": "hybrid_type",
         "name": "string",
-        "anonymous": "string",
-        "sd": "string",
-        "stream": "string",
-        "imdb": "url",
-
-        "internal": "string",
-        "free": "string",
-        "featured": "string",
-        "doubleup": "string",
-        "sticky": "string",
-
+        "imdb":"string",
         "category_id": {
-            "1": "movie"
+            "1": "movie",
+            "2": "episode"
         },
 
         "type_id": {
@@ -228,43 +244,13 @@
     },
 
     "Optional": {
-        "nfo_text": "string",
-        "scene": "string",
-
-        "season_number": "string",
-        "episode_number": "string",
-
+        "nfo": "file",
         "bdinfo": "string",
-        "mediainfo": "string",
-
-        "remaster_title": {
-            "type" : "string",
-            "separator": " / ",
-            "tags": [
-                "Remux",
-                "Director's Cut",
-                "Extended Cut",
-                "Uncut",
-                "Unrated",
-                "4K Restoration",
-                "Dolby Atmos",
-                "Dolby Vision",
-                "With Commentary",
-                "DTS:X",
-                "Dual Audio",
-                "English Dub",
-                "Extras",
-                "HDR10",
-                "HDR10+",
-                "Hybrid",
-                "Non English Dub",
-                "Theatrical Cut",
-                "Workprint"
-            ]
-        }
+        "mediainfo": "string"
     },
 
     "Default":{
+        "announcekey": ""
     },
 
     "dupes": {
