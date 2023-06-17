@@ -3,7 +3,7 @@
     "url": "https://www.torrentleech.org/",
     "upload_form": "https://www.torrentleech.org/torrents/upload/apiupload",
     "torrents_search": "https://www.torrentleech.org/torrents/upload/apiupload",
-    "source": "TL",
+    "source": "TorrentLeech.org",
     "platform": "TorrentLeech",
     "bbcode_line_break": "\n",
     "title_separator" : " ",
