@@ -211,6 +211,24 @@ class GGBotHybridMapper:
         self, *, sub_key, sub_val, tracker_settings
     ):
         datasource = self.__get_datasource(sub_val, tracker_settings)
+        if sub_key.startswith("$."):
+            logging.info(
+                f"[HybridMapping] Identified json path '{sub_key}' as datasource key. Attempting to fetch data...`"
+            )
+            items = sub_key.replace("$.", "").split(".")
+            try:
+                temp_datasource = datasource
+                for item in items:
+                    temp_datasource = temp_datasource.get(item)
+                    if temp_datasource is None:
+                        return None
+                return temp_datasource
+            except Exception as ex:
+                logging.error(
+                    f"[HybridMapping] Invalid json path '{sub_key}' configured for hybrid mapping data key.",
+                    exc_info=ex,
+                )
+                return None
         return datasource[sub_key] if sub_key in datasource else None
 
     def __get_datasource(self, sub_val, tracker_settings):

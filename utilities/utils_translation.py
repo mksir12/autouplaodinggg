@@ -211,7 +211,10 @@ def _get_hybrid_type(
                 try:
                     temp_datasource = datasource
                     for item in items:
-                        temp_datasource = temp_datasource[item]
+                        temp_datasource = temp_datasource(item)
+                        if temp_datasource is None:
+                            selected_val = None
+                            break
                     selected_val = temp_datasource
                 except Exception as ex:
                     logging.error(
