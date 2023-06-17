@@ -365,6 +365,11 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
             encoding="utf-8",
         )
     )
+    if config["dupes"].get("skip_dupe_check", False) is True:
+        logging.info(
+            f"[Main] Dupe check disabled for tracker {tracker}. SKipping dupe check..."
+        )
+        return False
 
     # -------- format the torrent title --------
     torrent_info["torrent_title"] = translation_utilities.format_title(
@@ -1872,6 +1877,7 @@ def _upload_to_tracker(
 
 
 # -------------- END of _process_torrent --------------
+
 
 # ---------------------------------------------------------------------- #
 #                               Reupload Job!                            #

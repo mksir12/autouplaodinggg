@@ -2,7 +2,7 @@
     "name": "TorrentLeech",
     "url": "https://www.torrentleech.org/",
     "upload_form": "https://www.torrentleech.org/torrents/upload/apiupload",
-    "torrents_search": "https://www.torrentleech.org/torrents/browse/list/query/",
+    "torrents_search": "",
     "source": "TL",
     "platform": "TorrentLeech",
     "bbcode_line_break": "\n",
@@ -24,14 +24,6 @@
         "response_action": "modules.custom_actions.ptp_actions.check_successful_upload",
         "payload_type": "MULTI-PART",
         "custom_actions": [
-            "modules.custom_actions.ptp_actions.check_for_existing_group",
-            "modules.custom_actions.ptp_actions.rehost_screens_to_ptpimg",
-            "modules.custom_actions.ptp_actions.get_ptp_type",
-            "modules.custom_actions.ptp_actions.rewrite_description",
-            "modules.custom_actions.ptp_actions.add_subtitle_information",
-            "modules.custom_actions.ptp_actions.mark_scene_release_if_applicable",
-            "modules.custom_actions.ptp_actions.fix_other_resolution",
-            "modules.custom_actions.ptp_actions.get_crsf_token"
         ]
     },
 
@@ -273,22 +265,10 @@
     },
 
     "Default":{
-        "submit" : "true",
-        "remaster_year": "",
-        "remaster": "",
-        "AntiCsrfToken": "",
-        "type": "",
-        "title": "",
-        "year": "",
-        "image": "",
-        "tags": "",
-        "album_desc": "",
-        "trailer": "",
-        "subtitles[]": "",
-        "groupid": ""
     },
 
     "dupes": {
+        "skip_dupe_check": true,
         "technical_jargons": {
             "authentication_mode": "HEADER",
             "headers" : [
@@ -328,35 +308,5 @@
     },
 
     "banned_groups": [
-        "EVO",
-        "HDT",
-        "aXXo",
-        "BRrip",
-        "CM8",
-        "CrEwSaDe",
-        "CTFOH",
-        "DNL",
-        "FaNGDiNG0",
-        "HD2DVD",
-        "HDTime",
-        "ION10",
-        "iPlanet",
-        "KiNGDOM",
-        "mHD",
-        "mSD",
-        "nHD",
-        "nikt0",
-        "nSD",
-        "NhaNc3",
-        "OFT",
-        "PRODJi",
-        "SANTi",
-        "STUTTERSHIT",
-        "ViSION",
-        "VXT",
-        "WAF",
-        "d3g",
-        "x0r",
-        "YIFY"
     ]
 }
