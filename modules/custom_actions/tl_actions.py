@@ -48,7 +48,7 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
         tl_description.write(f"[mediainfo]{mediainfo}[/mediainfo]\n")
         # writing screenshots to description
         tl_description.write("[align=center]..:: Screenshots ::..\n")
-        for screenshot in torrent_info["url_images"]:
+        for screenshot in torrent_info["url_images"].split("\n"):
             tl_description.write(f"[img]{screenshot}[/img]\n")
         if torrent_info["release_group"] == "DrDooFenShMiRtZ":
             tl_description.write(
