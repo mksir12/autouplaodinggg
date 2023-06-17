@@ -163,7 +163,7 @@
     "translation": {
         "dot_torrent": "torrent",
         "description": "description",
-        "imdb":"imdb",
+        "imdb_with_tt":"imdb",
         "hybrid_type_1": "category",
         "torrent_title": "name",
         "mediainfo": "mediainfo",
