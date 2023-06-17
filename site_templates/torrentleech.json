@@ -20,7 +20,8 @@
         "response_action": "modules.custom_actions.tl_actions.check_successful_upload",
         "payload_type": "MULTI-PART",
         "custom_actions": [
-            "modules.custom_actions.tl_actions.add_announce_pid_to_payload"
+            "modules.custom_actions.tl_actions.add_announce_pid_to_payload",
+            "modules.custom_actions.tl_actions.rewrite_description"
         ]
     },
 
