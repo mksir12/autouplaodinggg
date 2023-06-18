@@ -440,7 +440,7 @@ def prepare_and_validate_tracker_api_keys_dict(api_keys_file_path):
 
     # Make sure the TMDB API is provided [Mandatory Property]
     try:
-        if len(api_keys_dict["tmdb_api_key"]) == 0:
+        if len(api_keys_dict.get("tmdb_api_key", "")) == 0:
             raise AssertionError("TMDB API key is required")
     except (
         AssertionError

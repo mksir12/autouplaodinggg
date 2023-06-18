@@ -141,8 +141,6 @@ def test_prepare_and_validate_tracker_api_keys_dict(mocker):
     api_keys = json.load(
         open(f"{working_folder}/parameters/tracker/api_keys.json")
     )
-    for i in range(0, len(api_keys)):
-        expected[api_keys[i]] = ""
     expected["ant_api_key"] = "ant_api_key_value"
     expected["ath_api_key"] = "ath_api_key_value"
     expected["tmdb_api_key"] = "tmdb_api_key_value"
