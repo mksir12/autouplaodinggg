@@ -28,8 +28,8 @@ from pymediainfo import MediaInfo
 from rich.console import Console
 from rich.prompt import Prompt
 
-import utilities.utils_bdinfo as bdinfo_utilities
 from modules.config import UploadAssistantConfig
+from utilities.utils_bdinfo import BDInfoProcessor
 
 console = Console()
 
@@ -109,7 +109,11 @@ def _get_dv_hdr(media_info_video_track):
 
 
 def basic_get_missing_video_codec(
-    torrent_info, is_disc, auto_mode, media_info_video_track
+    torrent_info,
+    is_disc,
+    auto_mode,
+    media_info_video_track,
+    bdinfo_processor: BDInfoProcessor = None,
 ):
     """Along with video_codec extraction the HDR format and DV is also updated from here.
 
@@ -136,10 +140,8 @@ def basic_get_missing_video_codec(
     logging.debug(
         f"[BasicUtils] Dumping torrent_info before video_codec identification. {pformat(torrent_info)}"
     )
-    if is_disc and torrent_info["bdinfo"] is not None:
-        return bdinfo_utilities.bdinfo_get_video_codec_from_bdinfo(
-            torrent_info["bdinfo"]
-        )
+    if is_disc and bdinfo_processor is not None:
+        return bdinfo_processor.get_video_codec()
 
     dv, hdr = _get_dv_hdr(media_info_video_track)
 
@@ -267,6 +269,7 @@ def basic_get_missing_audio_codec(
     media_info_audio_track,
     parse_me,
     missing_value,
+    bdinfo_processor: BDInfoProcessor = None,
 ):
     """
     Returns (audio_codec, atmos)
@@ -276,13 +279,11 @@ def basic_get_missing_audio_codec(
     atmos = __get_atmos_from_media_info(media_info_audio_track)
 
     # TODO handle returning atmos from here
-    if is_disc and torrent_info["bdinfo"] is not None:
+    if is_disc and bdinfo_processor is not None:
         (
             atmos,
             audio_codec,
-        ) = bdinfo_utilities.bdinfo_get_audio_codec_from_bdinfo(
-            torrent_info["bdinfo"], audio_codec_dict
-        )
+        ) = bdinfo_processor.get_audio_code(audio_codec_dict=audio_codec_dict)
         return audio_codec, atmos
 
     # First check to see if GuessIt inserted an audio_codec into torrent_info and if it did then we can verify its formatted correctly
@@ -466,11 +467,10 @@ def basic_get_missing_audio_channels(
     parse_me,
     media_info_audio_track,
     missing_value,
+    bdinfo_processor: BDInfoProcessor = None,
 ):
-    if is_disc and torrent_info["bdinfo"] is not None:
-        return bdinfo_utilities.bdinfo_get_audio_channels_from_bdinfo(
-            torrent_info["bdinfo"]
-        )
+    if is_disc and bdinfo_processor is not None:
+        return bdinfo_processor.get_audio_channels()
 
     # suppressing regex based audio channel identification
     # First try detecting the 'audio_channels' using regex
@@ -510,7 +510,7 @@ def basic_get_missing_audio_channels(
         )
         return audio_channels_pymedia
 
-    # If the mediainfo failed then we use ffprobe to try and auto detect the channels
+    # If the mediainfo failed then we use ffprobe to try and auto-detect the channels
     audio_info_probe = FFprobe(
         inputs={parse_me: None},
         global_options=[

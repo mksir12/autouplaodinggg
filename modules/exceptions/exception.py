@@ -7,6 +7,10 @@ class GGBotUploaderException(GGBotException):
     pass
 
 
+class GGBotFatalException(GGBotException):
+    pass
+
+
 class GGBotCacheClientException(GGBotUploaderException):
     pass
 

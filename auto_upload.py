@@ -17,32 +17,28 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import base64
 import glob
 import json
 import logging
 import os
-import pickle
 import re
 import sys
 import time
 from pprint import pformat
 
 # These packages need to be installed
-import requests
 from dotenv import load_dotenv
 from pymediainfo import MediaInfo
 
 # Rich is used for printing text & interacting with user input
 from rich import box
 from rich.console import Console
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Confirm
 from rich.table import Table
 from rich.traceback import install
 
 import utilities.utils as utils
 import utilities.utils_basic as basic_utilities
-import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils_metadata as metadata_utilities
 import utilities.utils_miscellaneous as miscellaneous_utilities
@@ -53,6 +49,7 @@ from modules.constants import *
 # Method that will search for dupes in trackers.
 from modules.template_schema_validator import TemplateSchemaValidator
 from modules.uploader import GGBotTrackerUploader
+from utilities.utils_bdinfo import BDInfoProcessor
 from utilities.utils_screenshots import GGBotScreenshotManager
 from utilities.utils_torrent import GGBotTorrentCreator
 
@@ -121,6 +118,7 @@ acronym_to_tracker = json.load(
 api_keys_dict = utils.prepare_and_validate_tracker_api_keys_dict(
     TRACKER_API_KEYS.format(base_path=working_folder)
 )
+bdinfo_processor = None
 
 # Import 'auto_mode' status
 upload_assistant_config = UploadAssistantConfig()
@@ -372,6 +370,7 @@ def identify_type_and_basic_info(full_path, guess_it_result):
 
     Returns `skip_to_next_file` if there are no video files in thhe provided folder
     """
+    global bdinfo_processor
     console.line(count=2)
     console.rule("Analyzing & Identifying Video", style="red", align="center")
     console.line(count=1)
@@ -479,21 +478,16 @@ def identify_type_and_basic_info(full_path, guess_it_result):
 
         # First check to see if we are uploading a 'raw bluray disc'
         if args.disc:
-            # validating presence of bdinfo script for bare metal
-            bdinfo_utilities.bdinfo_validate_bdinfo_script_for_bare_metal(
-                bdinfo_script
-            )
-            # validating presence of BDMV/STREAM/
-            bdinfo_utilities.bdinfo_validate_presence_of_bdmv_stream(
-                torrent_info["upload_media"]
+            bdinfo_processor: BDInfoProcessor = BDInfoProcessor(
+                bdinfo_script=bdinfo_script,
+                auto_mode=auto_mode,
+                upload_media=torrent_info["upload_media"],
             )
 
             (
                 raw_video_file,
                 largest_playlist,
-            ) = bdinfo_utilities.bdinfo_get_largest_playlist(
-                bdinfo_script, auto_mode, torrent_info["upload_media"]
-            )
+            ) = bdinfo_processor.get_largest_playlist()
 
             torrent_info["raw_video_file"] = raw_video_file
             torrent_info["largest_playlist"] = largest_playlist
@@ -542,11 +536,8 @@ def identify_type_and_basic_info(full_path, guess_it_result):
         torrent_info["mediainfo"] = MEDIAINFO_FILE_PATH.format(
             base_path=working_folder, sub_folder=torrent_info["working_folder"]
         )
-        torrent_info[
-            "bdinfo"
-        ] = bdinfo_utilities.bdinfo_generate_and_parse_bdinfo(
-            bdinfo_script, torrent_info, args.debug
-        )  # TODO handle non-happy paths
+        bdinfo_processor.generate_bdinfo(torrent_info=torrent_info)
+        torrent_info["bdinfo"] = bdinfo_processor.bdinfo
         logging.debug(
             "::::::::::::::::::::::::::::: Parsed BDInfo output :::::::::::::::::::::::::::::"
         )
@@ -764,6 +755,7 @@ def analyze_video_file(missing_value, media_info):
             parse_me,
             media_info_audio_track,
             missing_value,
+            bdinfo_processor=bdinfo_processor,
         )
 
     # ---------------- Audio Codec ---------------- #
@@ -778,6 +770,7 @@ def analyze_video_file(missing_value, media_info):
             media_info_audio_track=media_info_audio_track,
             parse_me=parse_me,
             missing_value=missing_value,
+            bdinfo_processor=bdinfo_processor,
         )
 
         if atmos is not None:
@@ -799,6 +792,7 @@ def analyze_video_file(missing_value, media_info):
             is_disc=args.disc,
             auto_mode=auto_mode,
             media_info_video_track=media_info_video_track,
+            bdinfo_processor=bdinfo_processor,
         )
         if dv is not None:
             torrent_info["dv"] = dv

@@ -15,12 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
-import pytest
 import shutil
+from unittest import mock
+
+import pytest
 
 from pathlib import Path
-from utilities.utils_bdinfo import *
-
+from utilities.utils_bdinfo import BDInfoProcessor
 
 """
     HOW IS THIS TESTS SETUP?
@@ -83,17 +84,14 @@ def __get_torrent_info(file_name):
         open(f"{working_folder}{bdinfo_metadata}{file_name}.json")
     )
 
-    torrent_info = {}
-    torrent_info[
-        "upload_media"
-    ] = f"{working_folder}{bdinfo_working_folder}{file_name}/"
-    torrent_info[
-        "mediainfo"
-    ] = f"{working_folder}{bdinfo_working_folder}{file_name}/mediainfo.txt"
-    torrent_info["largest_playlist"] = meta_data["largest_playlist"]
-    torrent_info["raw_file_name"] = meta_data["raw_file_name"]
-    torrent_info["file_name"] = file_name
-    torrent_info["raw_video_file"] = meta_data["raw_video_file"]
+    torrent_info = {
+        "upload_media": f"{working_folder}{bdinfo_working_folder}{file_name}/",
+        "mediainfo": f"{working_folder}{bdinfo_working_folder}{file_name}/mediainfo.txt",
+        "largest_playlist": meta_data["largest_playlist"],
+        "raw_file_name": meta_data["raw_file_name"],
+        "file_name": file_name,
+        "raw_video_file": meta_data["raw_video_file"],
+    }
 
     source = f"{working_folder}{bdinfo_summary}{file_name}.txt"
     destination = f'{working_folder}{bdinfo_working_folder}{file_name}/BDINFO.{torrent_info["raw_file_name"]}.txt'
@@ -118,6 +116,15 @@ def __get_data_for_largest_playlist(file_name, override=None):
         data["bdinfo_output_split"],
         data["largest_playlist"] if override is None else override,
     )
+
+
+@pytest.fixture(scope="function")
+@mock.patch(
+    "utilities.utils_bdinfo_r.BDInfoProcessor._validate_presence_of_bdmv_stream"
+)
+@mock.patch("utilities.utils_bdinfo_r.BDInfoProcessor._validate_bdinfo_path")
+def bdinfo_processor(mock_path_validator, mock_stream_validator):
+    return BDInfoProcessor(bdinfo_script="", upload_media="", auto_mode=False)
 
 
 @pytest.mark.parametrize(
@@ -178,16 +185,15 @@ def __get_data_for_largest_playlist(file_name, override=None):
     ],
 )
 def test_bdinfo_generate_and_parse_bdinfo(
-    torrent_info, expected, debug, mocker
+    torrent_info, expected, debug, mocker, bdinfo_processor
 ):
     mocker.patch("subprocess.run", return_value=None)
-    assert (
-        bdinfo_generate_and_parse_bdinfo(None, torrent_info, debug) == expected
-    )
+    bdinfo_processor.generate_bdinfo(torrent_info=torrent_info)
+    assert bdinfo_processor.bdinfo == expected
 
 
 @pytest.mark.parametrize(
-    ("input"),
+    "input",
     [
         pytest.param(
             __get_data_for_largest_playlist(
@@ -219,9 +225,11 @@ def test_bdinfo_generate_and_parse_bdinfo(
         ),
     ],
 )
-def test_bdinfo_get_largest_playlist(input, mocker):
+def test_bdinfo_get_largest_playlist(input, mocker, bdinfo_processor):
     mocker.patch("subprocess.check_output", return_value=input[1])
-    assert bdinfo_get_largest_playlist(None, True, input[0]) == ("", input[2])
+    bdinfo_processor.upload_media = input[0]
+    bdinfo_processor.auto_mode = True
+    assert bdinfo_processor.get_largest_playlist() == ("", input[2])
 
 
 @pytest.mark.parametrize(
@@ -265,10 +273,14 @@ def test_bdinfo_get_largest_playlist(input, mocker):
         ),
     ],
 )
-def test_bdinfo_get_largest_playlist_manual_mode(input, user_choice, mocker):
+def test_bdinfo_get_largest_playlist_manual_mode(
+    input, user_choice, mocker, bdinfo_processor
+):
     mocker.patch("subprocess.check_output", return_value=input[1])
     mocker.patch("rich.prompt.Prompt.ask", return_value=user_choice)
-    assert bdinfo_get_largest_playlist(None, False, input[0]) == ("", input[2])
+    bdinfo_processor.upload_media = input[0]
+    bdinfo_processor.auto_mode = False
+    assert bdinfo_processor.get_largest_playlist() == ("", input[2])
 
 
 @pytest.mark.parametrize(
@@ -297,8 +309,11 @@ def test_bdinfo_get_largest_playlist_manual_mode(input, user_choice, mocker):
         ),
     ],
 )
-def test_bdinfo_get_audio_channels_from_bdinfo(bdinfo, expected):
-    assert bdinfo_get_audio_channels_from_bdinfo(bdinfo) == expected
+def test_bdinfo_get_audio_channels_from_bdinfo(
+    bdinfo, bdinfo_processor, expected
+):
+    bdinfo_processor.bdinfo = bdinfo
+    assert bdinfo_processor.get_audio_channels() == expected
 
 
 @pytest.mark.parametrize(
@@ -320,12 +335,13 @@ def test_bdinfo_get_audio_channels_from_bdinfo(bdinfo, expected):
         ),
     ],
 )
-def test_bdinfo_get_audio_codec_from_bdinfo(bdinfo, expected):
+def test_bdinfo_get_audio_codec_from_bdinfo(bdinfo, bdinfo_processor, expected):
+    bdinfo_processor.bdinfo = bdinfo
+    audio_codec_dict = json.load(
+        open(f"{working_folder}/parameters/audio_codecs.json")
+    )
     assert (
-        bdinfo_get_audio_codec_from_bdinfo(
-            bdinfo,
-            json.load(open(f"{working_folder}/parameters/audio_codecs.json")),
-        )
+        bdinfo_processor.get_audio_code(audio_codec_dict=audio_codec_dict)
         == expected
     )
 
@@ -355,5 +371,6 @@ def test_bdinfo_get_audio_codec_from_bdinfo(bdinfo, expected):
         ),
     ],
 )
-def test_bdinfo_get_video_codec_from_bdinfo(bdinfo, expected):
-    assert bdinfo_get_video_codec_from_bdinfo(bdinfo) == expected
+def test_bdinfo_get_video_codec_from_bdinfo(bdinfo, bdinfo_processor, expected):
+    bdinfo_processor.bdinfo = bdinfo
+    assert bdinfo_processor.get_video_codec() == expected

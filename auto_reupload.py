@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import base64
 import glob
 import json
 import logging
@@ -28,7 +27,6 @@ from pprint import pformat
 from typing import Dict, Tuple, Any, Union
 
 # These packages need to be installed
-import requests
 import schedule
 from dotenv import load_dotenv
 from pymediainfo import MediaInfo

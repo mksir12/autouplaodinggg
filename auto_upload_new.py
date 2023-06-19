@@ -30,12 +30,12 @@ from rich.table import Table
 
 import utilities.utils as utils
 import utilities.utils_basic as basic_utilities
-import utilities.utils_bdinfo as bdinfo_utilities
 import utilities.utils_dupes as dupe_utilities
 import utilities.utils_metadata as metadata_utilities
 import utilities.utils_miscellaneous as miscellaneous_utilities
 import utilities.utils_translation as translation_utilities
 from ggbot_base import GGBot
+from utilities.utils_bdinfo import BDInfoProcessor
 from modules.cli.arguments.upload_assistant import UploadAssistantArgumentParser
 from modules.config import UploadAssistantConfig, TrackerConfig
 from modules.constants import (
@@ -83,6 +83,7 @@ class GGBotUploadAssistant(GGBot):
             working_folder=working_folder,
             banner_text="  Upload  Assistant  ",
         )
+        self.bdinfo_processor: Optional[BDInfoProcessor] = None
 
     def setup(self) -> None:
         self._validate_full_disk_settings()
@@ -890,28 +891,19 @@ class GGBotUploadAssistant(GGBot):
             # the episode/file that we select will be stored under "raw_video_file" (full path + episode/file name)
 
             # Some uploads are movies within a folder and those folders occasionally contain non-video files nfo,
-            # sub, srt, etc files we need to make sure we select a video file to use for mediainfo later
+            # sub, srt, etc. files we need to make sure we select a video file to use for mediainfo later
 
             # First check to see if we are uploading a 'raw bluray disc'
             if self.args.disc:
-                # validating presence of bdinfo script for bare metal
-                bdinfo_utilities.bdinfo_validate_bdinfo_script_for_bare_metal(
-                    self.bdinfo_script
+                self.bdinfo_processor = BDInfoProcessor(
+                    bdinfo_script=self.bdinfo_script,
+                    auto_mode=self.auto_mode,
+                    upload_media=torrent_info["upload_media"],
                 )
-                # validating presence of BDMV/STREAM/
-                bdinfo_utilities.bdinfo_validate_presence_of_bdmv_stream(
-                    torrent_info["upload_media"]
-                )
-
                 (
                     raw_video_file,
                     largest_playlist,
-                ) = bdinfo_utilities.bdinfo_get_largest_playlist(
-                    self.bdinfo_script,
-                    self.auto_mode,
-                    torrent_info["upload_media"],
-                )
-
+                ) = self.bdinfo_processor.get_largest_playlist()
                 torrent_info["raw_video_file"] = raw_video_file
                 torrent_info["largest_playlist"] = largest_playlist
             else:
@@ -961,11 +953,13 @@ class GGBotUploadAssistant(GGBot):
                 base_path=working_folder,
                 sub_folder=torrent_info["working_folder"],
             )
-            torrent_info[
-                "bdinfo"
-            ] = bdinfo_utilities.bdinfo_generate_and_parse_bdinfo(
-                self.bdinfo_script, torrent_info, self.args.debug
-            )  # TODO handle non-happy paths
+            if self.bdinfo_processor is None:
+                raise GGBotFatalException(
+                    "BDInfoProcessor has not been initialized yet"
+                )
+
+            self.bdinfo_processor.generate_bdinfo(torrent_info=torrent_info)
+            torrent_info["bdinfo"] = self.bdinfo_processor.bdinfo
             self.logger.debug(
                 "::::::::::::::::::::::::::::: Parsed BDInfo output :::::::::::::::::::::::::::::"
             )
@@ -1198,6 +1192,7 @@ class GGBotUploadAssistant(GGBot):
                 parse_me,
                 media_info_audio_track,
                 missing_value,
+                bdinfo_processor=self.bdinfo_processor,
             )
 
         # ---------------- Audio Codec ---------------- #
@@ -1212,6 +1207,7 @@ class GGBotUploadAssistant(GGBot):
                 media_info_audio_track=media_info_audio_track,
                 parse_me=parse_me,
                 missing_value=missing_value,
+                bdinfo_processor=self.bdinfo_processor,
             )
 
             if atmos is not None:
@@ -1233,6 +1229,7 @@ class GGBotUploadAssistant(GGBot):
                 is_disc=self.args.disc,
                 auto_mode=self.auto_mode,
                 media_info_video_track=media_info_video_track,
+                bdinfo_processor=self.bdinfo_processor,
             )
             if dv is not None:
                 torrent_info["dv"] = dv
