@@ -157,6 +157,12 @@ class UploadAssistantConfig(UploaderConfig):
         return self._get_property("post_processing_mode")
 
 
+class AutoUploaderConfig(UploaderConfig):
+    @property
+    def CACHE(self):
+        return self._get_property("cache_type")
+
+
 class ReUploaderConfig(UploaderConfig):
     @property
     def CACHE(self):
