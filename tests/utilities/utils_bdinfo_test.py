@@ -123,7 +123,7 @@ def __get_data_for_largest_playlist(file_name, override=None):
     "utilities.utils_bdinfo.BDInfoProcessor._validate_presence_of_bdmv_stream"
 )
 @mock.patch("utilities.utils_bdinfo.BDInfoProcessor._validate_bdinfo_path")
-def bdinfo_processor(mock_path_validator, mock_stream_validator):
+def bdinfo_processor(_, __):
     return BDInfoProcessor(bdinfo_script="", upload_media="", auto_mode=False)
 
 
