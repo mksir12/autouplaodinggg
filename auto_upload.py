@@ -370,7 +370,6 @@ def identify_type_and_basic_info(full_path, guess_it_result):
 
     Returns `skip_to_next_file` if there are no video files in thhe provided folder
     """
-    global bdinfo_processor
     console.line(count=2)
     console.rule("Analyzing & Identifying Video", style="red", align="center")
     console.line(count=1)
