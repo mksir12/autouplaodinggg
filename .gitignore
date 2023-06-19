@@ -1,6 +1,6 @@
 # Dev folders
 /temp_upload
-/tests/resources/bdinfo/working_folder/*
+/tests/resources/bdinfo/working_folder
 /tests/working_folder
 /.idea/
 /.vscode
@@ -117,8 +117,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-config.env
-reupload.config.env
+./config.env
+./reupload.config.env
+./auto_uploader.config.env
 
 # Spyder project settings
 .spyderproject

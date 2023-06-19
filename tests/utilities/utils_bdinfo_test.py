@@ -120,9 +120,9 @@ def __get_data_for_largest_playlist(file_name, override=None):
 
 @pytest.fixture(scope="function")
 @mock.patch(
-    "utilities.utils_bdinfo_r.BDInfoProcessor._validate_presence_of_bdmv_stream"
+    "utilities.utils_bdinfo.BDInfoProcessor._validate_presence_of_bdmv_stream"
 )
-@mock.patch("utilities.utils_bdinfo_r.BDInfoProcessor._validate_bdinfo_path")
+@mock.patch("utilities.utils_bdinfo.BDInfoProcessor._validate_bdinfo_path")
 def bdinfo_processor(mock_path_validator, mock_stream_validator):
     return BDInfoProcessor(bdinfo_script="", upload_media="", auto_mode=False)
 
