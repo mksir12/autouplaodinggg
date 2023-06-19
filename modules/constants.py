@@ -41,6 +41,13 @@ REUPLOADER_LOG = "{base_path}/reuploader.log"
 REUPLOADER_CONFIG = "{base_path}/reupload.config.env"
 REUPLOADER_SAMPLE_CONFIG = "{base_path}/samples/reuploader/reupload.config.env"
 
+# Auto Uploader Specific
+AUTO_UPLOADER_LOG = "{base_path}/auto_uploader.log"
+AUTO_UPLOADER_CONFIG = "{base_path}/auto_uploader.config.env"
+AUTO_UPLOADER_SAMPLE_CONFIG = (
+    "{base_path}/samples/auto_uploader/auto_uploader.config.env"
+)
+
 # Reference Data
 TAG_GROUPINGS = "{base_path}/parameters/tag_grouping.json"
 AUDIO_CODECS_MAP = "{base_path}/parameters/audio_codecs.json"
