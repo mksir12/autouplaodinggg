@@ -61,6 +61,44 @@ dockerhub-gg-bot-upload-assistant:
       exists:
         - Dockerfiles/Dockerfile
 
+dockerhub-gg-bot-upload-assistant-new:
+  stage: deploy
+  image:
+    name: $DOCKER_IMAGE
+  services:
+    - name: docker:dind
+      alias: buildcontainer
+      entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://buildcontainer:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - docker login -u "$DOCKER_CI_REGISTRY_USER" -p "$DOCKER_CI_REGISTRY_PASSWORD" $DOCKER_CI_REGISTRY
+  script:
+    - mv Dockerfiles/Dockerfile ./
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=":refactor-latest"
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'refactor-latest'"
+      elif [[ $CI_COMMIT_TAG ]]; then
+        tag=":refactor-$CI_COMMIT_TAG"
+        echo "Running for tag '$CI_COMMIT_TAG': tag = $tag"
+      else
+        tag=":refactor-$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - |
+      echo "Building Image '$DOCKER_CI_REGISTRY_IMAGE${tag}"
+    - docker build --pull -t "$DOCKER_CI_REGISTRY_IMAGE${tag}" -f Dockerfile.new .
+    - |
+      echo "Publishing Image to Docker Hub Container Registry: '$DOCKER_CI_REGISTRY_IMAGE${tag}"
+    - docker push "$DOCKER_CI_REGISTRY_IMAGE${tag}"
+  rules:
+    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "feature/auto_uploader"' # runs for every tags and master branch and dev branch
+      exists:
+        - Dockerfiles/Dockerfile.new
+
 
 # Image ID: noobmaster669/gg-bot-uploader:aarch64-{TAG}
 # Image Description: arm32v7 Docker Image build and stored in Docker Registry

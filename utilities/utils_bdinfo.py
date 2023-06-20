@@ -413,20 +413,23 @@ class BDInfoProcessor:
         """
         dv = None
         hdr = None
-        # for full disks here we identify the video_codec, hdr and dv information
-        for index, video_track in enumerate(self.bdinfo["video"]):
-            if "dv_hdr" in video_track and len(video_track["dv_hdr"]) != 0:
-                # so hdr or DV is present in this track. next we need to identify which one it is
+        video_tracks = self.bdinfo["video"]
+        first_video_track = video_tracks[0]
+        video_codec = first_video_track["codec"]
+
+        for index, video_track in enumerate(video_tracks):
+            dv_hdr = video_track.get("dv_hdr", "").strip()
+            if dv_hdr:
                 logging.debug(
-                    f"[BDInfoUtils] Detected {video_track['dv_hdr']} from bdinfo in track {index}"
+                    f"[BDInfoUtils] Detected {dv_hdr} from bdinfo in track {index}"
                 )
                 if (
-                    "DOLBY" in video_track["dv_hdr"].upper()
-                    or "DOLBY VISION" in video_track["dv_hdr"].upper()
+                    "DOLBY" in dv_hdr.upper()
+                    or "DOLBY VISION" in dv_hdr.upper()
                 ):
                     dv = "DV"
                 else:
-                    hdr = video_track["dv_hdr"].strip()
+                    hdr = dv_hdr
                     if "HDR10+" in hdr:
                         hdr = "HDR10+"
                     elif "HDR10" in hdr:
@@ -434,11 +437,12 @@ class BDInfoProcessor:
                     logging.debug(
                         f"[BDInfoUtils] Adding proper HDR Format `{hdr}` to torrent info"
                     )
+                break
+
         logging.info(
-            f"[BDInfoUtils] `video_codec` identified from bdinfo as {self.bdinfo['video'][0]['codec']}"
+            f"[BDInfoUtils] `video_codec` identified from bdinfo as {video_codec}"
         )
-        # video codec is taken from the first track
-        return dv, hdr, self.bdinfo["video"][0]["codec"]
+        return dv, hdr, video_codec
 
     def get_audio_code(self, *, audio_codec_dict: Dict):
         """
@@ -446,32 +450,24 @@ class BDInfoProcessor:
         The method also checks for the presence of atmos in the audio
         The return value is (ATMOS, AUDIO_CODEC)
         """
-        # here we populate the audio_codec and atmos information from bdinfo
         atmos = None
+        codec = self.bdinfo["audio"][0]["codec"].strip()
         for audio_track in self.bdinfo["audio"]:
-            if "atmos" in audio_track and len(audio_track["atmos"]) != 0:
+            if "atmos" in audio_track:
                 logging.info(
                     f"[BDInfoUtils] `atmos` identified from bdinfo as {audio_track['atmos']}"
                 )
                 atmos = "Atmos"
                 break
 
-        logging.info(
-            f"[BDInfoUtils] `audio_codec` identified from bdinfo as {self.bdinfo['audio'][0]['codec']}"
-        )
-        for key in audio_codec_dict.keys():
-            if str(self.bdinfo["audio"][0]["codec"].strip()) == key:
-                logging.info(
-                    f"[BDInfoUtils] Used (audio_codec_dict + BDInfo) to identify the "
-                    f'audio codec: {audio_codec_dict[self.bdinfo["audio"][0]["codec"].strip()]}'
-                )
-                return (
-                    atmos,
-                    audio_codec_dict[self.bdinfo["audio"][0]["codec"].strip()],
-                )
+        if codec in audio_codec_dict:
+            logging.info(
+                f"[BDInfoUtils] Used audio_codec_dict + BDInfo to identify the audio codec: {audio_codec_dict[codec]}"
+            )
+            return atmos, audio_codec_dict[codec]
+
         logging.error(
-            f"[BDInfoUtils] Failed to identify audio_codec from audio_codec_dict + BDInfo. "
-            f"Audio Codec from BDInfo {self.bdinfo['audio'][0]['codec']}"
+            f"[BDInfoUtils] Failed to get audio_codec from audio_codec_dict + BDInfo. Audio Codec from BDInfo: {codec}"
         )
         return None, None
 
@@ -482,13 +478,12 @@ class BDInfoProcessor:
         # if 2.1 and 2.0 tracks are present and we encounter 2.0 first followed by 2.1,
         # we return 2.0 only.
         # # TODO check whether subwoofer or even atmos channels needs to be considered
-        audio_channel = None
-        for audio_track in self.bdinfo["audio"]:
-            if audio_channel is None:
-                audio_channel = audio_track["channels"]
-            elif int(audio_track["channels"][0:1]) > int(audio_channel[0:1]):
-                audio_channel = audio_track["channels"]
+        audio_channel = ""
+        if self.bdinfo["audio"]:
+            audio_channel = max(
+                self.bdinfo["audio"], key=lambda track: track["channels"]
+            )["channels"]
         logging.info(
-            f"[BDInfoUtils] `audio_channels` identifed from bdinfo as {audio_channel}"
+            f"[BDInfoUtils] `audio_channels` identified from bdinfo as {audio_channel}"
         )
         return audio_channel
