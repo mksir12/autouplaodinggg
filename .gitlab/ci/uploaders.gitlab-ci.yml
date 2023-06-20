@@ -76,7 +76,7 @@ dockerhub-gg-bot-upload-assistant-new:
   before_script:
     - docker login -u "$DOCKER_CI_REGISTRY_USER" -p "$DOCKER_CI_REGISTRY_PASSWORD" $DOCKER_CI_REGISTRY
   script:
-    - mv Dockerfiles/Dockerfile ./
+    - mv Dockerfiles/Dockerfile.new ./
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
         tag=":refactor-latest"
