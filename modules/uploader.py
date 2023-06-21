@@ -1,3 +1,19 @@
+# GG Bot Upload Assistant
+# Copyright (C) 2023  Noob Master669
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import json
 import os
 import pickle
@@ -385,20 +401,19 @@ class GGBotTrackerUploader:
         self.console.print(review_upload_settings_files_table, justify="center")
 
     def _stop_upload(self):
-        # Give the user a chance to stop the upload
         if (
             Prompt.ask(
                 "Do you want to upload with these settings?", choices=["y", "n"]
             )
-            != "y"
+            == "y"
         ):
-            self.console.print(
-                f"\nCanceling upload to [bright_red]{self.tracker}[/bright_red]"
-            )
-            self.logger.error(
-                f"[TrackerUpload] User chose to cancel the upload to {self.tracker}"
-            )
             return False
+        self.console.print(
+            f"\nCanceling upload to [bright_red]{self.tracker}[/bright_red]"
+        )
+        self.logger.error(
+            f"[TrackerUpload] User chose to cancel the upload to {self.tracker}"
+        )
         return True
 
     def _log_dry_run_message(self):

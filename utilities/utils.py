@@ -47,6 +47,7 @@ from modules.constants import (
     VALIDATED_SITE_TEMPLATES_DIR,
     WORKING_DIR,
 )
+from modules.exceptions.exception import GGBotFatalException
 from modules.torrent_client import Clients, TorrentClientFactory
 
 console = Console()
@@ -436,12 +437,8 @@ def prepare_and_validate_tracker_api_keys_dict(api_keys_file_path):
         api_keys_dict[value] = GGBotConfig().get_config(value.upper(), "")
 
     # Make sure the TMDB API is provided [Mandatory Property]
-    try:
-        if len(api_keys_dict["tmdb_api_key"]) == 0:
-            raise AssertionError("TMDB API key is required")
-    except AssertionError as err:  # Log AssertionError in the logfile and quit here
-        logging.exception("TMDB API Key is required")
-        raise err
+    if len(api_keys_dict.get("tmdb_api_key", "")) == 0:
+        raise GGBotFatalException("TMDB API key is required")
 
     return api_keys_dict
 
@@ -756,23 +753,22 @@ def _post_mode_watch_folder(torrent_info, working_folder):
             )
 
 
-def get_torrent_client_if_needed():
-    upload_assistant_config = UploadAssistantConfig()
+def get_torrent_client_if_needed(config=None):
+    if config is None:
+        config = UploadAssistantConfig()
     logging.debug(
-        f"[Utils] enable_post_processing {upload_assistant_config.ENABLE_POST_PROCESSING}"
+        f"[Utils] enable_post_processing {config.ENABLE_POST_PROCESSING}"
     )
-    logging.debug(
-        f"[Utils] post_processing_mode {upload_assistant_config.POST_PROCESSING_MODE}"
-    )
+    logging.debug(f"[Utils] post_processing_mode {config.POST_PROCESSING_MODE}")
     if (
-        upload_assistant_config.ENABLE_POST_PROCESSING
-        and upload_assistant_config.POST_PROCESSING_MODE == "CROSS_SEED"
+        config.ENABLE_POST_PROCESSING
+        and config.POST_PROCESSING_MODE == "CROSS_SEED"
     ):
         # getting an instance of the torrent client factory
         torrent_client_factory = TorrentClientFactory()
         # creating the torrent client using the factory based on the users configuration
         torrent_client = torrent_client_factory.create(
-            Clients[upload_assistant_config.TORRENT_CLIENT]
+            Clients[config.TORRENT_CLIENT]
         )
         # checking whether the torrent client connection has been created successfully or not
         torrent_client.hello()
