@@ -24,6 +24,7 @@ from modules.constants import (
     TRACKER_ACRONYMS,
 )
 from modules.exceptions.exception import GGBotFatalException
+from modules.logger import GGBotLogManager
 from modules.template_schema_validator import TemplateSchemaValidator
 from modules.torrent_client import TorrentClientFactory, Clients
 
@@ -68,9 +69,10 @@ class GGBot(ABC):
         self.args = argument_parser().parse_args()
         self.working_folder = working_folder
         self.meta = self._load_metadata()
-        self.logger = self._initialize_logger(log_file)
-        if self.args.verbose:
-            self._enable_verbose_logging()
+        self.logger_manager = GGBotLogManager(
+            enable_verbose=self.args.verbose, log_file=log_file
+        )
+        self.gg_bot_logger = self.logger_manager.get_logger(__name__)
 
         # By default, we load the templates from site_templates/ path
         # If user has provided load_external_templates argument then we'll update this path to a different one
@@ -132,7 +134,7 @@ class GGBot(ABC):
         # If not in 'auto_mode' then verify with the user that they want to continue with the upload
         if not self.auto_mode:
             if not Confirm.ask("Continue upload to these sites?", default="y"):
-                self.logger.info(
+                self.gg_bot_logger.info(
                     "[Main] User canceled upload when asked to confirm sites to upload to"
                 )
                 self.console.print(
@@ -277,7 +279,7 @@ class GGBot(ABC):
 
     def _validate_args(self) -> None:
         if self.args.tripleup and self.args.doubleup:
-            self.logger.error(
+            self.gg_bot_logger.error(
                 "[Main] User tried to pass tripleup and doubleup together. Stopping torrent upload process"
             )
             self.console.print(

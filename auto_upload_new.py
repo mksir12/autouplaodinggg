@@ -84,6 +84,7 @@ class GGBotUploadAssistant(GGBot):
             banner_text="  Upload  Assistant  ",
         )
         self.bdinfo_processor: Optional[BDInfoProcessor] = None
+        self.logger = self.logger_manager.get_logger(__name__)
 
     def setup(self) -> None:
         self._validate_full_disk_settings()
@@ -577,7 +578,7 @@ class GGBotUploadAssistant(GGBot):
             # 2.0 we take all the info we generated outside of this loop (
             # mediainfo, description, etc.) and combine it with tracker specific info and upload it all now
             torrent_info[f"{tracker}_upload_status"] = GGBotTrackerUploader(
-                logger=self.logger,
+                logger=self.logger_manager.get_logger("GGBotTrackerUploader"),
                 tracker=tracker,
                 uploader_config=self.config,
                 tracker_settings=tracker_settings,
