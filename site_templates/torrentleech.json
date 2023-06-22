@@ -10,10 +10,7 @@
 
     "description_components":{
         "code_code": "[code][/code]",
-        "spoiler_code":"[spoiler=TITLE_PLACEHOLDER][/spoiler]",
-        "notes_code":"[note][/note]",
-        "quote_code":"[quote][/quote]",
-        "alert_code":"[alert][/alert]"
+        "quote_code":"[quote][/quote]"
     },
 
     "technical_jargons": {
