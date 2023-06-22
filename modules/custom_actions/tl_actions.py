@@ -45,18 +45,20 @@ def rewrite_description(torrent_info, tracker_settings, tracker_config):
     with open(tl_description_file, "a", encoding="utf-8") as tl_description:
         # writing mediainfo to description
         mediainfo = open(torrent_info["mediainfo"]).read()
-        tl_description.write(f"[mediainfo]{mediainfo}[/mediainfo]\n")
+        tl_description.write(f"..:: MediaInfo ::..\n{mediainfo}\n")
         # writing screenshots to description
-        tl_description.write("[align=center]..:: Screenshots ::..\n")
+        tl_description.write("..:: Screenshots ::..\n")
         for screenshot in torrent_info["url_images"].split("\n"):
+            if len(screenshot.strip()) == 0:
+                continue
             tl_description.write(f"[img]{screenshot}[/img]\n")
         if torrent_info["release_group"] == "DrDooFenShMiRtZ":
             tl_description.write(
-                "Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistantinator[/align]"
+                "Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistantinator"
             )
         else:
             tl_description.write(
-                "Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant[/align]"
+                "Uploaded with [color=#ff0000]❤[/color] using GG-BOT Upload Assistant"
             )
 
     tracker_settings["description"] = tl_description_file
