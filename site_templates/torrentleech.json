@@ -13,7 +13,7 @@
         "spoiler_code":"[spoiler=TITLE_PLACEHOLDER][/spoiler]",
         "notes_code":"[note][/note]",
         "quote_code":"[quote][/quote]",
-        "alert_code":"[alert][/alert]",
+        "alert_code":"[alert][/alert]"
     },
 
     "technical_jargons": {
