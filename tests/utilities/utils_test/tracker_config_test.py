@@ -131,6 +131,8 @@ def __tracker_key_validation(param, default=None):
         return "ath_api_key_value"
     elif param == "TMDB_API_KEY":
         return "tmdb_api_key_value"
+    elif param == "TL_API_KEY":
+        return "# API_KEY"
     return ""
 
 
