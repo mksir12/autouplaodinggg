@@ -433,13 +433,18 @@ def prepare_and_validate_tracker_api_keys_dict(api_keys_file_path):
     api_keys = json.load(open(api_keys_file_path))
     api_keys_dict = dict()
     for value in api_keys:
-        api_keys_dict[value] = GGBotConfig().get_config(value.upper(), "")
+        api_key = GGBotConfig().get_config(value.upper(), "")
+        if len(api_key.strip()) == 0 or api_key.startswith("#"):
+            continue
+        api_keys_dict[value] = api_key
 
     # Make sure the TMDB API is provided [Mandatory Property]
     try:
-        if len(api_keys_dict["tmdb_api_key"]) == 0:
+        if len(api_keys_dict.get("tmdb_api_key", "")) == 0:
             raise AssertionError("TMDB API key is required")
-    except AssertionError as err:  # Log AssertionError in the logfile and quit here
+    except (
+        AssertionError
+    ) as err:  # Log AssertionError in the logfile and quit here
         logging.exception("TMDB API Key is required")
         raise err
 

@@ -164,6 +164,11 @@ GG-BOT Upload Assistant is a torrent auto uploader to take the manual work out o
             <td><strong>GPW</strong></td>
             <td><strong><a href="https://greatposterwall.com">GreatPosterWall</a></strong></td>
         </tr>
+        <tr style="text-align: center">
+            <td><strong>TorrentLeech</strong></td>
+            <td><strong>TL</strong></td>
+            <td><strong><a href="https://www.torrentleech.org">TorrentLeech</a></strong></td>
+        </tr>
     </tbody>
 </table>
 
