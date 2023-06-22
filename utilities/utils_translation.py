@@ -579,6 +579,7 @@ def choose_right_tracker_keys(
                         "internal",
                         "sticky",
                         "tripleup",
+                        "exclusive",
                         "foreign",
                         "3d",
                     ]:
