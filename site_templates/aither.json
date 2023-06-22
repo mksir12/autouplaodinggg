@@ -53,7 +53,8 @@
         "personal": "personal_release",
         "doubleup": "doubleup",
         "sticky": "sticky",
-        "freeleech": "free"
+        "freeleech": "free",
+        "exclusive": "exclusive"
     },
 
     "Required": {

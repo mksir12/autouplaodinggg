@@ -300,6 +300,11 @@ internal_args.add_argument(
 internal_args.add_argument(
     "-sticky", action="store_true", help="(Internal) Pin the new upload"
 )
+internal_args.add_argument(
+    "-exclusive",
+    nargs=1,
+    help="(Internal) Set an upload as exclusive for n days",
+)
 
 args = parser.parse_args()
 
