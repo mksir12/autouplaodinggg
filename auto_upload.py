@@ -84,8 +84,12 @@ torrent_info = {}
 # Debug logs for the upload processing
 # Logger running in "w" : write mode
 # Create a custom log format with UTF-8 encoding
-log_format = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s', '%Y-%m-%d %H:%M:%S')
-handler = logging.FileHandler(ASSISTANT_LOG.format(base_path=working_folder), mode='w', encoding='utf-8')
+log_format = logging.Formatter(
+    "%(asctime)s | %(name)s | %(levelname)s | %(message)s", "%Y-%m-%d %H:%M:%S"
+)
+handler = logging.FileHandler(
+    ASSISTANT_LOG.format(base_path=working_folder), mode="w", encoding="utf-8"
+)
 handler.setFormatter(log_format)
 # Add the FileHandler to the root logger
 logging.root.addHandler(handler)
@@ -109,7 +113,7 @@ site_templates_path = SITE_TEMPLATES_DIR.format(base_path=working_folder)
 # Used to correctly select json file
 # the value in this dictionary must correspond to the file name of the site template
 acronym_to_tracker = json.load(
-    open(TRACKER_ACRONYMS.format(base_path=working_folder), "r", encoding="utf-8")
+    open(TRACKER_ACRONYMS.format(base_path=working_folder), encoding="utf-8")
 )
 
 # the `prepare_tracker_api_keys_dict` prepares the api_keys_dict and also does mandatory property validations
@@ -296,6 +300,12 @@ internal_args.add_argument(
 internal_args.add_argument(
     "-sticky", action="store_true", help="(Internal) Pin the new upload"
 )
+internal_args.add_argument(
+    "-exclusive",
+    nargs=1,
+    choices=["0", "1", "2", "3"],
+    help="(Internal) Set an upload as exclusive for n days",
+)
 
 args = parser.parse_args()
 
@@ -321,6 +331,12 @@ def check_for_dupes_in_tracker(tracker, temp_tracker_api_key):
             encoding="utf-8",
         )
     )
+
+    if config["dupes"].get("skip_dupe_check", False) is True:
+        logging.info(
+            f"[Main] Dupe check disabled for tracker {tracker}. SKipping dupe check..."
+        )
+        return False
 
     # If the user provides this arg with the title right after in double quotes then we automatically use that
     # If the user does not manually provide the title (Most common) then we pull the renaming template from *.json & use all the info we gathered earlier to generate a title
@@ -866,7 +882,10 @@ def identify_miscellaneous_details(guess_it_result, file_to_parse):
 
     # Blu-ray disc regions are read from new json file
     bluray_regions = json.load(
-        open(BLURAY_REGIONS_MAP.format(base_path=working_folder), "r", encoding="utf-8")
+        open(
+            BLURAY_REGIONS_MAP.format(base_path=working_folder),
+            encoding="utf-8",
+        )
     )
 
     # Try to split the torrent title and match a few keywords

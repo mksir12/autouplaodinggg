@@ -92,10 +92,12 @@
                 "bluray_encode": 1
             },
             "42": {
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
             "45": {
-                "webrip": 1
+                "webrip": 2,
+                "web_rip": 2
             },
             "35": {
                 "hdtv": 1

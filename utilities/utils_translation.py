@@ -203,9 +203,30 @@ def _get_hybrid_type(
                 if sub_val["data_source"] == "tracker"
                 else torrent_info
             )
-            selected_val = (
-                datasource[sub_key] if sub_key in datasource else None
-            )
+            if sub_key.startswith("$."):
+                logging.info(
+                    f"[HybridMapping] Identified json path '{sub_key}' as datasource key. Attempting to fetch data...`"
+                )
+                items = sub_key.replace("$.", "").split(".")
+                try:
+                    temp_datasource = datasource
+                    for item in items:
+                        temp_datasource = temp_datasource(item)
+                        if temp_datasource is None:
+                            selected_val = None
+                            break
+                    selected_val = temp_datasource
+                except Exception as ex:
+                    logging.error(
+                        f"[HybridMapping] Invalid json path '{sub_key}' configured for hybrid mapping data key.",
+                        exc_info=ex,
+                    )
+                    selected_val = None
+            else:
+                selected_val = (
+                    datasource[sub_key] if sub_key in datasource else None
+                )
+
             logging.debug(
                 f"[HybridMapping] Value selected from data source is '{selected_val}'"
             )
@@ -568,6 +589,11 @@ def choose_right_tracker_keys(
                             if getattr(args, translation_key, False) is True
                             else "0"
                         )
+                    elif translation_key in ["exclusive"]:
+                        arg_value = getattr(args, translation_key, [""])
+                        tracker_settings[
+                            config["translation"][translation_key]
+                        ] = arg_value[0]
 
                     # We dump all the info from torrent_info in tracker_settings here
                     elif translation_key in torrent_info:
@@ -804,6 +830,8 @@ def choose_right_tracker_keys(
 
     # Adding default values from template to tracker settings
     for default_key, default_value in config["Default"].items():
+        if default_key in tracker_settings:
+            continue
         logging.debug(
             f"[Translation] Adding default key `{default_key}` with value `{default_value}` to tracker settings"
         )

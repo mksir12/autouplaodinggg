@@ -88,10 +88,12 @@
                 "bluray_remux": 2
             },
             "2": {
-                "webrip": 1
+                "webrip": 2,
+                "web_rip": 2
             },
             "3": {
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
             "23": {
                 "hdtv": 1

@@ -113,38 +113,48 @@
                 "2160p": 1,
                 "bluray_encode": 2,
                 "webdl": 2,
-                "webrip": 2
+                "web_dl": 2,
+                "webrip": 2,
+                "web_rip": 2
             },
 
             "1080p": {
                 "1080p": 1,
                 "bluray_encode": 2,
                 "webdl": 2,
-                "webrip": 2
+                "web_dl": 2,
+                "webrip": 2,
+                "web_rip": 2
             },
 
             "1080i": {
                 "1080i": 1,
                 "bluray_encode": 2,
                 "webdl": 2,
-                "webrip": 2
+                "web_dl": 2,
+                "webrip": 2,
+                "web_rip": 2
             },
 
             "720p": {
                 "720p": 1,
                 "bluray_encode": 2,
                 "webdl": 2,
-                "webrip": 2
+                "web_dl": 2,
+                "webrip": 2,
+                "web_rip": 2
             },
 
             "576p": {
                 "576p": 1,
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
 
             "540p": {
                 "540p": 1,
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
 
             "DVD Remux": {
@@ -156,7 +166,8 @@
 
             "480p": {
                 "480p": 1,
-                "webdl": 1
+                "webdl": 2,
+                "web_dl": 2
             },
 
             "Other": {
@@ -179,7 +190,9 @@
             "WEB": {
                 "web": 1,
                 "webrip": 2,
-                "webdl": 2
+                "web_rip": 2,
+                "webdl": 2,
+                "web_dl": 2
             },
 
             "HDTV": {

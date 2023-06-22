@@ -13,8 +13,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
 class GGBotImageUploadStatus:
     def __init__(
         self,
@@ -30,3 +28,6 @@ class GGBotImageUploadStatus:
         self.bb_code_thumb = bb_code_thumb
         self.bb_code_medium = bb_code_medium
         self.bb_code_medium_thumb = bb_code_medium_thumb
+
+    def __str__(self):
+        return f"GGBotImageUploadStatus(status={self.status}, bb_code_medium_thumb={self.bb_code_medium_thumb}, bb_code_medium={self.bb_code_medium}, bb_code_thumb={self.bb_code_thumb}, image_url={self.image_url})"
