@@ -9,9 +9,11 @@
     "title_separator" : " ",
 
     "description_components":{
-        "code_code": "[quote][/quote]",
-        "spoiler_code":"[hide=TITLE_PLACEHOLDER][/hide]",
-        "quote_code":"[quote][/quote]"
+        "code_code": "[code][/code]",
+        "spoiler_code":"[spoiler=TITLE_PLACEHOLDER][/spoiler]",
+        "notes_code":"[note][/note]",
+        "quote_code":"[quote][/quote]",
+        "alert_code":"[alert][/alert]",
     },
 
     "technical_jargons": {
