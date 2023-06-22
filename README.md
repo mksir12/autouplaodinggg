@@ -302,7 +302,7 @@ pip install -r requirements/requirements.txt
 <br>
 
 # Roadmap
-### v3.0.8
+### v3.0.9
 - [ ] Add Support for new platforms:
     - [ ] TorrentLeech
 - [ ] EPIC: GG-Bot Visor for reports and failure recoveries
@@ -310,13 +310,8 @@ pip install -r requirements/requirements.txt
 - [ ] Issue#93: Bit-hdtv doesn't allow ptpimg screenshots
 - [ ] Issue#96: DVD Remux not supported
 - [ ] Issue#97: PTP uploads fail if no tags in IMDB
-- [X] Issue#114: Not detecting Opus audio codec
-- [X] Issue#116: Error on image upload: json KeyError: 'url_viewer'
-- [X] Issue#118: GPW upload failures
-- [X] Issue#120: Unable to upload web-dls to GPW
 
-
-### v3.0.9
+### v3.1.0
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
@@ -346,6 +341,34 @@ pip install -r requirements/requirements.txt
 <br>
 
 # Change Log
+## **3.0.8**
+    Bug Fixes
+        * Issue#114: Not detecting Opus audio codec
+        * Issue#116: Error on image upload: json KeyError: 'url_viewer'
+        * Issue#118: GPW upload failures
+        * Issue#120: Unable to upload web-dls to GPW
+
+<br>
+
+## **3.0.7**
+    Underhood Changes
+        * Code refactor v3
+
+    New Features
+        * Support for trumpable flags for PTP
+        * Updated banned groups for TSP
+        * Initial windows support (_might be buggy_)
+
+    Bug Fixes
+        * Issue#98: Season Packs Not using 1st episode for Mediainfo
+        * Issue#106: Releases tagged incorrectly as scene
+        * Issue#107: Streaming service names being ignored
+        * Issue#108: SpeedApp SD and HD TV episode mismatch
+        * Issue#110: GGBotException when connection to mongo fails
+        * Issue#111: SpeedApp cross seed torrents not registered
+
+<br>
+
 ## **3.0.6**
     New Trackers
         * TheDarkCommunity
