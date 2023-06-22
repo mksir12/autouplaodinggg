@@ -308,15 +308,14 @@ pip install -r requirements/requirements.txt
 
 # Roadmap
 ### v3.0.9
-- [ ] Add Support for new platforms:
-    - [ ] TorrentLeech
-- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
+- [ ] EPIC: GG-Bot Auto Uploader
 - [ ] Issue#79: Not able to cross-seed rared releases
 - [ ] Issue#93: Bit-hdtv doesn't allow ptpimg screenshots
 - [ ] Issue#96: DVD Remux not supported
 - [ ] Issue#97: PTP uploads fail if no tags in IMDB
 
 ### v3.1.0
+- [ ] EPIC: GG-Bot Visor for reports and failure recoveries
 - [ ] Improved TMDB metadata search Phase 3
 - [ ] Support for encrypted values from config
 - [ ] Add support for adding primary language to title
@@ -347,6 +346,12 @@ pip install -r requirements/requirements.txt
 
 # Change Log
 ## **3.0.8**
+    New Trackers
+        * TorrentLeech
+
+    New Features
+        * Support for ATH exclusive flag
+
     Bug Fixes
         * Issue#114: Not detecting Opus audio codec
         * Issue#116: Error on image upload: json KeyError: 'url_viewer'

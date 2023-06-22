@@ -1,3 +1,18 @@
+### **3.0.8**
+    New Trackers
+        * TorrentLeech
+
+    New Features
+        * Support for ATH exclusive flag
+
+    Bug Fixes
+        * Issue#114: Not detecting Opus audio codec
+        * Issue#116: Error on image upload: json KeyError: 'url_viewer'
+        * Issue#118: GPW upload failures
+        * Issue#120: Unable to upload web-dls to GPW
+
+<br>
+
 ### **3.0.7**
     Underhood Changes
         * Code refactor v3
