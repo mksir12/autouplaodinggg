@@ -73,6 +73,7 @@
 
         "internal": "string",
         "free": "string",
+        "exclusive": "string",
         "featured": "string",
         "personal_release": "string",
         "doubleup": "string",

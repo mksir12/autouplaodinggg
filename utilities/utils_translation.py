@@ -579,7 +579,6 @@ def choose_right_tracker_keys(
                         "internal",
                         "sticky",
                         "tripleup",
-                        "exclusive",
                         "foreign",
                         "3d",
                     ]:
@@ -590,6 +589,11 @@ def choose_right_tracker_keys(
                             if getattr(args, translation_key, False) is True
                             else "0"
                         )
+                    elif translation_key in ["exclusive"]:
+                        arg_value = getattr(args, translation_key, [""])
+                        tracker_settings[
+                            config["translation"][translation_key]
+                        ] = arg_value[0]
 
                     # We dump all the info from torrent_info in tracker_settings here
                     elif translation_key in torrent_info:
