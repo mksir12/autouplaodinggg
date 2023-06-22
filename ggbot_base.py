@@ -31,21 +31,20 @@ from modules.torrent_client import TorrentClientFactory, Clients
 install()
 
 T = TypeVar("T", bound=GGBotArgumentParser)
-root_logger = logging.getLogger(__name__)
 
 
-def suppress_exceptions_and_log(logger):
+def suppress_exceptions_and_log():
     def decorator(func):
-        def wrapper(*args, **kwargs):
+        def wrapper(self, *args, **kwargs):
             try:
                 return func(*args, **kwargs)
             except GGBotFatalException as e:
-                logger.fatal(
+                self.logger.fatal(
                     f"Exception in {func.__name__}: {str(e)}", exc_info=e
                 )
                 sys.exit(1)
             except Exception as e:
-                logger.fatal(
+                self.logger.fatal(
                     f"Exception in {func.__name__}: {str(e)}", exc_info=e
                 )
 
@@ -175,7 +174,7 @@ class GGBot(ABC):
     def config_sample_file(self):
         raise NotImplementedError
 
-    @suppress_exceptions_and_log(root_logger)
+    @suppress_exceptions_and_log()
     def start(self) -> None:
         self._process()
 
