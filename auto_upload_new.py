@@ -17,6 +17,7 @@
 import glob
 import json
 import os
+import logging
 import re
 import time
 from pprint import pformat
@@ -76,6 +77,12 @@ load_dotenv(ASSISTANT_CONFIG.format(base_path=working_folder))
 
 class GGBotUploadAssistant(GGBot):
     def __init__(self):
+        logging.basicConfig(
+            filename=ASSISTANT_LOG.format(base_path=working_folder),
+            filemode="w",
+            level=logging.INFO,
+            format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+        )
         super().__init__(
             log_file=ASSISTANT_LOG.format(base_path=working_folder),
             argument_parser=UploadAssistantArgumentParser,
@@ -84,7 +91,6 @@ class GGBotUploadAssistant(GGBot):
             banner_text="  Upload  Assistant  ",
         )
         self.bdinfo_processor: Optional[BDInfoProcessor] = None
-        self.logger = self.logger_manager.get_logger(__name__)
 
     def setup(self) -> None:
         self._validate_full_disk_settings()
@@ -93,7 +99,7 @@ class GGBotUploadAssistant(GGBot):
 
     def _process(self) -> None:
         self.initialize_upload_queue()
-        self.logger.debug(f"[Main] Upload queue: {self.upload_queue}")
+        logging.debug(f"[Main] Upload queue: {self.upload_queue}")
 
         # Now for each file we've been supplied (batch more or just the user manually specifying multiple files) we
         # create a loop here that uploads each of them until none are left
@@ -143,7 +149,7 @@ class GGBotUploadAssistant(GGBot):
         ):
             # If there is an issue with the file & we can't upload we use this check to skip the current file & move on
             # to the next (if exists)
-            self.logger.debug(
+            logging.debug(
                 f"[Main] Skipping {torrent_info['upload_media']} because type and basic information cannot be "
                 f"identified. "
             )
@@ -183,7 +189,7 @@ class GGBotUploadAssistant(GGBot):
             if self.args.mal is not None and len(self.args.mal[0]) > 1:
                 # user has provided a mal id manually. Since we were not able to identify one, we'll use the id
                 # provided by the user.
-                self.logger.info(
+                logging.info(
                     f"[Main] Using user provided mal id '{self.args.mal[0]}'"
                 )
                 mal = self.args.mal[0]
@@ -209,9 +215,7 @@ class GGBotUploadAssistant(GGBot):
         # Support for user adding in custom edition if it's not obvious from filename
         if self.args.edition:
             user_input_edition = str(self.args.edition[0])
-            self.logger.info(
-                f"[Main] User specified edition: {user_input_edition}"
-            )
+            logging.info(f"[Main] User specified edition: {user_input_edition}")
             self.console.print(
                 f"\nUsing the user supplied edition: [medium_spring_green]{user_input_edition}[/medium_spring_green]"
             )
@@ -221,7 +225,7 @@ class GGBotUploadAssistant(GGBot):
             "Do you want to add custom texts to torrent description?",
             default=False,
         ):
-            self.logger.debug(
+            logging.debug(
                 "[Main] User decided to add custom text to torrent description. Handing control to custom_user_input "
                 "module "
             )
@@ -231,7 +235,7 @@ class GGBotUploadAssistant(GGBot):
                 CUSTOM_TEXT_COMPONENTS.format(base_path=working_folder)
             )
         else:
-            self.logger.debug(
+            logging.debug(
                 "[Main] User decided not to add custom text to torrent description or running in auto_mode"
             )
         # if the upload is a web-dl, then we'll have values for `web_source` and `web_source_name`
@@ -268,7 +272,7 @@ class GGBotUploadAssistant(GGBot):
                 style="red",
                 align="center",
             )
-            self.logger.debug(
+            logging.debug(
                 f"[Main] Dumping torrent_info contents to log before dupe check: \n{pformat(torrent_info)}"
             )
             dupe_check_response = self.check_for_dupes_in_tracker(
@@ -277,7 +281,7 @@ class GGBotUploadAssistant(GGBot):
             # If dupes are present and user decided to stop upload, for single tracker uploads we stop operation
             # immediately True == dupe_found False == no_dupes/continue upload
             if dupe_check_response:
-                self.logger.error(
+                logging.error(
                     f"[Main] Could not upload to: {tracker} because we found a dupe on site"
                 )
                 if self.auto_mode:
@@ -344,7 +348,7 @@ class GGBotUploadAssistant(GGBot):
 
         # At this point the only stuff that remains to be done is site specific so we can start a loop here for each
         # site we are uploading to
-        self.logger.info("[Main] Now starting tracker specific tasks")
+        logging.info("[Main] Now starting tracker specific tasks")
         for tracker in self.upload_to_trackers:
             tracker_env_config = TrackerConfig(tracker)
 
@@ -356,7 +360,7 @@ class GGBotUploadAssistant(GGBot):
             temp_tracker_api_key = self.api_keys_dict[
                 f"{str(tracker).lower()}_api_key"
             ]
-            self.logger.info(f"[Main] Trying to upload to: {tracker}")
+            logging.info(f"[Main] Trying to upload to: {tracker}")
 
             # Create a new dictionary that we store the exact keys/vals that the site is expecting
             tracker_settings = {}
@@ -378,7 +382,7 @@ class GGBotUploadAssistant(GGBot):
                 and torrent_info["release_group"] in config["banned_groups"]
             ):
                 torrent_info[f"{tracker}_upload_status"] = False
-                self.logger.fatal(
+                logging.fatal(
                     f"[Main] Release group {torrent_info['release_group']} is banned in this at {tracker}. Skipping "
                     f"upload... "
                 )
@@ -457,7 +461,7 @@ class GGBotUploadAssistant(GGBot):
                     style="red",
                     align="center",
                 )
-                self.logger.debug(
+                logging.debug(
                     f"[Main] Dumping torrent_info contents to log before dupe check: \n{pformat(torrent_info)}"
                 )
                 # Call the function that will search each site for dupes and return a similarity percentage,
@@ -468,7 +472,7 @@ class GGBotUploadAssistant(GGBot):
                 # True == dupe_found
                 # False == no_dupes/continue upload
                 if dupe_check_response:
-                    self.logger.error(
+                    logging.error(
                         f"[Main] Could not upload to: {tracker} because we found a dupe on site"
                     )
                     # If dupe was found & the script is auto_mode OR if the user responds with 'n' for the 'dupe
@@ -480,7 +484,7 @@ class GGBotUploadAssistant(GGBot):
             self.console.print(
                 f"\n[bold]Generating .torrent file for [chartreuse1]{tracker}[/chartreuse1][/bold]"
             )
-            self.logger.debug(
+            logging.debug(
                 f"[Main] Torrent info just before dot torrent creation. \n {pformat(torrent_info)}"
             )
             # If the type is a movie, then we only include the `raw_video_file` for torrent file creation. If type is
@@ -525,10 +529,10 @@ class GGBotUploadAssistant(GGBot):
             ):
                 continue
 
-            self.logger.debug(
+            logging.debug(
                 "::::::::::::::::::::::::::::: Final 'torrent_info' with all data filled :::::::::::::::::::::::::::::"
             )
-            self.logger.debug(f"\n{pformat(torrent_info)}")
+            logging.debug(f"\n{pformat(torrent_info)}")
 
             # once the uploader finishes filling all the details as per the template, users can override values with
             # custom actions.
@@ -539,11 +543,11 @@ class GGBotUploadAssistant(GGBot):
                 action = ""
                 try:
                     for action in config["technical_jargons"]["custom_actions"]:
-                        self.logger.info(
+                        logging.info(
                             f"[Main] Loading custom action :: {action}"
                         )
                         custom_action = utils.load_custom_actions(action)
-                        self.logger.info(
+                        logging.info(
                             f"[Main] Loaded custom action :: {action} :: Executing..."
                         )
                         # any additional values added to tracker_settings will be treated as optional values by
@@ -551,7 +555,7 @@ class GGBotUploadAssistant(GGBot):
                         custom_action(torrent_info, tracker_settings, config)
                 except Exception as e:
                     # if any sorts of exception occurs from custom actions, we stop the upload to the tracker here
-                    self.logger.exception(
+                    logging.exception(
                         f"[Main] Exception thrown from custom action :: {action}. Skipping upload to tracker {tracker}",
                         exc_info=e,
                     )
@@ -578,7 +582,7 @@ class GGBotUploadAssistant(GGBot):
             # 2.0 we take all the info we generated outside of this loop (
             # mediainfo, description, etc.) and combine it with tracker specific info and upload it all now
             torrent_info[f"{tracker}_upload_status"] = GGBotTrackerUploader(
-                logger=self.logger_manager.get_logger("GGBotTrackerUploader"),
+                logger=logging.getLogger(),
                 tracker=tracker,
                 uploader_config=self.config,
                 tracker_settings=tracker_settings,
@@ -595,15 +599,15 @@ class GGBotUploadAssistant(GGBot):
                 torrent_info[f"{tracker}_upload_status"] is True
                 and "success_processor" in config["technical_jargons"]
             ):
-                self.logger.info(
+                logging.info(
                     f"[Main] Upload to tracker {tracker} is successful and success processor is configured"
                 )
                 action = config["technical_jargons"]["success_processor"]
-                self.logger.info(
+                logging.info(
                     f"[Main] Performing success processor action '{action}' for tracker {tracker}"
                 )
                 custom_action = utils.load_custom_actions(action)
-                self.logger.info(
+                logging.info(
                     f"[Main] Loaded custom action :: {action} :: Executing..."
                 )
                 custom_action(
@@ -657,7 +661,7 @@ class GGBotUploadAssistant(GGBot):
 
         torrent_info["post_processing_complete"] = False
         if self.args.dry_run:
-            self.logger.info(
+            logging.info(
                 "[Main] Dry-Run mode... Skipping post processing steps"
             )
             self.console.print(
@@ -678,22 +682,22 @@ class GGBotUploadAssistant(GGBot):
         script_start_time = time.perf_counter()
         script_end_time = time.perf_counter()
         total_run_time = f"{script_end_time - script_start_time:0.4f}"
-        self.logger.info(f"[Main] Total runtime is {total_run_time} seconds")
+        logging.info(f"[Main] Total runtime is {total_run_time} seconds")
 
     def initialize_upload_queue(self):
         if self.args.batch:
-            self.logger.info("[Main] Running in batch mode")
-            self.logger.info(
+            logging.info("[Main] Running in batch mode")
+            logging.info(
                 f"[Main] Uploading all the items in the folder: {self.args.path}"
             )
             self.upload_queue.extend(
                 utils.files_for_batch_processing([self.args.path[0]])
             )
-            self.logger.info(
+            logging.info(
                 f"[Main] Upload queue for batch mode {self.upload_queue}"
             )
         else:
-            self.logger.info(
+            logging.info(
                 "[Main] Running in regular '-path' mode, starting upload now"
             )
             # This means the ran the script normally and specified a direct path to some media (or multiple media items,
@@ -722,7 +726,7 @@ class GGBotUploadAssistant(GGBot):
         """
         self.bdinfo_script = self.config.BD_INFO_LOCATION
         if self.config.CONTAINERIZED and self.config.BD_SUPPORT:
-            self.logger.info(
+            logging.info(
                 "[Main] Full disk is supported inside this container. Setting overriding configured `bdinfo_script` "
                 "to use alias `bdinfocli` "
             )
@@ -733,7 +737,7 @@ class GGBotUploadAssistant(GGBot):
             and self.config.CONTAINERIZED
             and not self.config.BD_SUPPORT
         ):
-            self.logger.fatal(
+            logging.fatal(
                 "[Main] User tried to upload Full Disk from an unsupported image!. Stopping upload process."
             )
             self.console.print(
@@ -825,7 +829,7 @@ class GGBotUploadAssistant(GGBot):
         keys_we_need_but_missing_torrent_info = []
         # We can (need to) have some other information in the final torrent title like 'editions', 'hdr', etc
         # All of that is important but not essential right now so we will try to extract that info later in the script
-        self.logger.debug(
+        logging.debug(
             f"Attempting to detect the following keys from guessit :: {keys_we_need_torrent_info}"
         )
         for basic_key in keys_we_need_torrent_info:
@@ -836,7 +840,7 @@ class GGBotUploadAssistant(GGBot):
 
         # As guessit evolves and adds more info we can easily support whatever they add
         # and insert it into our main torrent_info dict
-        self.logger.debug(
+        logging.debug(
             f"Attempting to detect the following keys from guessit :: {keys_we_want_torrent_info}"
         )
         for wanted_key in keys_we_want_torrent_info:
@@ -915,7 +919,7 @@ class GGBotUploadAssistant(GGBot):
                     torrent_info["raw_video_file"] = raw_video_file
 
             if "raw_video_file" not in torrent_info:
-                self.logger.critical(
+                logging.critical(
                     f"The folder {torrent_info['upload_media']} does not contain any video files"
                 )
                 self.console.print(
@@ -943,7 +947,7 @@ class GGBotUploadAssistant(GGBot):
         ]  # for disc, we don't need mediainfo
         if self.args.disc:
             bdinfo_start_time = time.perf_counter()
-            self.logger.debug(
+            logging.debug(
                 f"Generating and parsing the BDInfo for playlist {torrent_info['largest_playlist']}"
             )
             self.console.print(
@@ -961,12 +965,12 @@ class GGBotUploadAssistant(GGBot):
 
             self.bdinfo_processor.generate_bdinfo(torrent_info=torrent_info)
             torrent_info["bdinfo"] = self.bdinfo_processor.bdinfo
-            self.logger.debug(
+            logging.debug(
                 "::::::::::::::::::::::::::::: Parsed BDInfo output :::::::::::::::::::::::::::::"
             )
-            self.logger.debug(f"\n{pformat(torrent_info['bdinfo'])}")
+            logging.debug(f"\n{pformat(torrent_info['bdinfo'])}")
             bdinfo_end_time = time.perf_counter()
-            self.logger.debug(
+            logging.debug(
                 f"Time taken for full bdinfo parsing :: {(bdinfo_end_time - bdinfo_start_time)}"
             )
         else:
@@ -979,10 +983,10 @@ class GGBotUploadAssistant(GGBot):
         # the dict when what we want is "DD+" ------------ If we are missing any other "basic info" we try to
         # identify it here ------------ #
         if len(keys_we_need_but_missing_torrent_info) != 0:
-            self.logger.error(
+            logging.error(
                 "Unable to automatically extract all the required info from the FILENAME"
             )
-            self.logger.error(
+            logging.error(
                 f"We are missing this info: {keys_we_need_but_missing_torrent_info}"
             )
             # Show the user what is missing & the next steps
@@ -1005,14 +1009,14 @@ class GGBotUploadAssistant(GGBot):
             if "raw_video_file" in torrent_info
             else torrent_info["upload_media"]
         )
-        self.logger.debug(
+        logging.debug(
             f"[Main] Torrent info just before MediaInfo generation. \n {pformat(torrent_info)}"
         )
         media_info_result = basic_utilities.basic_get_mediainfo(parse_me)
 
         if self.args.disc:
             # for full disk uploads the bdinfo summary itself will be set as the `mediainfo_summary`
-            self.logger.info(
+            logging.info(
                 "[Main] Full Disk Upload. Setting bdinfo summary as mediainfo summary"
             )
             with open(
@@ -1045,12 +1049,12 @@ class GGBotUploadAssistant(GGBot):
                 self.args.tmdb = [
                     tmdb
                 ]  # saving this to args, so that this value will be used in the `fill_database_ids` method
-                self.logger.info(
+                logging.info(
                     f"[Main] Obtained TMDB Id from mediainfo summary. Proceeding with {self.args.tmdb}"
                 )
             if imdb != "0":
                 self.args.imdb = [imdb]
-                self.logger.info(
+                logging.info(
                     f"[Main] Obtained IMDB Id from mediainfo summary. Proceeding with {self.args.imdb}"
                 )
 
@@ -1063,10 +1067,10 @@ class GGBotUploadAssistant(GGBot):
                 torrent_info=torrent_info,
             )
 
-        self.logger.debug(
+        logging.debug(
             "::::::::::::::::::::::::::::: Torrent Information collected so far :::::::::::::::::::::::::::::"
         )
-        self.logger.debug(f"\n{pformat(torrent_info)}")
+        logging.debug(f"\n{pformat(torrent_info)}")
         # Show the user what we identified so far
         columns_we_want = {
             "type": "Type",
@@ -1083,9 +1087,7 @@ class GGBotUploadAssistant(GGBot):
             "atmos": f'{"Dolby Atmos" if "atmos" in torrent_info else ""}',
             "release_group": f'{"Release Group" if "release_group" in torrent_info else ""}',
         }
-        self.logger.debug(
-            f"The columns that we want to show are {columns_we_want}"
-        )
+        logging.debug(f"The columns that we want to show are {columns_we_want}")
         presentable_type = (
             "Movie" if torrent_info["type"] == "movie" else "TV Show"
         )
@@ -1098,7 +1100,7 @@ class GGBotUploadAssistant(GGBot):
 
         for column_display_value in columns_we_want.values():
             if len(column_display_value) != 0:
-                self.logger.debug(
+                logging.debug(
                     f"Adding column {column_display_value} to the torrent details result table"
                 )
                 codec_result_table.add_column(
@@ -1118,7 +1120,7 @@ class GGBotUploadAssistant(GGBot):
                     if column_query_key in torrent_info
                     else None
                 )
-                self.logger.debug(
+                logging.debug(
                     f"Getting value for {column_query_key} with display {column_display_value} as "
                     f"{torrent_info_key_failsafe} for the torrent details result table "
                 )
@@ -1135,7 +1137,7 @@ class GGBotUploadAssistant(GGBot):
         This method is being called in loop with mediainfo calculation all taking place multiple times.
         Optimize this code for better performance
         """
-        self.logger.debug(f"[Main] Trying to identify the {missing_value}...")
+        logging.debug(f"[Main] Trying to identify the {missing_value}...")
 
         # ffprobe/mediainfo need to access to video file not folder, set that here using the 'parse_me' variable
         parse_me = (
@@ -1239,11 +1241,11 @@ class GGBotUploadAssistant(GGBot):
             torrent_info["pymediainfo_video_codec"] = pymediainfo_video_codec
 
             if video_codec != pymediainfo_video_codec:
-                self.logger.error(
+                logging.error(
                     f"[BasicUtils] Regex extracted video_codec [{video_codec}] and"
                     f" pymediainfo extracted video_codec [{pymediainfo_video_codec}] doesn't match!!"
                 )
-                self.logger.info(
+                logging.info(
                     "[BasicUtils] If `--force_pymediainfo` or `-fpm` is provided as argument, PyMediaInfo video_codec "
                     "will be used, else regex extracted video_codec will be used "
                 )
@@ -1298,7 +1300,7 @@ class GGBotUploadAssistant(GGBot):
                 auto_mode=self.auto_mode,
             )
         except Exception as e:
-            self.logger.exception(
+            logging.exception(
                 f"[Main] Error occurred while performing dupe check for tracker {tracker}. Error: {e}"
             )
             self.console.print(
@@ -1317,7 +1319,7 @@ class GGBotUploadAssistant(GGBot):
         We also search for "editions" here, this info is typically made known in the filename so we can use some
         simple regex to extract it (e.g. extended, Criterion, directors, etc)
         """
-        self.logger.debug(
+        logging.debug(
             "[MiscellaneousDetails] Trying to identify miscellaneous details for torrent."
         )
         # ------ Specific Source info ------ #
@@ -1392,7 +1394,7 @@ class GGBotUploadAssistant(GGBot):
         for word in hdr_hybrid_remux_keyword_search:
             word = str(word)
             if word in key_words:
-                self.logger.info(
+                logging.info(
                     f"extracted the key_word: {word} from the filename"
                 )
                 # special case. TODO find a way to generalize and handle this
@@ -1416,7 +1418,7 @@ class GGBotUploadAssistant(GGBot):
                 or len(torrent_info["dv"]) < 1
             ):
                 if any(x == word for x in ["dv", "dovi"]):
-                    self.logger.info("Detected Dolby Vision from the filename")
+                    logging.info("Detected Dolby Vision from the filename")
                     torrent_info["dv"] = "DV"
 
         # trying to check whether Do-Vi exists in the title, again needed only for older versions of mediainfo
@@ -1430,7 +1432,7 @@ class GGBotUploadAssistant(GGBot):
                 and "vi" in hdr_hybrid_remux_keyword_search
             ):
                 torrent_info["dv"] = "DV"
-                self.logger.info(
+                logging.info(
                     "Adding Do-Vi from file name. Marking existing of Dolby Vision"
                 )
 

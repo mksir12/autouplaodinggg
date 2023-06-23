@@ -24,7 +24,6 @@ from modules.constants import (
     TRACKER_ACRONYMS,
 )
 from modules.exceptions.exception import GGBotFatalException
-from modules.logger import GGBotLogManager
 from modules.template_schema_validator import TemplateSchemaValidator
 from modules.torrent_client import TorrentClientFactory, Clients
 
@@ -48,10 +47,9 @@ class GGBot(ABC):
         self.args = argument_parser().parse_args()
         self.working_folder = working_folder
         self.meta = self._load_metadata()
-        self.logger_manager = GGBotLogManager(
-            enable_verbose=self.args.verbose, log_file=log_file
-        )
-        self.gg_bot_logger = self.logger_manager.get_logger(__name__)
+        self._initialize_logger(log_file=log_file)
+        if self.args.verbose:
+            self._enable_verbose_logging()
 
         # By default, we load the templates from site_templates/ path
         # If user has provided load_external_templates argument then we'll update this path to a different one
@@ -113,7 +111,7 @@ class GGBot(ABC):
         # If not in 'auto_mode' then verify with the user that they want to continue with the upload
         if not self.auto_mode:
             if not Confirm.ask("Continue upload to these sites?", default="y"):
-                self.gg_bot_logger.info(
+                logging.info(
                     "[Main] User canceled upload when asked to confirm sites to upload to"
                 )
                 self.console.print(
@@ -158,14 +156,10 @@ class GGBot(ABC):
         try:
             self._process()
         except GGBotFatalException as e:
-            self.gg_bot_logger.fatal(
-                f"Exception in {self.__name__}: {str(e)}", exc_info=e
-            )
+            logging.fatal(f"Exception: {str(e)}", exc_info=e)
             sys.exit(1)
         except Exception as e:
-            self.gg_bot_logger.fatal(
-                f"Exception in {self.__name__}: {str(e)}", exc_info=e
-            )
+            logging.fatal(f"Exception: {str(e)}", exc_info=e)
 
     @abstractmethod
     def setup(self) -> None:
@@ -267,7 +261,7 @@ class GGBot(ABC):
 
     def _validate_args(self) -> None:
         if self.args.tripleup and self.args.doubleup:
-            self.gg_bot_logger.error(
+            logging.error(
                 "[Main] User tried to pass tripleup and doubleup together. Stopping torrent upload process"
             )
             self.console.print(
@@ -301,16 +295,17 @@ class GGBot(ABC):
 
     @staticmethod
     def _initialize_logger(log_file):
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            f"[{__name__}] %(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        #
+        # logger = logging.getLogger("root")
+        # logger.setLevel(logging.INFO)
+        # formatter = logging.Formatter(
+        #     f"[{__name__}] %(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        # )
+        #
+        # file_handler = logging.FileHandler(log_file)
+        # file_handler.setLevel(logging.INFO)
+        # file_handler.setFormatter(formatter)
+        # logger.addHandler(file_handler)
 
         # Disabling the logs from cinemagoer
         logging.getLogger("imdbpy").disabled = True
@@ -318,7 +313,6 @@ class GGBot(ABC):
         logging.getLogger("imdbpy.parser.http").disabled = True
         logging.getLogger("imdbpy.parser.http.piculet").disabled = True
         logging.getLogger("imdbpy.parser.http.build_person").disabled = True
-        return logger
 
     def _enable_verbose_logging(self):
         logging.getLogger().setLevel(logging.DEBUG)
